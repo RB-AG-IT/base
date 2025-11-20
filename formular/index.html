@@ -485,6 +485,14 @@ input[type="radio"][name="type"]:checked::after {
             background: #f8f8f8;
         }
 
+        .search-result-item strong {
+    font-size: 13px;
+}
+
+.search-result-item small {
+    font-size: 11px;
+}
+
         .footer-text {
             font-size: 12px;
             color: #777;
@@ -1469,10 +1477,10 @@ input[type="radio"][name="type"]:checked::after {
             });
         }
 
-        // Debounce timer für API calls
+       // Debounce timer für API calls
 let autocompleteTimer = null;
 
-  async function searchStreetAddress(query) {
+async function searchStreetAddress(query) {
     const suggestions = document.getElementById('streetSuggestions');
     
     if (query.length < 3) {
@@ -1489,7 +1497,7 @@ let autocompleteTimer = null;
     autocompleteTimer = setTimeout(async () => {
         try {
             const apiKey = 'bbb56e4d3e5447a89b834ac1c3b8875d';
-            const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&filter=countrycode:de&format=json&lang=de&limit=5&apiKey=${apiKey}`;
+            const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&filter=countrycode:de&format=json&lang=de&limit=10&apiKey=${apiKey}`;
             
             const response = await fetch(url);
             const data = await response.json();
@@ -1499,9 +1507,17 @@ let autocompleteTimer = null;
                 return;
             }
 
+            // Filter: Nur Ergebnisse MIT Straße
+            const streetResults = data.results.filter(result => result.street && result.street.trim() !== '');
+            
+            if (streetResults.length === 0) {
+                suggestions.classList.add('hidden');
+                return;
+            }
+
             suggestions.innerHTML = '';
             
-            data.results.slice(0, 5).forEach(result => {
+            streetResults.slice(0, 5).forEach(result => {
                 const item = document.createElement('div');
                 item.className = 'search-result-item';
                 
@@ -1512,8 +1528,8 @@ let autocompleteTimer = null;
                 const city = result.city || '';
                 
                 item.innerHTML = `
-                    <strong>${street} ${houseNumber}</strong><br>
-                    <small>${postcode} ${city}</small>
+                    <strong style="font-size: 13px;">${street} ${houseNumber}</strong><br>
+                    <small style="font-size: 11px;">${postcode} ${city}</small>
                 `;
                 
                 item.onclick = () => {
