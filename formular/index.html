@@ -180,6 +180,66 @@ input[type="checkbox"]:checked::after {
     left: 50%;
     transform: translate(-50%, -50%);
 }
+
+        /* Custom Radio Button Styling */
+input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+}
+
+input[type="radio"]:checked {
+    border-color: #667eea;
+}
+
+input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: #667eea;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Custom Radio Styling für NMG/ERH */
+input[type="radio"][name="type"] {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    background-color: white;
+    margin: 0 !important;
+    margin-right: 5px !important;
+}
+
+input[type="radio"][name="type"]:checked {
+    border-color: #667eea;
+    background-color: white;
+}
+
+input[type="radio"][name="type"]:checked::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: #667eea;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+        
         
         input:focus, select:focus, textarea:focus {
             outline: none;
