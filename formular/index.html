@@ -1521,17 +1521,10 @@ async function searchStreetAddress(query) {
                 return;
             }
 
-            // Filter: Nur Ergebnisse MIT Straße UND die zur Suchanfrage passen
-            const streetResults = data.results.filter(result => {
-                if (!result.street || result.street.trim() === '') return false;
-                
-                // Prüfe ob Straßenname den Suchbegriff enthält
-                const searchLower = query.toLowerCase();
-                const streetLower = result.street.toLowerCase();
-                const cityLower = (result.city || '').toLowerCase();
-                
-                return streetLower.includes(searchLower) || cityLower.includes(searchLower);
-            });
+           // Filter: Nur Ergebnisse MIT Straße
+const streetResults = data.results.filter(result => {
+    return result.street && result.street.trim() !== '';
+});
             
             if (streetResults.length === 0) {
                 suggestions.classList.add('hidden');
