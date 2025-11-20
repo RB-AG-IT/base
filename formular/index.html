@@ -1480,8 +1480,9 @@ input[type="radio"][name="type"]:checked::after {
             });
         }
 
-       // Debounce timer für API calls
+    // Debounce timer und AbortController für API calls
 let autocompleteTimer = null;
+let autocompleteController = null;
 
 async function searchStreetAddress(query) {
     const suggestions = document.getElementById('streetSuggestions');
@@ -1496,13 +1497,23 @@ async function searchStreetAddress(query) {
         clearTimeout(autocompleteTimer);
     }
 
+    // Cancel previous API request
+    if (autocompleteController) {
+        autocompleteController.abort();
+    }
+
     // Debounce API call (warte 300ms nach letzter Eingabe)
     autocompleteTimer = setTimeout(async () => {
         try {
+            // Create new AbortController for this request
+            autocompleteController = new AbortController();
+            
             const apiKey = 'bbb56e4d3e5447a89b834ac1c3b8875d';
             const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&filter=countrycode:de&format=json&lang=de&limit=10&apiKey=${apiKey}`;
             
-            const response = await fetch(url);
+            const response = await fetch(url, {
+                signal: autocompleteController.signal
+            });
             const data = await response.json();
             
             if (!data.results || data.results.length === 0) {
@@ -1511,16 +1522,16 @@ async function searchStreetAddress(query) {
             }
 
             // Filter: Nur Ergebnisse MIT Straße UND die zur Suchanfrage passen
-const streetResults = data.results.filter(result => {
-    if (!result.street || result.street.trim() === '') return false;
-    
-    // Prüfe ob Straßenname den Suchbegriff enthält
-    const searchLower = query.toLowerCase();
-    const streetLower = result.street.toLowerCase();
-    const cityLower = (result.city || '').toLowerCase();
-    
-    return streetLower.includes(searchLower) || cityLower.includes(searchLower);
-});
+            const streetResults = data.results.filter(result => {
+                if (!result.street || result.street.trim() === '') return false;
+                
+                // Prüfe ob Straßenname den Suchbegriff enthält
+                const searchLower = query.toLowerCase();
+                const streetLower = result.street.toLowerCase();
+                const cityLower = (result.city || '').toLowerCase();
+                
+                return streetLower.includes(searchLower) || cityLower.includes(searchLower);
+            });
             
             if (streetResults.length === 0) {
                 suggestions.classList.add('hidden');
@@ -1540,9 +1551,9 @@ const streetResults = data.results.filter(result => {
                 const city = result.city || '';
                 
                 item.innerHTML = `
-    <strong style="font-size: 13px;">${street} ${houseNumber}</strong>
-    <span style="font-size: 11px; color: #666; margin-left: 8px;">${postcode} ${city}</span>
-`;
+                    <strong style="font-size: 13px;">${street} ${houseNumber}</strong>
+                    <span style="font-size: 11px; color: #666; margin-left: 8px;">${postcode} ${city}</span>
+                `;
                 
                 item.onclick = () => {
                     // Auto-fill form fields
@@ -1559,6 +1570,10 @@ const streetResults = data.results.filter(result => {
             suggestions.classList.remove('hidden');
             
         } catch (error) {
+            // Ignore AbortError (das ist normal wenn wir die Anfrage abbrechen)
+            if (error.name === 'AbortError') {
+                return;
+            }
             console.error('Adresssuche Fehler:', error);
             suggestions.classList.add('hidden');
         }
