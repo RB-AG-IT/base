@@ -475,11 +475,12 @@ input[type="radio"][name="type"]:checked::after {
             margin-top: 10px;
         }
 
-        .search-result-item {
-            padding: 10px;
-            border-bottom: 1px solid #f0f0f0;
-            cursor: pointer;
-        }
+       .search-result-item {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    line-height: 1.3;
+}
 
         .search-result-item:hover {
             background: #f8f8f8;
@@ -1507,8 +1508,17 @@ async function searchStreetAddress(query) {
                 return;
             }
 
-            // Filter: Nur Ergebnisse MIT Straße
-            const streetResults = data.results.filter(result => result.street && result.street.trim() !== '');
+            // Filter: Nur Ergebnisse MIT Straße UND die zur Suchanfrage passen
+const streetResults = data.results.filter(result => {
+    if (!result.street || result.street.trim() === '') return false;
+    
+    // Prüfe ob Straßenname den Suchbegriff enthält
+    const searchLower = query.toLowerCase();
+    const streetLower = result.street.toLowerCase();
+    const cityLower = (result.city || '').toLowerCase();
+    
+    return streetLower.includes(searchLower) || cityLower.includes(searchLower);
+});
             
             if (streetResults.length === 0) {
                 suggestions.classList.add('hidden');
