@@ -1195,10 +1195,10 @@ input[type="radio"][name="type"]:checked::after {
                 });
             });
 
-            // Street autocomplete simulation
-            document.getElementById('street').addEventListener('input', function() {
-                simulateStreetAutocomplete(this.value);
-            });
+             // Street address autocomplete
+   document.getElementById('street').addEventListener('input', function() {
+       searchStreetAddress(this.value);
+   });
 
             // Validate button
             document.getElementById('validateBtn').addEventListener('click', validateForm);
@@ -1469,45 +1469,76 @@ input[type="radio"][name="type"]:checked::after {
             });
         }
 
-        function simulateStreetAutocomplete(query) {
-            const suggestions = document.getElementById('streetSuggestions');
-            
-            if (query.length < 3) {
-                suggestions.classList.add('hidden');
-                return;
-            }
+        // Debounce timer für API calls
+let autocompleteTimer = null;
 
-            // Simulated street suggestions
-            const streets = [
-                'Hauptstraße',
-                'Bahnhofstraße',
-                'Gartenweg',
-                'Kirchplatz',
-                'Marktplatz'
-            ];
+  async function searchStreetAddress(query) {
+    const suggestions = document.getElementById('streetSuggestions');
+    
+    if (query.length < 3) {
+        suggestions.classList.add('hidden');
+        return;
+    }
 
-            const filtered = streets.filter(s => s.toLowerCase().includes(query.toLowerCase()));
+    // Clear previous timer
+    if (autocompleteTimer) {
+        clearTimeout(autocompleteTimer);
+    }
+
+    // Debounce API call (warte 300ms nach letzter Eingabe)
+    autocompleteTimer = setTimeout(async () => {
+        try {
+            const apiKey = 'bbb56e4d3e5447a89b834ac1c3b8875d';
+            const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&filter=countrycode:de&format=json&lang=de&limit=5&apiKey=${apiKey}`;
             
-            if (filtered.length === 0) {
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            if (!data.results || data.results.length === 0) {
                 suggestions.classList.add('hidden');
                 return;
             }
 
             suggestions.innerHTML = '';
-            filtered.forEach(street => {
+            
+            data.results.slice(0, 5).forEach(result => {
                 const item = document.createElement('div');
                 item.className = 'search-result-item';
-                item.textContent = street;
+                
+                // Format: Straße Hausnummer, PLZ Ort
+                const street = result.street || '';
+                const houseNumber = result.housenumber || '';
+                const postcode = result.postcode || '';
+                const city = result.city || '';
+                
+                item.innerHTML = `
+                    <strong>${street} ${houseNumber}</strong><br>
+                    <small>${postcode} ${city}</small>
+                `;
+                
                 item.onclick = () => {
+                    // Auto-fill form fields
                     document.getElementById('street').value = street;
+                    document.getElementById('houseNumber').value = houseNumber;
+                    document.getElementById('zipCode').value = postcode;
+                    document.getElementById('city').value = city;
                     suggestions.classList.add('hidden');
                 };
+                
                 suggestions.appendChild(item);
             });
 
             suggestions.classList.remove('hidden');
+            
+        } catch (error) {
+            console.error('Adresssuche Fehler:', error);
+            suggestions.classList.add('hidden');
         }
+    }, 300); // 300ms debounce
+}
 
+
+        
         function initializeSignaturePad() {
             const canvas = document.getElementById('signatureCanvas');
             const ctx = canvas.getContext('2d');
