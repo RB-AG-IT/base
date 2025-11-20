@@ -153,6 +153,34 @@ select {
     padding-right: 32px;
 }
 
+        /* Custom Checkbox Styling */
+input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ddd;
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    background-color: white;
+}
+
+input[type="checkbox"]:checked {
+    background-color: white;
+    border-color: #667eea;
+}
+
+input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: #667eea;
+    font-size: 14px;
+    font-weight: bold;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+        
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: #667eea;
