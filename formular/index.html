@@ -1508,10 +1508,27 @@ async function lookupBankFromIBAN(iban, bankField, bicField, statusField) {
     }
 }
 
-// Zeige "Bitte manuell ausfüllen" Nachricht
+// Zeige "Bitte manuell ausfüllen" Nachricht unter Bank und BIC Feldern
 function showManualFillMessage(statusField) {
-    const currentStatus = statusField.innerHTML;
-    statusField.innerHTML = currentStatus + '<br><span style="color: #ff9800; font-size: 10px;">Bank/BIC bitte manuell ausfüllen</span>';
+    // Entferne alte Meldungen falls vorhanden
+    const oldMessages = document.querySelectorAll('.manual-fill-message');
+    oldMessages.forEach(msg => msg.remove());
+    
+    // Nachricht unter Bank-Feld
+    const bankField = document.getElementById('bankName');
+    const bankMessage = document.createElement('div');
+    bankMessage.className = 'manual-fill-message';
+    bankMessage.style.cssText = 'color: #ff9800; font-size: 10px; text-align: right; margin-top: 3px;';
+    bankMessage.textContent = 'Bitte manuell ausfüllen';
+    bankField.parentElement.appendChild(bankMessage);
+    
+    // Nachricht unter BIC-Feld
+    const bicField = document.getElementById('bic');
+    const bicMessage = document.createElement('div');
+    bicMessage.className = 'manual-fill-message';
+    bicMessage.style.cssText = 'color: #ff9800; font-size: 10px; text-align: right; margin-top: 3px;';
+    bicMessage.textContent = 'Bitte manuell ausfüllen';
+    bicField.parentElement.appendChild(bicMessage);
 }
 
         function updateAmountDisplay() {
