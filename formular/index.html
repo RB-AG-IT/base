@@ -1514,16 +1514,18 @@ function showManualFillMessage(statusField) {
     const oldMessages = document.querySelectorAll('.manual-fill-message');
     oldMessages.forEach(msg => msg.remove());
     
-    // Nachricht unter Bank-Feld
+    // Bank-Feld: Placeholder entfernen + Nachricht
     const bankField = document.getElementById('bankName');
+    bankField.placeholder = '';
     const bankMessage = document.createElement('div');
     bankMessage.className = 'manual-fill-message';
     bankMessage.style.cssText = 'color: #ff9800; font-size: 10px; text-align: right; margin-top: 3px;';
     bankMessage.textContent = 'Bitte manuell ausfüllen';
     bankField.parentElement.appendChild(bankMessage);
     
-    // Nachricht unter BIC-Feld
+    // BIC-Feld: Placeholder entfernen + Nachricht
     const bicField = document.getElementById('bic');
+    bicField.placeholder = '';
     const bicMessage = document.createElement('div');
     bicMessage.className = 'manual-fill-message';
     bicMessage.style.cssText = 'color: #ff9800; font-size: 10px; text-align: right; margin-top: 3px;';
