@@ -257,26 +257,107 @@ const views = {
         <div class="view-container">
             <h1 class="view-title">Ranking</h1>
 
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 24px; color: white; margin-bottom: 24px; text-align: center;">
-                <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Deine Position</div>
-                <div style="font-size: 48px; font-weight: 700; line-height: 1;">#${dummyData.stats.rank}</div>
-                <div style="font-size: 14px; opacity: 0.9; margin-top: 4px;">von ${dummyData.stats.totalUsers} Werbern</div>
+            <!-- Last Period Winner Banner -->
+            <div class="winner-banner">
+                <div class="winner-crown">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L15 9L22 9.5L17 15L18.5 22L12 18L5.5 22L7 15L2 9.5L9 9L12 2Z"/>
+                    </svg>
+                </div>
+                <div class="winner-content">
+                    <div class="winner-label">Champion der letzten Woche</div>
+                    <div class="winner-name">Anna Schmidt</div>
+                    <div class="winner-score">127 Punkte</div>
+                </div>
+                <div class="winner-confetti"></div>
             </div>
 
-            <h3 style="font-size: 14px; color: #757575; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Top Werber</h3>
-            <div class="ranking-list">
-                ${dummyData.ranking.map(item => `
-                    <div class="ranking-item ${item.isCurrentUser ? 'highlight' : ''}">
-                        <div class="ranking-position ${item.position === 1 ? 'gold' : item.position === 2 ? 'silver' : item.position === 3 ? 'bronze' : ''}">
-                            ${item.position}
+            <!-- Period Tabs -->
+            <div class="ranking-tabs">
+                <button class="ranking-tab active" data-period="day">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    Tag
+                </button>
+                <button class="ranking-tab" data-period="week">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    Woche
+                </button>
+                <button class="ranking-tab" data-period="month">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                        <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"></path>
+                    </svg>
+                    Monat
+                </button>
+                <button class="ranking-tab" data-period="year">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L15 9L22 9.5L17 15L18.5 22L12 18L5.5 22L7 15L2 9.5L9 9L12 2Z"/>
+                    </svg>
+                    Jahr
+                </button>
+            </div>
+
+            <!-- Your Position Card -->
+            <div class="your-position-card">
+                <div class="position-label">Deine Position</div>
+                <div class="position-rank">#${dummyData.stats.rank}</div>
+                <div class="position-total">von ${dummyData.stats.totalUsers} Werbern</div>
+            </div>
+
+            <!-- Rankings List -->
+            <div class="ranking-section">
+                <h3 class="section-header">
+                    <span>Top Performer</span>
+                    <svg class="trophy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                        <path d="M4 22h16"></path>
+                        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                        <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
+                    </svg>
+                </h3>
+                <div class="flashy-ranking-list">
+                    ${dummyData.ranking.map(item => `
+                        <div class="flashy-ranking-item rank-${item.position} ${item.isCurrentUser ? 'is-you' : ''}">
+                            ${item.position <= 3 ? `<div class="rank-particles"></div>` : ''}
+                            <div class="rank-badge ${item.position === 1 ? 'gold' : item.position === 2 ? 'silver' : item.position === 3 ? 'bronze' : ''}">
+                                ${item.position <= 3 ? `
+                                    <div class="medal-shine"></div>
+                                    <svg class="medal-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2L15 9L22 9.5L17 15L18.5 22L12 18L5.5 22L7 15L2 9.5L9 9L12 2Z"/>
+                                    </svg>
+                                ` : item.position}
+                            </div>
+                            <div class="rank-info">
+                                <div class="rank-name">${item.name} ${item.isCurrentUser ? '<span class="you-badge">Du</span>' : ''}</div>
+                                <div class="rank-team">${item.team}</div>
+                            </div>
+                            <div class="rank-score">
+                                <div class="score-value">${item.score}</div>
+                                <div class="score-label">Punkte</div>
+                            </div>
                         </div>
-                        <div class="ranking-info">
-                            <div class="ranking-name">${item.name} ${item.isCurrentUser ? '(Du)' : ''}</div>
-                            <div class="ranking-team">${item.team}</div>
-                        </div>
-                        <div class="ranking-score">${item.score}</div>
-                    </div>
-                `).join('')}
+                    `).join('')}
+                </div>
             </div>
         </div>
     `,
