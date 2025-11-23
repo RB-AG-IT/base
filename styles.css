@@ -356,6 +356,20 @@ button {
     background: rgba(102, 126, 234, 0.2);
 }
 
+.side-menu-item.active {
+    color: var(--accent-primary);
+    background: transparent;
+}
+
+.side-menu-item.active::before {
+    transform: scaleY(1);
+}
+
+.side-menu-item.active .icon {
+    transform: scale(1.15);
+    filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.8));
+}
+
 .side-menu-item .icon {
     width: 24px;
     height: 24px;
