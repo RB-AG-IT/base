@@ -465,19 +465,7 @@ function loadView(viewName) {
     // Load view
     content.innerHTML = views[viewName]();
 
-    // Update header title
-    const titles = {
-        dashboard: 'Dashboard',
-        team: 'Mein Team',
-        ranking: 'Ranking',
-        offline: 'Offline Gespeichert',
-        profil: 'Mein Profil',
-        einstellungen: 'Einstellungen',
-        benutzer: 'Benutzerverwaltung',
-        kampagnen: 'Kampagnen',
-        quality: 'Quality Management'
-    };
-    document.getElementById('headerTitle').textContent = titles[viewName] || 'Base Portal';
+    // Header title is hidden (no update needed)
 
     // Update active nav item
     document.querySelectorAll('.nav-item').forEach(item => {
@@ -533,8 +521,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Menu button
-    document.getElementById('menuBtn').addEventListener('click', () => {
+    // Avatar click opens sidebar (statt Menu button)
+    document.getElementById('headerAvatar').addEventListener('click', () => {
         openSidebar();
     });
 
