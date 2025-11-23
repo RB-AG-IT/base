@@ -365,6 +365,10 @@ button {
     transform: scaleY(0);
 }
 
+.side-menu-item.active::after {
+    width: 0%;
+}
+
 .side-menu-item.active .icon {
     transform: scale(1.15);
     filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.8));
