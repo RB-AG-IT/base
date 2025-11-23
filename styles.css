@@ -105,6 +105,10 @@ body {
     position: relative;
 }
 
+body.sidebar-open {
+    overflow: hidden;
+}
+
 /* Animated Background Gradient */
 body::before {
     content: '';
@@ -339,7 +343,7 @@ button {
 }
 
 .side-menu-item:hover::before {
-    transform: scaleY(1);
+    transform: scaleY(0);
 }
 
 .side-menu-item:hover::after {
@@ -468,7 +472,7 @@ button {
 .app-content {
     min-height: calc(100vh - var(--bottom-nav-height));
     padding: var(--spacing-lg);
-    padding-top: calc(var(--spacing-xl) + var(--safe-area-inset-top));
+    padding-top: calc(80px + var(--safe-area-inset-top));
     padding-bottom: calc(var(--spacing-xl) + var(--bottom-nav-height));
 }
 
