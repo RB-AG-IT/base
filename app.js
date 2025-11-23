@@ -81,22 +81,42 @@ const views = {
             <!-- Mini Stats Grid (2x2) -->
             <div class="mini-stats-grid">
                 <div class="mini-stat animated-stat" style="--delay: 0.1s">
-                    <div class="mini-stat-icon">📅</div>
+                    <div class="mini-stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                    </div>
                     <div class="mini-stat-value">${dummyData.stats.week}</div>
                     <div class="mini-stat-label">Diese Woche</div>
                 </div>
                 <div class="mini-stat animated-stat" style="--delay: 0.2s">
-                    <div class="mini-stat-icon">📆</div>
+                    <div class="mini-stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
                     <div class="mini-stat-value">${dummyData.stats.month}</div>
                     <div class="mini-stat-label">Dieser Monat</div>
                 </div>
                 <div class="mini-stat animated-stat" style="--delay: 0.3s">
-                    <div class="mini-stat-icon">🏆</div>
+                    <div class="mini-stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"></path>
+                        </svg>
+                    </div>
                     <div class="mini-stat-value">#${dummyData.stats.rank}</div>
                     <div class="mini-stat-label">Dein Rang</div>
                 </div>
                 <div class="mini-stat animated-stat" style="--delay: 0.4s">
-                    <div class="mini-stat-icon">📈</div>
+                    <div class="mini-stat-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                    </div>
                     <div class="mini-stat-value">${dummyData.stats.total}</div>
                     <div class="mini-stat-label">Gesamt</div>
                 </div>
@@ -108,19 +128,40 @@ const views = {
             </div>
             <div class="quick-actions-scroll">
                 <a href="formular/" class="action-card">
-                    <div class="action-icon">📝</div>
+                    <div class="action-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </div>
                     <div class="action-label">Neues<br/>Mitglied</div>
                 </a>
                 <a href="#team" class="action-card">
-                    <div class="action-icon">🗺️</div>
+                    <div class="action-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon>
+                            <line x1="8" y1="2" x2="8" y2="18"></line>
+                            <line x1="16" y1="6" x2="16" y2="22"></line>
+                        </svg>
+                    </div>
                     <div class="action-label">Werbe-<br/>gebiete</div>
                 </a>
                 <a href="#ranking" class="action-card">
-                    <div class="action-icon">🏆</div>
+                    <div class="action-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z"></path>
+                        </svg>
+                    </div>
                     <div class="action-label">Ranking</div>
                 </a>
                 <a href="#offline" class="action-card">
-                    <div class="action-icon">💾</div>
+                    <div class="action-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </div>
                     <div class="action-label">Offline<br/>Daten</div>
                 </a>
             </div>
@@ -150,7 +191,13 @@ const views = {
 
             <!-- Current Campaign Banner -->
             <div class="campaign-banner">
-                <div class="campaign-icon">🎯</div>
+                <div class="campaign-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <circle cx="12" cy="12" r="6"></circle>
+                        <circle cx="12" cy="12" r="2"></circle>
+                    </svg>
+                </div>
                 <div class="campaign-info">
                     <div class="campaign-name">${dummyData.user.campaign}</div>
                     <div class="campaign-team">Team: ${dummyData.user.team}</div>
@@ -170,7 +217,7 @@ const views = {
 
     team: () => `
         <div class="view-container">
-            <h1 class="view-title">Mein Team 👥</h1>
+            <h1 class="view-title">Mein Team</h1>
 
             <div style="background: white; border-radius: 12px; padding: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
                 <div style="font-size: 13px; color: #757575; margin-bottom: 4px;">Kampagne</div>
@@ -186,7 +233,7 @@ const views = {
                         <h3>${area.name}</h3>
                         <p>Heute: ${area.today} Mitglieder • Diese Woche: ${area.week} Mitglieder</p>
                         <span class="area-badge" style="background: ${area.active ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)' : '#eeeeee'}; color: ${area.active ? 'white' : '#757575'};">
-                            ${area.active ? '🟢 Aktiv' : '⚫ Inaktiv'}
+                            ${area.active ? '● Aktiv' : '○ Inaktiv'}
                         </span>
                     </a>
                 `).join('')}
@@ -208,7 +255,7 @@ const views = {
 
     ranking: () => `
         <div class="view-container">
-            <h1 class="view-title">Ranking 🏆</h1>
+            <h1 class="view-title">Ranking</h1>
 
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 24px; color: white; margin-bottom: 24px; text-align: center;">
                 <div style="font-size: 14px; opacity: 0.9; margin-bottom: 8px;">Deine Position</div>
@@ -236,12 +283,16 @@ const views = {
 
     offline: () => `
         <div class="view-container">
-            <h1 class="view-title">Offline Gespeichert 💾</h1>
+            <h1 class="view-title">Offline Gespeichert</h1>
 
             ${dummyData.offline.length > 0 ? `
                 <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                        <span style="font-size: 20px;">⚠️</span>
+                        <svg style="width: 20px; height: 20px; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="#856404" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
                         <strong style="color: #856404;">Nicht synchronisiert</strong>
                     </div>
                     <p style="font-size: 14px; color: #856404; margin: 0;">
@@ -259,12 +310,21 @@ const views = {
                     `).join('')}
                 </div>
 
-                <button class="btn-primary" style="margin-top: 16px;">
-                    🔄 Jetzt synchronisieren
+                <button class="btn-primary" style="margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <svg style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    Jetzt synchronisieren
                 </button>
             ` : `
                 <div class="empty-state">
-                    <div class="empty-state-icon">✅</div>
+                    <div class="empty-state-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
                     <div class="empty-state-title">Alles synchronisiert!</div>
                     <div class="empty-state-text">Keine offline gespeicherten Datensätze vorhanden</div>
                 </div>
@@ -274,7 +334,7 @@ const views = {
 
     profil: () => `
         <div class="view-container">
-            <h1 class="view-title">Mein Profil 👤</h1>
+            <h1 class="view-title">Mein Profil</h1>
 
             <div style="text-align: center; margin-bottom: 32px;">
                 <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23667eea'/%3E%3Ctext x='50' y='68' text-anchor='middle' font-size='40' fill='white' font-family='Arial'%3E${dummyData.user.avatar}%3C/text%3E%3C/svg%3E"
@@ -323,15 +383,19 @@ const views = {
                 </div>
             </div>
 
-            <button class="btn-secondary" style="margin-top: 16px;">
-                ✏️ Profil bearbeiten
+            <button class="btn-secondary" style="margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Profil bearbeiten
             </button>
         </div>
     `,
 
     einstellungen: () => `
         <div class="view-container">
-            <h1 class="view-title">Einstellungen ⚙️</h1>
+            <h1 class="view-title">Einstellungen</h1>
 
             <div class="profile-section">
                 <h3>Rollen-Wechsel (Demo)</h3>
@@ -373,8 +437,13 @@ const views = {
                 </div>
             </div>
 
-            <button class="btn-secondary" style="margin-top: 16px; background: #ffebee; color: #c62828;">
-                🚪 Logout
+            <button class="btn-secondary" style="margin-top: 16px; background: #ffebee; color: #c62828; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Logout
             </button>
         </div>
     `,
@@ -382,11 +451,15 @@ const views = {
     // Admin-only views
     benutzer: () => `
         <div class="view-container">
-            <h1 class="view-title">Benutzerverwaltung 👨‍💼</h1>
+            <h1 class="view-title">Benutzerverwaltung</h1>
 
-            <div style="margin-bottom: 16px;">
-                <input type="text" placeholder="🔍 Benutzer suchen..."
-                       style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+            <div style="margin-bottom: 16px; position: relative;">
+                <svg style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; pointer-events: none;" viewBox="0 0 24 24" fill="none" stroke="#9e9e9e" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <input type="text" placeholder="Benutzer suchen..."
+                       style="width: 100%; padding: 12px 12px 12px 40px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
             </div>
 
             <div class="area-list">
@@ -398,27 +471,32 @@ const views = {
                                 <p>${user.role} • ${user.team}</p>
                             </div>
                             <span class="area-badge" style="background: ${user.active ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)' : '#eeeeee'}; color: ${user.active ? 'white' : '#757575'};">
-                                ${user.active ? '🟢 Aktiv' : '⚫ Inaktiv'}
+                                ${user.active ? '● Aktiv' : '○ Inaktiv'}
                             </span>
                         </div>
                     </div>
                 `).join('')}
             </div>
 
-            <button class="btn-primary" style="margin-top: 16px;">
-                ➕ Neuer Benutzer
+            <button class="btn-primary" style="margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+                Neuer Benutzer
             </button>
         </div>
     `,
 
     kampagnen: () => `
         <div class="view-container">
-            <h1 class="view-title">Kampagnen 📋</h1>
+            <h1 class="view-title">Kampagnen</h1>
 
             <div class="area-list">
                 ${dummyData.campaigns.map(campaign => {
                     const statusColor = campaign.status === 'active' ? '#4caf50' : campaign.status === 'planned' ? '#2196f3' : '#9e9e9e';
-                    const statusLabel = campaign.status === 'active' ? '🟢 Aktiv' : campaign.status === 'planned' ? '🔵 Geplant' : '⚪ Entwurf';
+                    const statusLabel = campaign.status === 'active' ? '● Aktiv' : campaign.status === 'planned' ? '● Geplant' : '○ Entwurf';
                     return `
                     <div class="area-card">
                         <h3>${campaign.name}</h3>
@@ -430,15 +508,20 @@ const views = {
                 `}).join('')}
             </div>
 
-            <button class="btn-primary" style="margin-top: 16px;">
-                ➕ Neue Kampagne
+            <button class="btn-primary" style="margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                </svg>
+                Neue Kampagne
             </button>
         </div>
     `,
 
     quality: () => `
         <div class="view-container">
-            <h1 class="view-title">Quality Management ✅</h1>
+            <h1 class="view-title">Quality Management</h1>
 
             <div class="stats-grid">
                 <div class="stat-card">
@@ -461,8 +544,19 @@ const views = {
                     <p>Werber: Max Mustermann • Werbegebiet: Musterstadt</p>
                     <p style="font-size: 12px; color: #9e9e9e; margin-top: 4px;">23.11.2024 14:30</p>
                     <div style="margin-top: 12px; display: flex; gap: 8px;">
-                        <button class="btn-primary" style="flex: 1; background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); padding: 8px;">✓ Freigeben</button>
-                        <button class="btn-secondary" style="flex: 1; background: #ffebee; color: #c62828; padding: 8px;">✗ Ablehnen</button>
+                        <button class="btn-primary" style="flex: 1; background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); padding: 8px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                            <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Freigeben
+                        </button>
+                        <button class="btn-secondary" style="flex: 1; background: #ffebee; color: #c62828; padding: 8px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                            <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            Ablehnen
+                        </button>
                     </div>
                 </div>
                 <div class="area-card">
@@ -470,8 +564,19 @@ const views = {
                     <p>Werber: Tom Müller • Werbegebiet: Neustadt</p>
                     <p style="font-size: 12px; color: #9e9e9e; margin-top: 4px;">23.11.2024 15:45</p>
                     <div style="margin-top: 12px; display: flex; gap: 8px;">
-                        <button class="btn-primary" style="flex: 1; background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); padding: 8px;">✓ Freigeben</button>
-                        <button class="btn-secondary" style="flex: 1; background: #ffebee; color: #c62828; padding: 8px;">✗ Ablehnen</button>
+                        <button class="btn-primary" style="flex: 1; background: linear-gradient(135deg, #4caf50 0%, #45a049 100%); padding: 8px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                            <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Freigeben
+                        </button>
+                        <button class="btn-secondary" style="flex: 1; background: #ffebee; color: #c62828; padding: 8px; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                            <svg style="width: 16px; height: 16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                            Ablehnen
+                        </button>
                     </div>
                 </div>
             </div>
