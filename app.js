@@ -739,11 +739,13 @@ document.addEventListener('DOMContentLoaded', function() {
 function openSidebar() {
     document.getElementById('sideMenu').classList.add('open');
     document.getElementById('overlay').classList.add('active');
+    document.body.classList.add('sidebar-open');
 }
 
 function closeSidebar() {
     document.getElementById('sideMenu').classList.remove('open');
     document.getElementById('overlay').classList.remove('active');
+    document.body.classList.remove('sidebar-open');
 }
 
 // ========== ANIMATED LIVE CHART (MODERN & RETINA) ==========
