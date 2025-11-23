@@ -1012,7 +1012,7 @@ function initLiveChart() {
     const container = canvas.parentElement;
     const dpr = window.devicePixelRatio || 1;
     const displayWidth = container.offsetWidth;
-    const displayHeight = 140;
+    const displayHeight = 100;
 
     canvas.width = displayWidth * dpr;
     canvas.height = displayHeight * dpr;
