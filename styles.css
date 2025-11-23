@@ -214,7 +214,11 @@ button {
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     transform: translateX(100%);
-    transition: transform 0.5s cubic-bezier(0.34, 0.36, 0.13, 1);
+    opacity: 0;
+    visibility: hidden;
+    transition: transform 0.5s cubic-bezier(0.34, 0.36, 0.13, 1),
+                opacity 0.5s cubic-bezier(0.34, 0.36, 0.13, 1),
+                visibility 0.5s cubic-bezier(0.34, 0.36, 0.13, 1);
     z-index: var(--z-sidebar);
     box-shadow:
         -10px 0 50px rgba(0, 0, 0, 0.7),
@@ -229,6 +233,8 @@ button {
 
 .side-menu.open {
     transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
     border-left-color: rgba(102, 126, 234, 0.5);
 }
 
