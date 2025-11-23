@@ -1218,7 +1218,7 @@ function initAddressAutocomplete() {
             const city = addr.city || addr.town || addr.village || addr.municipality || '';
             const country = addr.country_code ? addr.country_code.toUpperCase() : '';
 
-            // Format: Straße, Hausnummer, PLZ, Ort, Land (DE)
+            // Format: Straße, Hausnummer, PLZ, Ort, DE
             const parts = [];
             if (street && houseNumber) {
                 parts.push(`${street} ${houseNumber}`);
@@ -1227,7 +1227,7 @@ function initAddressAutocomplete() {
             }
             if (postcode) parts.push(postcode);
             if (city) parts.push(city);
-            if (country) parts.push(`Land (${country})`);
+            if (country) parts.push(country);
 
             const displayText = parts.join(', ');
 
@@ -1319,43 +1319,39 @@ function initIBANValidation() {
     const bankInput = document.querySelector('input[placeholder="Commerzbank"]');
     if (!ibanInput || !ibanCheck) return;
 
-    // Bank database (BLZ -> BIC and Bank Name)
-    const bankDatabase = {
-        '37040044': { bic: 'COBADEFFXXX', name: 'Commerzbank' },
-        '50040000': { bic: 'COBADEFFXXX', name: 'Commerzbank' },
-        '10070024': { bic: 'DEUTDEDB110', name: 'Deutsche Bank' },
-        '50070024': { bic: 'DEUTDEFF500', name: 'Deutsche Bank' },
-        '70070024': { bic: 'DEUTDEMM700', name: 'Deutsche Bank' },
-        '37080040': { bic: 'DRESDEFF370', name: 'Commerzbank (ehem. Dresdner Bank)' },
-        '50080000': { bic: 'DRESDEFF500', name: 'Commerzbank (ehem. Dresdner Bank)' },
-        '10050000': { bic: 'BELADEBEXXX', name: 'Berliner Sparkasse' },
-        '50050201': { bic: 'HELADEF1RRS', name: 'Kreissparkasse Köln' },
-        '76050101': { bic: 'SSKNDE77XXX', name: 'Sparkasse Nürnberg' },
-        '43060967': { bic: 'GENODEM1GLS', name: 'GLS Bank' },
-        '50010517': { bic: 'INGDDEFFXXX', name: 'ING-DiBa' },
-        '76026000': { bic: 'HYVEDEMM412', name: 'HypoVereinsbank' },
-        '79020076': { bic: 'HYVEDEMM419', name: 'HypoVereinsbank' },
-        '20070000': { bic: 'DEUTDEHHXXX', name: 'Deutsche Bank Hamburg' },
-        '30070010': { bic: 'DEUTDEDD300', name: 'Deutsche Bank Hannover' },
-        '60070070': { bic: 'DEUTDESS600', name: 'Deutsche Bank Stuttgart' },
-        '12030000': { bic: 'BYLADEM1001', name: 'Deutsche Kreditbank AG (DKB)' },
-        '50090900': { bic: 'GENODEF1S06', name: 'Sparda-Bank West' },
-        '55090500': { bic: 'GENODEF1S12', name: 'Sparda-Bank Südwest' },
-    };
-
-    // Get bank info from IBAN
-    function getBankInfoFromIBAN(iban) {
+    // Get bank info from IBAN via Supabase Edge Function
+    async function getBankInfoFromIBAN(iban) {
         iban = iban.replace(/\s/g, '').toUpperCase();
 
-        // Check if German IBAN (starts with DE)
-        if (!iban.startsWith('DE') || iban.length < 12) {
+        try {
+            const response = await fetch('https://lgztglycqtiwcmiydxnm.supabase.co/functions/v1/iban-validate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ iban })
+            });
+
+            if (!response.ok) {
+                console.error('IBAN validation API error:', response.status);
+                return null;
+            }
+
+            const data = await response.json();
+
+            // Expected response format: { valid: true, bic: 'COBADEFFXXX', bankName: 'Commerzbank' }
+            if (data.valid && data.bic && data.bankName) {
+                return {
+                    bic: data.bic,
+                    name: data.bankName
+                };
+            }
+
+            return null;
+        } catch (error) {
+            console.error('IBAN validation error:', error);
             return null;
         }
-
-        // Extract BLZ (Bankleitzahl) - characters 4-12 (8 digits after DE + 2 digit checksum)
-        const blz = iban.substring(4, 12);
-
-        return bankDatabase[blz] || null;
     }
 
     // IBAN validation function
@@ -1421,7 +1417,7 @@ function initIBANValidation() {
             e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
         }
 
-        validationTimeout = setTimeout(() => {
+        validationTimeout = setTimeout(async () => {
             const isValid = validateIBAN(e.target.value);
 
             if (e.target.value.replace(/\s/g, '').length >= 15) {
@@ -1429,8 +1425,8 @@ function initIBANValidation() {
                     ibanCheck.style.display = 'block';
                     ibanInput.style.borderColor = '#00e676';
 
-                    // Auto-fill BIC and Bank if available
-                    const bankInfo = getBankInfoFromIBAN(e.target.value);
+                    // Auto-fill BIC and Bank if available via API
+                    const bankInfo = await getBankInfoFromIBAN(e.target.value);
                     if (bankInfo) {
                         if (bicInput) {
                             bicInput.value = bankInfo.bic;
