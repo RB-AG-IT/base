@@ -254,24 +254,21 @@ const views = {
     `,
 
     ranking: () => `
-        <div class="view-container">
-            <h1 class="view-title">Ranking</h1>
-
-            <!-- Last Period Winner Banner -->
-            <div class="winner-banner">
-                <div class="winner-crown">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2L15 9L22 9.5L17 15L18.5 22L12 18L5.5 22L7 15L2 9.5L9 9L12 2Z"/>
-                    </svg>
-                </div>
-                <div class="winner-content">
-                    <div class="winner-label">Champion der letzten Woche</div>
-                    <div class="winner-name">Anna Schmidt</div>
-                    <div class="winner-score">127 Punkte</div>
-                </div>
-                <div class="winner-confetti"></div>
+        <!-- Champion Banner - Fixed Top Left (below avatar) -->
+        <div class="champion-banner-fixed">
+            <div class="winner-crown">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L15 9L22 9.5L17 15L18.5 22L12 18L5.5 22L7 15L2 9.5L9 9L12 2Z"/>
+                </svg>
             </div>
+            <div class="winner-content">
+                <div class="winner-label">Champion</div>
+                <div class="winner-name">Anna S.</div>
+                <div class="winner-score">127</div>
+            </div>
+        </div>
 
+        <div class="view-container">
             <!-- Period Tabs -->
             <div class="ranking-tabs">
                 <button class="ranking-tab active" data-period="day">
@@ -313,13 +310,6 @@ const views = {
                     </svg>
                     Jahr
                 </button>
-            </div>
-
-            <!-- Your Position Card -->
-            <div class="your-position-card">
-                <div class="position-label">Deine Position</div>
-                <div class="position-rank">#${dummyData.stats.rank}</div>
-                <div class="position-total">von ${dummyData.stats.totalUsers} Werbern</div>
             </div>
 
             <!-- Rankings List -->
@@ -417,60 +407,228 @@ const views = {
         <div class="view-container">
             <h1 class="view-title">Mein Profil</h1>
 
-            <div style="text-align: center; margin-bottom: 32px;">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23667eea'/%3E%3Ctext x='50' y='68' text-anchor='middle' font-size='40' fill='white' font-family='Arial'%3E${dummyData.user.avatar}%3C/text%3E%3C/svg%3E"
-                     style="width: 100px; height: 100px; border-radius: 50%; border: 4px solid #eeeeee; margin-bottom: 16px;">
-                <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 4px;">${dummyData.user.name}</h2>
-                <p style="color: #757575;">${getRoleLabel(currentRole)}</p>
-            </div>
-
-            <div class="profile-section">
-                <h3>Persönliche Daten</h3>
-                <div class="profile-item">
-                    <span class="profile-label">Name</span>
-                    <span class="profile-value">${dummyData.user.name}</span>
+            <!-- Profile Header -->
+            <div class="profile-header">
+                <div class="profile-avatar-section">
+                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23667eea'/%3E%3Ctext x='50' y='68' text-anchor='middle' font-size='40' fill='white' font-family='Arial'%3E${dummyData.user.avatar}%3C/text%3E%3C/svg%3E"
+                         class="profile-avatar">
                 </div>
-                <div class="profile-item">
-                    <span class="profile-label">E-Mail</span>
-                    <span class="profile-value">${dummyData.user.email}</span>
-                </div>
-                <div class="profile-item">
-                    <span class="profile-label">Telefon</span>
-                    <span class="profile-value">${dummyData.user.phone}</span>
+                <div class="profile-header-info">
+                    <h2 class="profile-name">${dummyData.user.name}</h2>
+                    <div class="profile-role-badge">${getRoleLabel(currentRole)}</div>
                 </div>
             </div>
 
-            <div class="profile-section">
-                <h3>Kampagne</h3>
-                <div class="profile-item">
-                    <span class="profile-label">Aktuelle Kampagne</span>
-                    <span class="profile-value">${dummyData.user.campaign}</span>
-                </div>
-                <div class="profile-item">
-                    <span class="profile-label">Team</span>
-                    <span class="profile-value">${dummyData.user.team}</span>
+            <!-- Personal Data Section -->
+            <div class="profile-form-section">
+                <h3 class="section-title">Persönliche Daten</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Vorname *</label>
+                        <input type="text" class="form-input" placeholder="Max" value="Max">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nachname *</label>
+                        <input type="text" class="form-input" placeholder="Mustermann" value="Mustermann">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">E-Mail *</label>
+                        <input type="email" class="form-input" placeholder="max@example.com" value="${dummyData.user.email}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Telefon *</label>
+                        <input type="tel" class="form-input" placeholder="+49 123 456789" value="${dummyData.user.phone}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">GameTAG</label>
+                        <input type="text" class="form-input" placeholder="MeinGameTag" value="ProGamer42">
+                    </div>
                 </div>
             </div>
 
-            <div class="profile-section">
-                <h3>Statistiken</h3>
-                <div class="profile-item">
-                    <span class="profile-label">Gesamt Mitglieder</span>
-                    <span class="profile-value">${dummyData.stats.total}</span>
-                </div>
-                <div class="profile-item">
-                    <span class="profile-label">Ranking</span>
-                    <span class="profile-value">#${dummyData.stats.rank} von ${dummyData.stats.totalUsers}</span>
+            <!-- Address Section -->
+            <div class="profile-form-section">
+                <h3 class="section-title">Adresse</h3>
+                <div class="form-grid">
+                    <div class="form-group form-group-2col">
+                        <label class="form-label">Straße *</label>
+                        <div class="input-with-icon">
+                            <input type="text" class="form-input" id="street-input" placeholder="Musterstraße" value="">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Hausnummer *</label>
+                        <input type="text" class="form-input" placeholder="42" value="">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">PLZ *</label>
+                        <input type="text" class="form-input" placeholder="12345" value="">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Stadt *</label>
+                        <input type="text" class="form-input" placeholder="Berlin" value="">
+                    </div>
+                    <div class="form-group form-group-2col">
+                        <label class="form-label">Land *</label>
+                        <select class="form-input">
+                            <option value="DE" selected>Deutschland</option>
+                            <option value="AT">Österreich</option>
+                            <option value="CH">Schweiz</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            <button class="btn-secondary" style="margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                </svg>
-                Profil bearbeiten
-            </button>
+            <!-- Bank Details Section -->
+            <div class="profile-form-section">
+                <h3 class="section-title">Bankverbindung</h3>
+                <div class="form-grid">
+                    <div class="form-group form-group-2col">
+                        <label class="form-label">Kontoinhaber *</label>
+                        <input type="text" class="form-input" placeholder="Max Mustermann" value="">
+                    </div>
+                    <div class="form-group form-group-2col">
+                        <label class="form-label">IBAN *</label>
+                        <div class="input-with-icon">
+                            <input type="text" class="form-input" id="iban-input" placeholder="DE89 3704 0044 0532 0130 00" value="">
+                            <svg class="input-icon input-icon-success" id="iban-check" style="display: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">BIC</label>
+                        <input type="text" class="form-input" placeholder="COBADEFFXXX" value="">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Bank</label>
+                        <input type="text" class="form-input" placeholder="Commerzbank" value="">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tax Information Section -->
+            <div class="profile-form-section">
+                <h3 class="section-title">Steuerinformationen</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Steuernummer</label>
+                        <input type="text" class="form-input" placeholder="12/345/67890" value="">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">USt-IdNr.</label>
+                        <input type="text" class="form-input" placeholder="DE123456789" value="">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information Section -->
+            <div class="profile-form-section">
+                <h3 class="section-title">Zusätzliche Informationen</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Kleidergröße</label>
+                        <select class="form-input">
+                            <option value="">Bitte wählen</option>
+                            <option value="XS">XS</option>
+                            <option value="S">S</option>
+                            <option value="M" selected>M</option>
+                            <option value="L">L</option>
+                            <option value="XL">XL</option>
+                            <option value="XXL">XXL</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Custom Commission (%)</label>
+                        <input type="number" class="form-input" placeholder="0" value="0" min="0" max="100">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Document Upload Section -->
+            <div class="profile-form-section">
+                <h3 class="section-title">Dokumente</h3>
+                <div class="upload-grid">
+                    <div class="upload-box">
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <div class="upload-label">Personalausweis</div>
+                        <div class="upload-hint">PNG, JPG oder PDF</div>
+                    </div>
+                    <div class="upload-box">
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <div class="upload-label">Führerschein Vorderseite</div>
+                        <div class="upload-hint">PNG, JPG oder PDF</div>
+                    </div>
+                    <div class="upload-box">
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <div class="upload-label">Führerschein Rückseite</div>
+                        <div class="upload-hint">PNG, JPG oder PDF</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Photo Upload Section -->
+            <div class="profile-form-section">
+                <h3 class="section-title">Fotos</h3>
+                <div class="upload-grid">
+                    <div class="upload-box">
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                        </div>
+                        <div class="upload-label">Internes Foto</div>
+                        <div class="upload-hint">PNG oder JPG</div>
+                    </div>
+                    <div class="upload-box">
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                        </div>
+                        <div class="upload-label">Externes Foto</div>
+                        <div class="upload-hint">PNG oder JPG</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Button -->
+            <div class="profile-actions">
+                <button class="btn-primary btn-save">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    Änderungen speichern
+                </button>
+            </div>
         </div>
     `,
 
@@ -758,6 +916,14 @@ function loadView(viewName) {
             }
         }, 0);
     }
+
+    // Setup profile form functionality
+    if (viewName === 'profil') {
+        setTimeout(() => {
+            initAddressAutocomplete();
+            initIBANValidation();
+        }, 0);
+    }
 }
 
 // ========== EVENT LISTENERS ==========
@@ -987,6 +1153,238 @@ function stopChartAnimation() {
         cancelAnimationFrame(chartAnimation);
         chartAnimation = null;
     }
+}
+
+// ========== ADDRESS AUTOCOMPLETE ==========
+function initAddressAutocomplete() {
+    const streetInput = document.getElementById('street-input');
+    if (!streetInput) return;
+
+    let autocompleteTimeout = null;
+    let suggestionsContainer = null;
+
+    // Create suggestions container
+    function createSuggestionsContainer() {
+        if (!suggestionsContainer) {
+            suggestionsContainer = document.createElement('div');
+            suggestionsContainer.className = 'address-suggestions';
+            streetInput.parentElement.appendChild(suggestionsContainer);
+        }
+        return suggestionsContainer;
+    }
+
+    // Fetch address suggestions
+    async function fetchAddressSuggestions(query) {
+        if (query.length < 3) {
+            hideSuggestions();
+            return;
+        }
+
+        try {
+            // Using OpenStreetMap Nominatim API (free, no API key required)
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/search?` +
+                `q=${encodeURIComponent(query)}&` +
+                `format=json&` +
+                `addressdetails=1&` +
+                `countrycodes=de,at,ch&` +
+                `limit=5`
+            );
+
+            if (!response.ok) return;
+
+            const results = await response.json();
+            showSuggestions(results);
+        } catch (error) {
+            console.error('Address autocomplete error:', error);
+        }
+    }
+
+    // Show suggestions
+    function showSuggestions(results) {
+        const container = createSuggestionsContainer();
+        container.innerHTML = '';
+
+        if (results.length === 0) {
+            hideSuggestions();
+            return;
+        }
+
+        results.forEach(result => {
+            const suggestion = document.createElement('div');
+            suggestion.className = 'address-suggestion-item';
+            suggestion.innerHTML = `
+                <div class="suggestion-main">${result.display_name}</div>
+            `;
+            suggestion.addEventListener('click', () => {
+                selectAddress(result);
+            });
+            container.appendChild(suggestion);
+        });
+
+        container.style.display = 'block';
+    }
+
+    // Hide suggestions
+    function hideSuggestions() {
+        if (suggestionsContainer) {
+            suggestionsContainer.style.display = 'none';
+        }
+    }
+
+    // Select address and fill form
+    function selectAddress(result) {
+        const address = result.address;
+
+        // Fill street
+        const street = address.road || address.pedestrian || address.path || '';
+        if (street) {
+            streetInput.value = street;
+        }
+
+        // Fill house number
+        const houseNumberInput = document.querySelector('input[placeholder="42"]');
+        if (houseNumberInput && address.house_number) {
+            houseNumberInput.value = address.house_number;
+        }
+
+        // Fill postal code
+        const postalInput = document.querySelector('input[placeholder="12345"]');
+        if (postalInput && address.postcode) {
+            postalInput.value = address.postcode;
+        }
+
+        // Fill city
+        const cityInput = document.querySelector('input[placeholder="Berlin"]');
+        if (cityInput) {
+            const city = address.city || address.town || address.village || address.municipality || '';
+            if (city) {
+                cityInput.value = city;
+            }
+        }
+
+        // Fill country
+        const countrySelect = document.querySelector('select.form-input');
+        if (countrySelect && address.country_code) {
+            const countryCode = address.country_code.toUpperCase();
+            if (countryCode === 'DE' || countryCode === 'AT' || countryCode === 'CH') {
+                countrySelect.value = countryCode;
+            }
+        }
+
+        hideSuggestions();
+    }
+
+    // Input event listener
+    streetInput.addEventListener('input', (e) => {
+        clearTimeout(autocompleteTimeout);
+        autocompleteTimeout = setTimeout(() => {
+            fetchAddressSuggestions(e.target.value);
+        }, 300);
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!streetInput.contains(e.target) && !suggestionsContainer?.contains(e.target)) {
+            hideSuggestions();
+        }
+    });
+}
+
+// ========== IBAN VALIDATION ==========
+function initIBANValidation() {
+    const ibanInput = document.getElementById('iban-input');
+    const ibanCheck = document.getElementById('iban-check');
+    if (!ibanInput || !ibanCheck) return;
+
+    // IBAN validation function
+    function validateIBAN(iban) {
+        // Remove spaces and convert to uppercase
+        iban = iban.replace(/\s/g, '').toUpperCase();
+
+        // Check if IBAN has valid length (15-34 characters)
+        if (iban.length < 15 || iban.length > 34) {
+            return false;
+        }
+
+        // Check if IBAN starts with 2 letters followed by 2 digits
+        if (!/^[A-Z]{2}[0-9]{2}[A-Z0-9]+$/.test(iban)) {
+            return false;
+        }
+
+        // Move first 4 characters to end
+        const rearranged = iban.substring(4) + iban.substring(0, 4);
+
+        // Replace letters with numbers (A=10, B=11, ..., Z=35)
+        let numericIBAN = '';
+        for (let char of rearranged) {
+            if (char >= 'A' && char <= 'Z') {
+                numericIBAN += (char.charCodeAt(0) - 55).toString();
+            } else {
+                numericIBAN += char;
+            }
+        }
+
+        // Calculate mod 97
+        let remainder = numericIBAN;
+        while (remainder.length > 2) {
+            const block = remainder.substring(0, 9);
+            remainder = (parseInt(block, 10) % 97).toString() + remainder.substring(block.length);
+        }
+
+        return parseInt(remainder, 10) % 97 === 1;
+    }
+
+    // Format IBAN with spaces
+    function formatIBAN(iban) {
+        // Remove all spaces first
+        iban = iban.replace(/\s/g, '').toUpperCase();
+        // Add space every 4 characters
+        return iban.match(/.{1,4}/g)?.join(' ') || iban;
+    }
+
+    // Validate on input
+    let validationTimeout = null;
+    ibanInput.addEventListener('input', (e) => {
+        clearTimeout(validationTimeout);
+
+        // Format IBAN as user types
+        const cursorPosition = e.target.selectionStart;
+        const oldValue = e.target.value;
+        const newValue = formatIBAN(oldValue);
+
+        if (oldValue !== newValue) {
+            e.target.value = newValue;
+            // Adjust cursor position
+            const diff = newValue.length - oldValue.length;
+            e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+        }
+
+        validationTimeout = setTimeout(() => {
+            const isValid = validateIBAN(e.target.value);
+
+            if (e.target.value.replace(/\s/g, '').length >= 15) {
+                if (isValid) {
+                    ibanCheck.style.display = 'block';
+                    ibanInput.style.borderColor = '#00e676';
+                } else {
+                    ibanCheck.style.display = 'none';
+                    ibanInput.style.borderColor = '#ff5252';
+                }
+            } else {
+                ibanCheck.style.display = 'none';
+                ibanInput.style.borderColor = '';
+            }
+        }, 500);
+    });
+
+    // Validate on blur
+    ibanInput.addEventListener('blur', () => {
+        if (ibanInput.value.trim() === '') {
+            ibanCheck.style.display = 'none';
+            ibanInput.style.borderColor = '';
+        }
+    });
 }
 
 // ========== SERVICE WORKER (PWA) ==========
