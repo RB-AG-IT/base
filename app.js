@@ -657,11 +657,10 @@ function loadView(viewName) {
 
     // Update active sidebar item
     document.querySelectorAll('.side-menu-item').forEach(item => {
+        item.classList.remove('active');
         const href = item.getAttribute('href');
         if (href === '#' + viewName) {
-            item.style.background = '#f5f5f5';
-        } else {
-            item.style.background = 'transparent';
+            item.classList.add('active');
         }
     });
 
