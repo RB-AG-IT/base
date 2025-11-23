@@ -2272,3 +2272,239 @@ button {
     background: linear-gradient(135deg, rgba(205, 127, 50, 0.1), rgba(232, 168, 112, 0.05));
     box-shadow: 0 0 15px rgba(205, 127, 50, 0.1);
 }
+
+/* ========== PROFILE FORM STYLES ========== */
+
+/* Profile Header */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    border: 2px solid var(--border-color);
+}
+
+.profile-avatar-section {
+    flex-shrink: 0;
+}
+
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-full);
+    border: 3px solid var(--accent-primary);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+}
+
+.profile-header-info {
+    flex: 1;
+}
+
+.profile-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+.profile-role-badge {
+    display: inline-block;
+    background: var(--accent-gradient);
+    color: white;
+    padding: 6px 16px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Form Sections */
+.profile-form-section {
+    background: var(--bg-card);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    border: 2px solid var(--border-color);
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 2px solid var(--border-color);
+}
+
+/* Form Grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.form-group-2col {
+    grid-column: span 2;
+}
+
+/* Form Labels and Inputs */
+.form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-input {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-elevated);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-input::placeholder {
+    color: var(--text-disabled);
+}
+
+.form-input:hover:not(:focus) {
+    border-color: var(--text-disabled);
+}
+
+/* Input with Icon */
+.input-with-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-with-icon .form-input {
+    padding-right: 40px;
+}
+
+.input-icon {
+    position: absolute;
+    right: 12px;
+    width: 20px;
+    height: 20px;
+    color: var(--text-disabled);
+    pointer-events: none;
+}
+
+.input-icon-success {
+    color: #00e676;
+}
+
+/* Upload Grid */
+.upload-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.upload-box {
+    background: var(--bg-elevated);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 160px;
+}
+
+.upload-box:hover {
+    border-color: var(--accent-primary);
+    background: rgba(102, 126, 234, 0.05);
+    transform: translateY(-2px);
+}
+
+.upload-icon {
+    width: 40px;
+    height: 40px;
+    color: var(--text-disabled);
+    transition: all 0.3s ease;
+}
+
+.upload-box:hover .upload-icon {
+    color: var(--accent-primary);
+    transform: scale(1.1);
+}
+
+.upload-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.upload-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    text-align: center;
+}
+
+/* Profile Actions */
+.profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: var(--spacing-lg);
+}
+
+.btn-save {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md) var(--spacing-xl);
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.btn-save svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Responsive Form Grid */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group-2col {
+        grid-column: span 1;
+    }
+
+    .upload-grid {
+        grid-template-columns: 1fr;
+    }
+}
