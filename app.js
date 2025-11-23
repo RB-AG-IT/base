@@ -1324,12 +1324,13 @@ function initIBANValidation() {
         iban = iban.replace(/\s/g, '').toUpperCase();
 
         try {
-            const response = await fetch('https://lgztglycqtiwcmiydxnm.supabase.co/functions/v1/iban-validate', {
-                method: 'POST',
+            // Use query parameter instead of JSON body
+            const url = `https://lgztglycqtiwcmiydxnm.supabase.co/functions/v1/iban-validate?iban=${encodeURIComponent(iban)}`;
+            const response = await fetch(url, {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ iban })
+                }
             });
 
             if (!response.ok) {
@@ -1338,12 +1339,13 @@ function initIBANValidation() {
             }
 
             const data = await response.json();
+            console.log('IBAN API Response:', data); // Debug log
 
-            // Expected response format: { valid: true, bic: 'COBADEFFXXX', bankName: 'Commerzbank' }
-            if (data.valid && data.bic && data.bankName) {
+            // OpenIBAN response format: { valid: true, bankData: { bankCode: '...', name: '...', bic: '...' } }
+            if (data.valid && data.bankData) {
                 return {
-                    bic: data.bic,
-                    name: data.bankName
+                    bic: data.bankData.bic || '',
+                    name: data.bankData.name || ''
                 };
             }
 
