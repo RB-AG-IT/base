@@ -1856,7 +1856,6 @@ button {
     background: var(--accent-gradient);
     color: white;
     border-color: transparent;
-    transform: translateY(-3px);
     box-shadow:
         0 10px 30px rgba(102, 126, 234, 0.4),
         0 0 20px rgba(102, 126, 234, 0.3);
@@ -2494,14 +2493,12 @@ button {
 /* Address Autocomplete Suggestions */
 .address-suggestions {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 2px);
     left: 0;
     right: 0;
     background: var(--bg-elevated);
     border: 2px solid var(--accent-primary);
-    border-top: none;
-    border-radius: 0 0 var(--radius-md) var(--radius-md);
-    margin-top: -2px;
+    border-radius: var(--radius-md);
     max-height: 300px;
     overflow-y: auto;
     z-index: 1000;
@@ -2510,7 +2507,10 @@ button {
 }
 
 .address-suggestion-item {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    min-height: 44px;
+    display: flex;
+    align-items: center;
     cursor: pointer;
     border-bottom: 1px solid var(--border-color);
     transition: background 0.2s ease;
