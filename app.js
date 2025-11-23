@@ -65,19 +65,6 @@ const views = {
                 <div class="hero-stat-trend">↗ +${Math.floor(Math.random() * 30 + 10)}% mehr als gestern</div>
             </div>
 
-            <!-- Animated Live Chart -->
-            <div class="chart-card">
-                <div class="chart-header">
-                    <div>
-                        <div class="chart-title">7-Tage Performance</div>
-                        <div class="chart-change positive">↗ Trending Up</div>
-                    </div>
-                </div>
-                <div class="chart-canvas">
-                    <canvas id="liveChart"></canvas>
-                </div>
-            </div>
-
             <!-- Mini Stats Grid (2x2) -->
             <div class="mini-stats-grid">
                 <div class="mini-stat animated-stat" style="--delay: 0.1s">
@@ -561,7 +548,18 @@ const views = {
                                 <line x1="12" y1="3" x2="12" y2="15"></line>
                             </svg>
                         </div>
-                        <div class="upload-label">Personalausweis</div>
+                        <div class="upload-label">Personalausweis Vorderseite</div>
+                        <div class="upload-hint">PNG, JPG oder PDF</div>
+                    </div>
+                    <div class="upload-box">
+                        <div class="upload-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                        </div>
+                        <div class="upload-label">Personalausweis Rückseite</div>
                         <div class="upload-hint">PNG, JPG oder PDF</div>
                     </div>
                     <div class="upload-box">
