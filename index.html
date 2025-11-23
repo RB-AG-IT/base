@@ -1,1 +1,128 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#E30613">
+    <title>Base Portal</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <!-- Header -->
+    <header class="app-header">
+        <button class="menu-btn" id="menuBtn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <div class="header-title" id="headerTitle">Dashboard</div>
+        <div class="header-avatar" id="headerAvatar">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23667eea'/%3E%3Ctext x='20' y='26' text-anchor='middle' font-size='16' fill='white' font-family='Arial'%3EM%3C/text%3E%3C/svg%3E" alt="Avatar">
+        </div>
+    </header>
 
+    <!-- Side Menu -->
+    <div class="side-menu" id="sideMenu">
+        <div class="side-menu-header">
+            <div class="side-menu-avatar">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Ccircle cx='30' cy='30' r='30' fill='%23667eea'/%3E%3Ctext x='30' y='40' text-anchor='middle' font-size='24' fill='white' font-family='Arial'%3EM%3C/text%3E%3C/svg%3E" alt="Avatar">
+            </div>
+            <div class="side-menu-info">
+                <h3 id="userName">Max Mustermann</h3>
+                <p id="userRole">Werber</p>
+            </div>
+        </div>
+        <nav class="side-menu-nav">
+            <a href="#dashboard" class="side-menu-item">
+                <span class="icon">🏠</span>
+                <span>Dashboard</span>
+            </a>
+            <a href="#team" class="side-menu-item">
+                <span class="icon">👥</span>
+                <span>Team</span>
+            </a>
+            <a href="#ranking" class="side-menu-item">
+                <span class="icon">📊</span>
+                <span>Ranking</span>
+            </a>
+            <a href="#benutzer" class="side-menu-item admin-only" style="display:none;">
+                <span class="icon">👨‍💼</span>
+                <span>Benutzer</span>
+            </a>
+            <a href="#kampagnen" class="side-menu-item admin-only" style="display:none;">
+                <span class="icon">📋</span>
+                <span>Kampagnen</span>
+            </a>
+            <a href="#quality" class="side-menu-item quality-only" style="display:none;">
+                <span class="icon">✅</span>
+                <span>Quality</span>
+            </a>
+            <a href="#offline" class="side-menu-item">
+                <span class="icon">💾</span>
+                <span>Offline Gespeichert</span>
+            </a>
+            <a href="#profil" class="side-menu-item">
+                <span class="icon">👤</span>
+                <span>Profil</span>
+            </a>
+            <a href="#einstellungen" class="side-menu-item">
+                <span class="icon">⚙️</span>
+                <span>Einstellungen</span>
+            </a>
+        </nav>
+        <div class="side-menu-footer">
+            <button class="btn-logout" id="logoutBtn">
+                <span class="icon">🚪</span>
+                <span>Logout</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Main Content -->
+    <main class="app-content" id="appContent">
+        <!-- Views werden hier geladen -->
+    </main>
+
+    <!-- Floating Action Button -->
+    <button class="fab" id="fab">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+    </button>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav" id="bottomNav">
+        <a href="#dashboard" class="nav-item active" data-view="dashboard">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Dashboard</span>
+        </a>
+        <a href="#team" class="nav-item" data-view="team">
+            <span class="nav-icon">👥</span>
+            <span class="nav-label">Team</span>
+        </a>
+        <a href="#ranking" class="nav-item" data-view="ranking">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">Ranking</span>
+        </a>
+        <a href="#offline" class="nav-item" data-view="offline">
+            <span class="nav-icon">💾</span>
+            <span class="nav-label">Offline</span>
+        </a>
+        <a href="#profil" class="nav-item" data-view="profil">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">Profil</span>
+        </a>
+    </nav>
+
+    <script src="app.js"></script>
+</body>
+</html>
