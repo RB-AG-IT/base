@@ -1673,28 +1673,28 @@ button {
 
 /* ========== ULTRA-FLASHY RANKING STYLES ========== */
 
-/* Champion Banner - Fixed Top Left (Compact) */
+/* Champion Banner - Fixed Top Right (Larger) */
 .champion-banner-fixed {
     position: fixed;
     top: calc(var(--spacing-lg) + 10px);
-    left: calc(240px + var(--spacing-lg) + var(--spacing-lg));
+    right: var(--spacing-lg);
     z-index: 50;
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-md);
     background: linear-gradient(-45deg, #ffd700, #ffed4e, #ffa500, #ff8c00);
     background-size: 400% 400%;
     animation: gradientShift 8s ease infinite;
     border-radius: var(--radius-lg);
-    padding: var(--spacing-xs) var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
     box-shadow:
         0 4px 20px rgba(255, 215, 0, 0.4),
         0 0 30px rgba(255, 215, 0, 0.2) inset;
 }
 
 .champion-banner-fixed .winner-crown {
-    width: 24px;
-    height: 24px;
+    width: 48px;
+    height: 48px;
     animation: float 3s ease-in-out infinite;
     filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
     flex-shrink: 0;
@@ -1709,11 +1709,11 @@ button {
 .champion-banner-fixed .winner-content {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-sm);
 }
 
 .champion-banner-fixed .winner-label {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -1721,14 +1721,14 @@ button {
 }
 
 .champion-banner-fixed .winner-name {
-    font-size: 14px;
+    font-size: 18px;
     font-weight: 900;
     color: #000;
     text-shadow: 0 1px 5px rgba(255, 255, 255, 0.5);
 }
 
 .champion-banner-fixed .winner-score {
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 600;
     color: rgba(0, 0, 0, 0.8);
 }
