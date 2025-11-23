@@ -254,24 +254,21 @@ const views = {
     `,
 
     ranking: () => `
-        <div class="view-container">
-            <h1 class="view-title">Ranking</h1>
-
-            <!-- Last Period Winner Banner -->
-            <div class="winner-banner">
-                <div class="winner-crown">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2L15 9L22 9.5L17 15L18.5 22L12 18L5.5 22L7 15L2 9.5L9 9L12 2Z"/>
-                    </svg>
-                </div>
-                <div class="winner-content">
-                    <div class="winner-label">Champion der letzten Woche</div>
-                    <div class="winner-name">Anna Schmidt</div>
-                    <div class="winner-score">127 Punkte</div>
-                </div>
-                <div class="winner-confetti"></div>
+        <!-- Champion Banner - Fixed Top Left (below avatar) -->
+        <div class="champion-banner-fixed">
+            <div class="winner-crown">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L15 9L22 9.5L17 15L18.5 22L12 18L5.5 22L7 15L2 9.5L9 9L12 2Z"/>
+                </svg>
             </div>
+            <div class="winner-content">
+                <div class="winner-label">Champion</div>
+                <div class="winner-name">Anna S.</div>
+                <div class="winner-score">127</div>
+            </div>
+        </div>
 
+        <div class="view-container">
             <!-- Period Tabs -->
             <div class="ranking-tabs">
                 <button class="ranking-tab active" data-period="day">
@@ -313,13 +310,6 @@ const views = {
                     </svg>
                     Jahr
                 </button>
-            </div>
-
-            <!-- Your Position Card -->
-            <div class="your-position-card">
-                <div class="position-label">Deine Position</div>
-                <div class="position-rank">#${dummyData.stats.rank}</div>
-                <div class="position-total">von ${dummyData.stats.totalUsers} Werbern</div>
             </div>
 
             <!-- Rankings List -->

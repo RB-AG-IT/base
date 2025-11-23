@@ -1673,6 +1673,66 @@ button {
 
 /* ========== ULTRA-FLASHY RANKING STYLES ========== */
 
+/* Champion Banner - Fixed Top Left (Compact) */
+.champion-banner-fixed {
+    position: fixed;
+    top: calc(var(--spacing-lg) + 10px);
+    left: calc(240px + var(--spacing-lg) + var(--spacing-lg));
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    background: linear-gradient(-45deg, #ffd700, #ffed4e, #ffa500, #ff8c00);
+    background-size: 400% 400%;
+    animation: gradientShift 8s ease infinite;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xs) var(--spacing-md);
+    box-shadow:
+        0 4px 20px rgba(255, 215, 0, 0.4),
+        0 0 30px rgba(255, 215, 0, 0.2) inset;
+}
+
+.champion-banner-fixed .winner-crown {
+    width: 24px;
+    height: 24px;
+    animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+    flex-shrink: 0;
+}
+
+.champion-banner-fixed .winner-crown svg {
+    width: 100%;
+    height: 100%;
+    color: #fff;
+}
+
+.champion-banner-fixed .winner-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.champion-banner-fixed .winner-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.champion-banner-fixed .winner-name {
+    font-size: 14px;
+    font-weight: 900;
+    color: #000;
+    text-shadow: 0 1px 5px rgba(255, 255, 255, 0.5);
+}
+
+.champion-banner-fixed .winner-score {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.8);
+}
+
 /* Winner Banner - Champion Spotlight */
 .winner-banner {
     position: relative;
@@ -1764,7 +1824,7 @@ button {
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    padding: var(--spacing-md) var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-xs);
     background: transparent;
     border: 1px solid transparent;
     border-radius: var(--radius-md);
@@ -1900,18 +1960,18 @@ button {
 .flashy-ranking-list {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
 }
 
 .flashy-ranking-item {
     position: relative;
     background: var(--bg-card);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
     border: 2px solid var(--border-color);
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
     transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     overflow: hidden;
 }
@@ -1938,14 +1998,14 @@ button {
 
 /* Rank Badge - Base Styles */
 .rank-badge {
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     border-radius: var(--radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 900;
-    font-size: 20px;
+    font-size: 18px;
     flex-shrink: 0;
     border: 3px solid var(--border-color);
     background: var(--bg-elevated);
@@ -1955,8 +2015,8 @@ button {
 
 /* Medal Icon */
 .medal-icon {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     position: relative;
     z-index: 2;
 }
