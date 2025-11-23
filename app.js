@@ -57,13 +57,20 @@ const views = {
     dashboard: () => {
         const html = `
         <div class="view-container">
+            <!-- Hero Stats (Big & Bold) -->
+            <div class="hero-stat">
+                <div class="hero-stat-label">Heute erfasst</div>
+                <div class="hero-stat-value">${dummyData.stats.today}</div>
+                <div class="hero-stat-subtitle">Neue Mitglieder</div>
+                <div class="hero-stat-trend">↗ +${Math.floor(Math.random() * 30 + 10)}% mehr als gestern</div>
+            </div>
+
             <!-- Animated Live Chart -->
             <div class="chart-card">
                 <div class="chart-header">
                     <div>
-                        <div class="chart-title">Performance</div>
-                        <div class="chart-value">${dummyData.stats.today}</div>
-                        <div class="chart-change positive">↗ +${Math.floor(Math.random() * 20 + 10)}% heute</div>
+                        <div class="chart-title">7-Tage Performance</div>
+                        <div class="chart-change positive">↗ Trending Up</div>
                     </div>
                 </div>
                 <div class="chart-canvas">
@@ -71,72 +78,84 @@ const views = {
                 </div>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="quick-actions">
-                <a href="formular/" class="quick-action">
-                    <div class="quick-action-icon">📝</div>
-                    <div class="quick-action-label">Neues Mitglied</div>
-                </a>
-                <a href="#team" class="quick-action">
-                    <div class="quick-action-icon">👥</div>
-                    <div class="quick-action-label">Werbegebiete</div>
-                </a>
-            </div>
-
-            <!-- Animated Stats Grid -->
-            <div class="stats-grid">
-                <div class="stat-card animated-stat">
-                    <div class="stat-label">Heute</div>
-                    <div class="stat-value">${dummyData.stats.today}</div>
-                    <div class="stat-subtitle">Mitglieder</div>
+            <!-- Mini Stats Grid (2x2) -->
+            <div class="mini-stats-grid">
+                <div class="mini-stat animated-stat" style="--delay: 0.1s">
+                    <div class="mini-stat-icon">📅</div>
+                    <div class="mini-stat-value">${dummyData.stats.week}</div>
+                    <div class="mini-stat-label">Diese Woche</div>
                 </div>
-                <div class="stat-card animated-stat">
-                    <div class="stat-label">Diese Woche</div>
-                    <div class="stat-value">${dummyData.stats.week}</div>
-                    <div class="stat-subtitle">Mitglieder</div>
+                <div class="mini-stat animated-stat" style="--delay: 0.2s">
+                    <div class="mini-stat-icon">📆</div>
+                    <div class="mini-stat-value">${dummyData.stats.month}</div>
+                    <div class="mini-stat-label">Dieser Monat</div>
                 </div>
-                <div class="stat-card animated-stat">
-                    <div class="stat-label">Dieser Monat</div>
-                    <div class="stat-value">${dummyData.stats.month}</div>
-                    <div class="stat-subtitle">Mitglieder</div>
+                <div class="mini-stat animated-stat" style="--delay: 0.3s">
+                    <div class="mini-stat-icon">🏆</div>
+                    <div class="mini-stat-value">#${dummyData.stats.rank}</div>
+                    <div class="mini-stat-label">Dein Rang</div>
                 </div>
-                <div class="stat-card animated-stat">
-                    <div class="stat-label">Gesamt</div>
-                    <div class="stat-value">${dummyData.stats.total}</div>
-                    <div class="stat-subtitle">Mitglieder</div>
+                <div class="mini-stat animated-stat" style="--delay: 0.4s">
+                    <div class="mini-stat-icon">📈</div>
+                    <div class="mini-stat-value">${dummyData.stats.total}</div>
+                    <div class="mini-stat-label">Gesamt</div>
                 </div>
             </div>
 
-            <!-- Top 3 Ranking (Kompakt) -->
-            <div style="margin-top: 24px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h3 style="font-size: 14px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Top Werber</h3>
-                    <a href="#ranking" style="font-size: 13px; color: var(--accent-primary); font-weight: 600;">Alle ansehen →</a>
-                </div>
-                <div class="ranking-list">
-                    ${dummyData.ranking.slice(0, 3).map(item => `
-                        <div class="ranking-item ${item.isCurrentUser ? 'highlight' : ''}">
-                            <div class="ranking-position ${item.position === 1 ? 'gold' : item.position === 2 ? 'silver' : item.position === 3 ? 'bronze' : ''}">
-                                ${item.position}
-                            </div>
-                            <div class="ranking-info">
-                                <div class="ranking-name">${item.name} ${item.isCurrentUser ? '(Du)' : ''}</div>
-                                <div class="ranking-team">${item.team}</div>
-                            </div>
-                            <div class="ranking-score">${item.score}</div>
+            <!-- Quick Actions (Horizontal Scroll) -->
+            <div class="section-header">
+                <h3>Schnellzugriff</h3>
+            </div>
+            <div class="quick-actions-scroll">
+                <a href="formular/" class="action-card">
+                    <div class="action-icon">📝</div>
+                    <div class="action-label">Neues<br/>Mitglied</div>
+                </a>
+                <a href="#team" class="action-card">
+                    <div class="action-icon">🗺️</div>
+                    <div class="action-label">Werbe-<br/>gebiete</div>
+                </a>
+                <a href="#ranking" class="action-card">
+                    <div class="action-icon">🏆</div>
+                    <div class="action-label">Ranking</div>
+                </a>
+                <a href="#offline" class="action-card">
+                    <div class="action-icon">💾</div>
+                    <div class="action-label">Offline<br/>Daten</div>
+                </a>
+            </div>
+
+            <!-- Top 3 Leaderboard -->
+            <div class="section-header">
+                <h3>Top Werber</h3>
+                <a href="#ranking" class="section-link">Alle ansehen →</a>
+            </div>
+            <div class="leaderboard">
+                ${dummyData.ranking.slice(0, 3).map(item => `
+                    <div class="leaderboard-item ${item.isCurrentUser ? 'is-you' : ''}">
+                        <div class="leaderboard-position ${item.position === 1 ? 'gold' : item.position === 2 ? 'silver' : 'bronze'}">
+                            ${item.position}
                         </div>
-                    `).join('')}
-                </div>
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">${item.name}${item.isCurrentUser ? ' (Du)' : ''}</div>
+                            <div class="leaderboard-team">${item.team}</div>
+                        </div>
+                        <div class="leaderboard-score">
+                            <div class="score-value">${item.score}</div>
+                            <div class="score-label">Punkte</div>
+                        </div>
+                    </div>
+                `).join('')}
             </div>
 
-            <!-- Current Campaign -->
-            <div style="margin-top: 24px;">
-                <h3 style="font-size: 14px; color: var(--text-tertiary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700;">Aktuelle Kampagne</h3>
-                <div class="area-card">
-                    <h3>${dummyData.user.campaign}</h3>
-                    <p style="margin-top: 4px;">Team: ${dummyData.user.team}</p>
-                    <span class="area-badge" style="background: linear-gradient(135deg, #00e676 0%, #00c853 100%); color: white; border: none;">🟢 Aktiv</span>
+            <!-- Current Campaign Banner -->
+            <div class="campaign-banner">
+                <div class="campaign-icon">🎯</div>
+                <div class="campaign-info">
+                    <div class="campaign-name">${dummyData.user.campaign}</div>
+                    <div class="campaign-team">Team: ${dummyData.user.team}</div>
                 </div>
+                <div class="campaign-status">Aktiv</div>
             </div>
         </div>
     `;
@@ -623,47 +642,69 @@ function closeSidebar() {
     document.getElementById('overlay').classList.remove('active');
 }
 
-// ========== ANIMATED LIVE CHART ==========
+// ========== ANIMATED LIVE CHART (MODERN & RETINA) ==========
 let chartAnimation = null;
 
 function initLiveChart() {
     const canvas = document.getElementById('liveChart');
     if (!canvas) return;
 
-    // Make canvas responsive
+    // Make canvas Retina-ready
     const container = canvas.parentElement;
-    canvas.width = container.offsetWidth;
-    canvas.height = 120;
+    const dpr = window.devicePixelRatio || 1;
+    const displayWidth = container.offsetWidth;
+    const displayHeight = 140;
+
+    canvas.width = displayWidth * dpr;
+    canvas.height = displayHeight * dpr;
+    canvas.style.width = displayWidth + 'px';
+    canvas.style.height = displayHeight + 'px';
 
     const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
+    ctx.scale(dpr, dpr);
 
-    // Generate fake data points
-    const dataPoints = 30;
+    const width = displayWidth;
+    const height = displayHeight;
+
+    // Data configuration
+    const dataPoints = 50;
     let data = [];
     let currentIndex = 0;
+    let targetData = [];
 
-    // Initialize with random data
+    // Initialize with smooth random data
     for (let i = 0; i < dataPoints; i++) {
-        data.push(Math.random() * 50 + 30);
+        const value = 50 + Math.sin(i * 0.3) * 15 + Math.random() * 10;
+        data.push(value);
+        targetData.push(value);
     }
 
     function drawChart() {
         // Clear canvas
         ctx.clearRect(0, 0, width, height);
 
-        // Update data (shift and add new point)
-        if (currentIndex % 10 === 0) {
-            data.shift();
-            data.push(Math.random() * 50 + 30);
+        // Update data SLOWLY (only every 60 frames = ~1 second)
+        if (currentIndex % 60 === 0) {
+            // Generate smooth new target
+            const lastValue = targetData[targetData.length - 1];
+            const newValue = lastValue + (Math.random() - 0.5) * 10;
+            const clampedValue = Math.max(30, Math.min(70, newValue));
+
+            targetData.shift();
+            targetData.push(clampedValue);
         }
+
+        // Smooth interpolation to target
+        for (let i = 0; i < dataPoints; i++) {
+            data[i] += (targetData[i] - data[i]) * 0.05;
+        }
+
         currentIndex++;
 
-        // Draw grid lines
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+        // Draw subtle grid
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
         ctx.lineWidth = 1;
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i <= 4; i++) {
             const y = (height / 4) * i;
             ctx.beginPath();
             ctx.moveTo(0, y);
@@ -671,58 +712,79 @@ function initLiveChart() {
             ctx.stroke();
         }
 
-        // Draw gradient area
+        // Draw gradient fill
         const gradient = ctx.createLinearGradient(0, 0, 0, height);
-        gradient.addColorStop(0, 'rgba(102, 126, 234, 0.3)');
+        gradient.addColorStop(0, 'rgba(102, 126, 234, 0.25)');
+        gradient.addColorStop(0.7, 'rgba(102, 126, 234, 0.05)');
         gradient.addColorStop(1, 'rgba(102, 126, 234, 0)');
 
         ctx.beginPath();
         ctx.moveTo(0, height);
 
-        // Draw line
-        data.forEach((value, index) => {
-            const x = (width / (dataPoints - 1)) * index;
-            const y = height - (value / 100) * height;
+        // Smooth bezier curve
+        for (let i = 0; i < dataPoints; i++) {
+            const x = (width / (dataPoints - 1)) * i;
+            const y = height - ((data[i] / 100) * height);
 
-            if (index === 0) {
+            if (i === 0) {
                 ctx.lineTo(x, y);
             } else {
-                ctx.lineTo(x, y);
+                // Bezier curve for smoothness
+                const prevX = (width / (dataPoints - 1)) * (i - 1);
+                const prevY = height - ((data[i - 1] / 100) * height);
+                const cpX = (prevX + x) / 2;
+
+                ctx.quadraticCurveTo(cpX, prevY, x, y);
             }
-        });
+        }
 
         ctx.lineTo(width, height);
         ctx.closePath();
         ctx.fillStyle = gradient;
         ctx.fill();
 
-        // Draw line on top
+        // Draw main line with glow
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = 'rgba(102, 126, 234, 0.4)';
         ctx.beginPath();
-        data.forEach((value, index) => {
-            const x = (width / (dataPoints - 1)) * index;
-            const y = height - (value / 100) * height;
 
-            if (index === 0) {
+        for (let i = 0; i < dataPoints; i++) {
+            const x = (width / (dataPoints - 1)) * i;
+            const y = height - ((data[i] / 100) * height);
+
+            if (i === 0) {
                 ctx.moveTo(x, y);
             } else {
-                ctx.lineTo(x, y);
+                const prevX = (width / (dataPoints - 1)) * (i - 1);
+                const prevY = height - ((data[i - 1] / 100) * height);
+                const cpX = (prevX + x) / 2;
+
+                ctx.quadraticCurveTo(cpX, prevY, x, y);
             }
-        });
+        }
 
         ctx.strokeStyle = '#667eea';
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 3;
         ctx.stroke();
+        ctx.shadowBlur = 0;
 
-        // Draw dots
-        data.forEach((value, index) => {
-            const x = (width / (dataPoints - 1)) * index;
-            const y = height - (value / 100) * height;
+        // Draw dots on last 5 points
+        for (let i = dataPoints - 5; i < dataPoints; i++) {
+            const x = (width / (dataPoints - 1)) * i;
+            const y = height - ((data[i] / 100) * height);
 
             ctx.beginPath();
-            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
             ctx.fillStyle = '#667eea';
             ctx.fill();
-        });
+
+            // Outer ring
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
 
         // Continue animation
         chartAnimation = requestAnimationFrame(drawChart);
