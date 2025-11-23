@@ -1217,58 +1217,6 @@ input[type="radio"][name="type"]:checked::after {
             document.getElementById('validateBtn').addEventListener('click', validateForm);
         }
 
-        function searchMembers(query) {
-            const results = document.getElementById('searchResults');
-            
-            if (query.length < 2) {
-                results.classList.add('hidden');
-                return;
-            }
-
-            const filtered = existingMembers.filter(member => 
-                member.name.toLowerCase().includes(query.toLowerCase()) ||
-                member.street.toLowerCase().includes(query.toLowerCase())
-            );
-
-            if (filtered.length === 0) {
-                results.classList.add('hidden');
-                return;
-            }
-
-            results.innerHTML = '';
-            filtered.slice(0, 5).forEach(member => {
-                const item = document.createElement('div');
-                item.className = 'search-result-item';
-                item.innerHTML = `
-                    <strong>${member.name}</strong><br>
-                    <small>${member.street}, ${member.zipCode} ${member.city}</small><br>
-                    <small>Mitgliedsnr: ${member.memberNumber} | Beitrag: ${member.amount} €</small>
-                `;
-                item.onclick = () => selectMember(member);
-                results.appendChild(item);
-            });
-
-            results.classList.remove('hidden');
-        }
-
-        function selectMember(member) {
-            // Auto-fill form fields
-            const [lastName, firstName] = member.name.split(', ');
-            document.getElementById('firstName').value = firstName;
-            document.getElementById('lastName').value = lastName;
-            document.getElementById('street').value = member.street.replace(/\d+$/, '').trim();
-            document.getElementById('houseNumber').value = member.street.match(/\d+$/)[0];
-            document.getElementById('zipCode').value = member.zipCode;
-            document.getElementById('city').value = member.city;
-            document.getElementById('memberNumber').value = member.memberNumber;
-            document.getElementById('memberSince').value = member.memberSince;
-            document.getElementById('oldAmount').value = member.amount;
-            
-            // Hide search results
-            document.getElementById('searchResults').classList.add('hidden');
-            document.getElementById('searchContainer').classList.add('hidden');
-        }
-
         function validateEmail() {
             const email = document.getElementById('email');
             const error = document.getElementById('emailError');
@@ -1481,10 +1429,15 @@ function isValidIBAN(iban) {
     return parseInt(remainder, 10) % 97 === 1;
 }
 
-// Bank Lookup via OpenIBAN API
+// Bank Lookup via Supabase Edge Function
 async function lookupBankFromIBAN(iban, bankField, bicField, statusField) {
     try {
-        const response = await fetch(`https://openiban.com/validate/${iban}?getBIC=true&validateBankCode=true`);
+        const response = await fetch(`https://lgztglycqtiwcmiydxnm.supabase.co/functions/v1/iban-validate?iban=${encodeURIComponent(iban)}`, {
+            headers: {
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MDc2MTUsImV4cCI6MjA3OTM4MzYxNX0.a_ZeubRokmhdevV3JinTiD1Ji92C4bDHSiiDcYGZnt0',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MDc2MTUsImV4cCI6MjA3OTM4MzYxNX0.a_ZeubRokmhdevV3JinTiD1Ji92C4bDHSiiDcYGZnt0'
+            }
+        });
         const data = await response.json();
         
         if (data.valid && data.bankData) {
@@ -1610,11 +1563,14 @@ async function searchStreetAddress(query) {
             // Create new AbortController for this request
             autocompleteController = new AbortController();
             
-            const apiKey = 'bbb56e4d3e5447a89b834ac1c3b8875d';
-            const url = `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(query)}&filter=countrycode:de&format=json&lang=de&limit=10&apiKey=${apiKey}`;
+            const url = `https://lgztglycqtiwcmiydxnm.supabase.co/functions/v1/address-search?query=${encodeURIComponent(query)}`;
             
             const response = await fetch(url, {
-                signal: autocompleteController.signal
+                signal: autocompleteController.signal,
+                headers: {
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MDc2MTUsImV4cCI6MjA3OTM4MzYxNX0.a_ZeubRokmhdevV3JinTiD1Ji92C4bDHSiiDcYGZnt0',
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MDc2MTUsImV4cCI6MjA3OTM4MzYxNX0.a_ZeubRokmhdevV3JinTiD1Ji92C4bDHSiiDcYGZnt0'
+                }
             });
             const data = await response.json();
             
