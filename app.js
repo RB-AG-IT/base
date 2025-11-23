@@ -884,8 +884,11 @@ function loadView(viewName) {
     // Load view
     content.innerHTML = views[viewName]();
 
-    // Scroll to top on view change
-    window.scrollTo(0, 0);
+    // Scroll to top on view change (both window and content)
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    content.scrollTop = 0;
+    document.body.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
 
     // Header title is hidden (no update needed)
 
@@ -1009,7 +1012,7 @@ function initLiveChart() {
     const container = canvas.parentElement;
     const dpr = window.devicePixelRatio || 1;
     const displayWidth = container.offsetWidth;
-    const displayHeight = 140;
+    const displayHeight = 100;
 
     canvas.width = displayWidth * dpr;
     canvas.height = displayHeight * dpr;
