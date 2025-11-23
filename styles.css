@@ -362,7 +362,7 @@ button {
 }
 
 .side-menu-item.active::before {
-    transform: scaleY(1);
+    transform: scaleY(0);
 }
 
 .side-menu-item.active .icon {
