@@ -884,6 +884,9 @@ function loadView(viewName) {
     // Load view
     content.innerHTML = views[viewName]();
 
+    // Scroll to top on view change
+    window.scrollTo(0, 0);
+
     // Header title is hidden (no update needed)
 
     // Update active nav item

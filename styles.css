@@ -1114,7 +1114,7 @@ button {
 .chart-card {
     background: var(--bg-card);
     border-radius: var(--radius-xl);
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
     border: 1px solid var(--border-color);
     position: relative;
     overflow: hidden;
@@ -1145,7 +1145,7 @@ button {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
 }
 
 .chart-title {
@@ -2385,6 +2385,19 @@ button {
 
 .form-input:hover:not(:focus) {
     border-color: var(--text-disabled);
+}
+
+/* Fix iOS/Safari select styling */
+select.form-input {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--spacing-sm) center;
+    background-size: 12px;
+    padding-right: calc(var(--spacing-md) + 24px);
+    min-height: 44px;
 }
 
 /* Input with Icon */
