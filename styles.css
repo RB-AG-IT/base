@@ -2494,6 +2494,45 @@ button {
     height: 18px;
 }
 
+/* Address Autocomplete Suggestions */
+.address-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-elevated);
+    border: 2px solid var(--accent-primary);
+    border-top: none;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    margin-top: -2px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    display: none;
+}
+
+.address-suggestion-item {
+    padding: var(--spacing-md);
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.2s ease;
+}
+
+.address-suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.address-suggestion-item:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.suggestion-main {
+    font-size: 14px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
 /* Responsive Form Grid */
 @media (max-width: 768px) {
     .form-grid {

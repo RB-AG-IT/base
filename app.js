@@ -916,6 +916,14 @@ function loadView(viewName) {
             }
         }, 0);
     }
+
+    // Setup profile form functionality
+    if (viewName === 'profil') {
+        setTimeout(() => {
+            initAddressAutocomplete();
+            initIBANValidation();
+        }, 0);
+    }
 }
 
 // ========== EVENT LISTENERS ==========
@@ -1145,6 +1153,238 @@ function stopChartAnimation() {
         cancelAnimationFrame(chartAnimation);
         chartAnimation = null;
     }
+}
+
+// ========== ADDRESS AUTOCOMPLETE ==========
+function initAddressAutocomplete() {
+    const streetInput = document.getElementById('street-input');
+    if (!streetInput) return;
+
+    let autocompleteTimeout = null;
+    let suggestionsContainer = null;
+
+    // Create suggestions container
+    function createSuggestionsContainer() {
+        if (!suggestionsContainer) {
+            suggestionsContainer = document.createElement('div');
+            suggestionsContainer.className = 'address-suggestions';
+            streetInput.parentElement.appendChild(suggestionsContainer);
+        }
+        return suggestionsContainer;
+    }
+
+    // Fetch address suggestions
+    async function fetchAddressSuggestions(query) {
+        if (query.length < 3) {
+            hideSuggestions();
+            return;
+        }
+
+        try {
+            // Using OpenStreetMap Nominatim API (free, no API key required)
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/search?` +
+                `q=${encodeURIComponent(query)}&` +
+                `format=json&` +
+                `addressdetails=1&` +
+                `countrycodes=de,at,ch&` +
+                `limit=5`
+            );
+
+            if (!response.ok) return;
+
+            const results = await response.json();
+            showSuggestions(results);
+        } catch (error) {
+            console.error('Address autocomplete error:', error);
+        }
+    }
+
+    // Show suggestions
+    function showSuggestions(results) {
+        const container = createSuggestionsContainer();
+        container.innerHTML = '';
+
+        if (results.length === 0) {
+            hideSuggestions();
+            return;
+        }
+
+        results.forEach(result => {
+            const suggestion = document.createElement('div');
+            suggestion.className = 'address-suggestion-item';
+            suggestion.innerHTML = `
+                <div class="suggestion-main">${result.display_name}</div>
+            `;
+            suggestion.addEventListener('click', () => {
+                selectAddress(result);
+            });
+            container.appendChild(suggestion);
+        });
+
+        container.style.display = 'block';
+    }
+
+    // Hide suggestions
+    function hideSuggestions() {
+        if (suggestionsContainer) {
+            suggestionsContainer.style.display = 'none';
+        }
+    }
+
+    // Select address and fill form
+    function selectAddress(result) {
+        const address = result.address;
+
+        // Fill street
+        const street = address.road || address.pedestrian || address.path || '';
+        if (street) {
+            streetInput.value = street;
+        }
+
+        // Fill house number
+        const houseNumberInput = document.querySelector('input[placeholder="42"]');
+        if (houseNumberInput && address.house_number) {
+            houseNumberInput.value = address.house_number;
+        }
+
+        // Fill postal code
+        const postalInput = document.querySelector('input[placeholder="12345"]');
+        if (postalInput && address.postcode) {
+            postalInput.value = address.postcode;
+        }
+
+        // Fill city
+        const cityInput = document.querySelector('input[placeholder="Berlin"]');
+        if (cityInput) {
+            const city = address.city || address.town || address.village || address.municipality || '';
+            if (city) {
+                cityInput.value = city;
+            }
+        }
+
+        // Fill country
+        const countrySelect = document.querySelector('select.form-input');
+        if (countrySelect && address.country_code) {
+            const countryCode = address.country_code.toUpperCase();
+            if (countryCode === 'DE' || countryCode === 'AT' || countryCode === 'CH') {
+                countrySelect.value = countryCode;
+            }
+        }
+
+        hideSuggestions();
+    }
+
+    // Input event listener
+    streetInput.addEventListener('input', (e) => {
+        clearTimeout(autocompleteTimeout);
+        autocompleteTimeout = setTimeout(() => {
+            fetchAddressSuggestions(e.target.value);
+        }, 300);
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!streetInput.contains(e.target) && !suggestionsContainer?.contains(e.target)) {
+            hideSuggestions();
+        }
+    });
+}
+
+// ========== IBAN VALIDATION ==========
+function initIBANValidation() {
+    const ibanInput = document.getElementById('iban-input');
+    const ibanCheck = document.getElementById('iban-check');
+    if (!ibanInput || !ibanCheck) return;
+
+    // IBAN validation function
+    function validateIBAN(iban) {
+        // Remove spaces and convert to uppercase
+        iban = iban.replace(/\s/g, '').toUpperCase();
+
+        // Check if IBAN has valid length (15-34 characters)
+        if (iban.length < 15 || iban.length > 34) {
+            return false;
+        }
+
+        // Check if IBAN starts with 2 letters followed by 2 digits
+        if (!/^[A-Z]{2}[0-9]{2}[A-Z0-9]+$/.test(iban)) {
+            return false;
+        }
+
+        // Move first 4 characters to end
+        const rearranged = iban.substring(4) + iban.substring(0, 4);
+
+        // Replace letters with numbers (A=10, B=11, ..., Z=35)
+        let numericIBAN = '';
+        for (let char of rearranged) {
+            if (char >= 'A' && char <= 'Z') {
+                numericIBAN += (char.charCodeAt(0) - 55).toString();
+            } else {
+                numericIBAN += char;
+            }
+        }
+
+        // Calculate mod 97
+        let remainder = numericIBAN;
+        while (remainder.length > 2) {
+            const block = remainder.substring(0, 9);
+            remainder = (parseInt(block, 10) % 97).toString() + remainder.substring(block.length);
+        }
+
+        return parseInt(remainder, 10) % 97 === 1;
+    }
+
+    // Format IBAN with spaces
+    function formatIBAN(iban) {
+        // Remove all spaces first
+        iban = iban.replace(/\s/g, '').toUpperCase();
+        // Add space every 4 characters
+        return iban.match(/.{1,4}/g)?.join(' ') || iban;
+    }
+
+    // Validate on input
+    let validationTimeout = null;
+    ibanInput.addEventListener('input', (e) => {
+        clearTimeout(validationTimeout);
+
+        // Format IBAN as user types
+        const cursorPosition = e.target.selectionStart;
+        const oldValue = e.target.value;
+        const newValue = formatIBAN(oldValue);
+
+        if (oldValue !== newValue) {
+            e.target.value = newValue;
+            // Adjust cursor position
+            const diff = newValue.length - oldValue.length;
+            e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+        }
+
+        validationTimeout = setTimeout(() => {
+            const isValid = validateIBAN(e.target.value);
+
+            if (e.target.value.replace(/\s/g, '').length >= 15) {
+                if (isValid) {
+                    ibanCheck.style.display = 'block';
+                    ibanInput.style.borderColor = '#00e676';
+                } else {
+                    ibanCheck.style.display = 'none';
+                    ibanInput.style.borderColor = '#ff5252';
+                }
+            } else {
+                ibanCheck.style.display = 'none';
+                ibanInput.style.borderColor = '';
+            }
+        }, 500);
+    });
+
+    // Validate on blur
+    ibanInput.addEventListener('blur', () => {
+        if (ibanInput.value.trim() === '') {
+            ibanCheck.style.display = 'none';
+            ibanInput.style.borderColor = '';
+        }
+    });
 }
 
 // ========== SERVICE WORKER (PWA) ==========
