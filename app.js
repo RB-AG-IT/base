@@ -1,9 +1,22 @@
 // ========== SUPABASE SETUP ==========
-const SUPABASE_URL = 'https://lgztglycqtiwcmiydxnm.supabaseClient.co';
+const SUPABASE_URL = 'https://lgztglycqtiwcmiydxnm.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzgwNzYxNSwiZXhwIjoyMDc5MzgzNjE1fQ.54kSk9ZSUdQt6LKYWkblqgR6Sjev80W80qkNHYEbPgk';
 
-// Supabase Client (nicht 'supabase' nennen - kollidiert mit window.supabase vom CDN)
-const supabaseClient = window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Supabase Client initialisieren
+let supabaseClient = null;
+
+function initSupabase() {
+    if (window.supabase && window.supabase.createClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        return true;
+    }
+    return false;
+}
+
+// Sofort versuchen, oder auf DOMContentLoaded warten
+if (!initSupabase()) {
+    document.addEventListener('DOMContentLoaded', initSupabase);
+}
 
 // ========== STATE MANAGEMENT ==========
 let currentUser = null;
