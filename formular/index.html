@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DRK Fördermitgliedschaft</title>
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -1833,81 +1835,205 @@ const streetResults = data.results.filter(result => {
             }
         }
 
+        // ================================================================
+        // SUPABASE SETUP
+        // ================================================================
+        const SUPABASE_URL = 'https://lgztglycqtiwcmiydxnm.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzgwNzYxNSwiZXhwIjoyMDc5MzgzNjE1fQ.54kSk9ZSUdQt6LKYWkblqgR6Sjev80W80qkNHYEbPgk';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Get current KW
+        function getCurrentKW() {
+            const now = new Date();
+            const start = new Date(now.getFullYear(), 0, 1);
+            const diff = now - start;
+            const oneWeek = 604800000;
+            return Math.ceil((diff / oneWeek) + 1);
+        }
+
+        // Get werber_id and area from URL or parent window
+        function getWerberInfo() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const areaId = urlParams.get('area');
+
+            // Try to get from parent window (if in iframe)
+            let werberId = null;
+            try {
+                if (window.parent && window.parent.currentUser) {
+                    werberId = window.parent.currentUser.id;
+                }
+            } catch (e) {}
+
+            // Fallback: check localStorage
+            if (!werberId) {
+                const session = localStorage.getItem('sb-lgztglycqtiwcmiydxnm-auth-token');
+                if (session) {
+                    try {
+                        const parsed = JSON.parse(session);
+                        werberId = parsed?.user?.id;
+                    } catch (e) {}
+                }
+            }
+
+            return { werberId, areaId };
+        }
+
         async function submitForm() {
             const btn = document.getElementById('validateBtn');
             btn.disabled = true;
             btn.innerHTML = 'Wird übermittelt... <span class="loading"></span>';
 
-            // Collect form data
-            const formData = {
-                type: document.querySelector('input[name="type"]:checked').value,
-                company: document.getElementById('company').value,
-                salutation: document.getElementById('salutation').value,
-                title: document.getElementById('title').value,
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                birthDate: document.getElementById('birthDate').value,
-                email: document.getElementById('email').value,
-                phoneFixed: document.getElementById('phoneFixed').value,
-                phoneMobile: document.getElementById('phoneMobile').value,
-                street: document.getElementById('street').value,
-                houseNumber: document.getElementById('houseNumber').value,
-                zipCode: document.getElementById('zipCode').value,
-                city: document.getElementById('city').value,
-                iban: document.getElementById('iban').value,
-                amount: parseFloat(document.getElementById('customAmount').value) || 10,
-                interval: document.getElementById('interval').value,
-                paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').value,
-                consent1: document.getElementById('consent1').checked,
-                consent2: document.getElementById('consent2').checked,
-                consent3: document.getElementById('consent3').checked,
-                contactEmail: document.getElementById('contactEmail').checked,
-                contactPhone: document.getElementById('contactPhone').checked,
-                laterStartDate: document.getElementById('laterStartDate').value,
-                notes: document.getElementById('notes').value,
-                signature: document.getElementById('signatureCanvas').toDataURL(),
-                created_at: new Date().toISOString()
-            };
-
-            // Add ERH specific fields
-            if (formData.type === 'ERH') {
-                formData.memberNumber = document.getElementById('memberNumber').value;
-                formData.memberSince = document.getElementById('memberSince').value;
-                formData.oldAmount = parseFloat(document.getElementById('oldAmount').value);
-            }
+            const { werberId, areaId } = getWerberInfo();
+            const typeValue = document.querySelector('input[name="type"]:checked').value;
 
             // Calculate yearly amount
+            const amount = parseFloat(document.getElementById('customAmount').value) || 10;
+            const interval = document.getElementById('interval').value;
             const multipliers = {
                 'monthly': 12,
                 'quarterly': 4,
                 'halfyearly': 2,
                 'yearly': 1
             };
-            formData.yearlyAmount = formData.amount * multipliers[formData.interval];
+            const yearlyAmount = amount * multipliers[interval];
 
-            console.log('Form data to submit:', formData);
+            // Build record data matching database schema
+            const recordData = {
+                // Verknüpfungen
+                werber_id: werberId,
+                campaign_area_id: areaId,
 
-            // Simulate API call
-            setTimeout(() => {
-                // Show success page
-                document.querySelector('.container').innerHTML = `
-                    <div class="header">
-                        <div class="drk-logo" style="margin: 0 auto; width: 100px; height: 100px; font-size: 40px;">DRK</div>
-                    </div>
-                    <div style="padding: 40px; text-align: center;">
-                        <h1 style="color: #667eea; margin-bottom: 20px;">Vielen Dank!</h1>
-                        <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
-                            Ihre Fördermitgliedschaft wurde erfolgreich registriert.
-                        </p>
-                        <p style="color: #888;">
-                            Sie erhalten in Kürze eine Bestätigungs-E-Mail mit allen Details.
-                        </p>
-                        <button onclick="location.reload()" class="submit-btn" style="margin-top: 30px;">
-                            Neues Formular
-                        </button>
-                    </div>
-                `;
-            }, 2000);
+                // Status & Meta
+                record_type: typeValue === 'NMG' ? 'neumitglied' : 'erhoehung',
+                record_status: 'aktiv',
+                status: 'pending',
+                synced: navigator.onLine,
+                kw: getCurrentKW(),
+                year: new Date().getFullYear(),
+
+                // Persönliche Daten
+                salutation: document.getElementById('salutation').value,
+                title: document.getElementById('title').value,
+                first_name: document.getElementById('firstName').value,
+                last_name: document.getElementById('lastName').value,
+                company: document.getElementById('company').value,
+                birth_date: document.getElementById('birthDate').value || null,
+                email: document.getElementById('email').value,
+                phone_fixed: document.getElementById('phoneFixed').value,
+                phone_mobile: document.getElementById('phoneMobile').value,
+
+                // Adresse
+                street: document.getElementById('street').value,
+                house_number: document.getElementById('houseNumber').value,
+                zip_code: document.getElementById('zipCode').value,
+                city: document.getElementById('city').value,
+
+                // Zahlungsdaten
+                iban: document.getElementById('iban').value,
+                payment_method: document.querySelector('input[name="paymentMethod"]:checked')?.value || 'lastschrift',
+
+                // Beiträge
+                amount: amount,
+                yearly_amount: yearlyAmount,
+                interval: interval,
+
+                // Einwilligungen
+                consent_privacy: document.getElementById('consent1').checked,
+                consent_sepa: document.getElementById('consent2').checked,
+                consent_statutes: document.getElementById('consent3').checked,
+                contact_email: document.getElementById('contactEmail').checked,
+                contact_phone: document.getElementById('contactPhone').checked,
+
+                // Sonstiges
+                start_date: document.getElementById('laterStartDate').value || null,
+                notes: document.getElementById('notes').value,
+                signature: document.getElementById('signatureCanvas').toDataURL()
+            };
+
+            // Add ERH specific fields
+            if (typeValue === 'ERH') {
+                recordData.member_number = document.getElementById('memberNumber').value;
+                recordData.member_since = document.getElementById('memberSince').value || null;
+                recordData.old_amount = parseFloat(document.getElementById('oldAmount').value) || null;
+                recordData.increase_amount = yearlyAmount - (recordData.old_amount || 0);
+            }
+
+            // Store original form data as JSON for backwards compatibility
+            recordData.data = {
+                ...recordData,
+                created_at: new Date().toISOString()
+            };
+
+            console.log('Record data to submit:', recordData);
+
+            // Check if online
+            if (!navigator.onLine) {
+                // Save offline
+                saveOffline(recordData);
+                showSuccess('offline');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('records')
+                    .insert(recordData)
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                console.log('Record saved:', data);
+                showSuccess('online');
+
+            } catch (error) {
+                console.error('Submit error:', error);
+
+                // Save offline as fallback
+                saveOffline(recordData);
+                showSuccess('offline', error.message);
+            }
+        }
+
+        function saveOffline(recordData) {
+            const offlineRecords = JSON.parse(localStorage.getItem('offlineRecords') || '[]');
+            offlineRecords.push({
+                data: recordData,
+                name: `${recordData.first_name} ${recordData.last_name}`,
+                area: recordData.campaign_area_id,
+                timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('offlineRecords', JSON.stringify(offlineRecords));
+            console.log('Saved offline:', offlineRecords.length, 'records');
+        }
+
+        function showSuccess(mode, errorMsg = null) {
+            const isOffline = mode === 'offline';
+
+            document.querySelector('.container').innerHTML = `
+                <div class="header">
+                    <div class="drk-logo" style="margin: 0 auto; width: 100px; height: 100px; font-size: 40px;">DRK</div>
+                </div>
+                <div style="padding: 40px; text-align: center;">
+                    <h1 style="color: ${isOffline ? '#ffc107' : '#4caf50'}; margin-bottom: 20px;">
+                        ${isOffline ? '📴 Offline gespeichert' : '✅ Vielen Dank!'}
+                    </h1>
+                    <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
+                        ${isOffline
+                            ? 'Der Datensatz wurde lokal gespeichert und wird automatisch synchronisiert.'
+                            : 'Die Fördermitgliedschaft wurde erfolgreich registriert.'}
+                    </p>
+                    ${errorMsg ? `<p style="color: #888; font-size: 12px; margin-bottom: 20px;">Grund: ${errorMsg}</p>` : ''}
+                    <p style="color: #888;">
+                        ${isOffline
+                            ? 'Bitte synchronisieren Sie die Daten später in der App unter "Offline".'
+                            : 'Eine Bestätigungs-E-Mail wird in Kürze versendet.'}
+                    </p>
+                    <button onclick="location.reload()" class="submit-btn" style="margin-top: 30px;">
+                        Neues Formular
+                    </button>
+                </div>
+            `;
         }
     </script>
 </body>

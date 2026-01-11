@@ -479,6 +479,130 @@ async function fetchOfflineRecords() {
     }
 }
 
+// TC-Funktionen: Letzte 10 Records vom Team
+async function fetchLatestRecords() {
+    if (!currentUser) return [];
+
+    try {
+        const kw = getCurrentKW();
+        const year = getCurrentYear();
+
+        // Hol alle Werber die dem TC zugeordnet sind
+        const { data: teamWerber } = await supabase
+            .from('campaign_assignment_werber')
+            .select('werber_id')
+            .eq('teamchef_id', currentUser.id)
+            .eq('kw', kw)
+            .eq('year', year);
+
+        if (!teamWerber || teamWerber.length === 0) {
+            // Fallback: eigene Records
+            const { data } = await supabase
+                .from('records')
+                .select(`
+                    id,
+                    first_name,
+                    last_name,
+                    email,
+                    iban,
+                    created_at,
+                    werber_id,
+                    users!records_werber_id_fkey (name)
+                `)
+                .eq('werber_id', currentUser.id)
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            return data || [];
+        }
+
+        const werberIds = teamWerber.map(w => w.werber_id);
+
+        const { data } = await supabase
+            .from('records')
+            .select(`
+                id,
+                first_name,
+                last_name,
+                email,
+                iban,
+                created_at,
+                werber_id,
+                users!records_werber_id_fkey (name)
+            `)
+            .in('werber_id', werberIds)
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        return data || [];
+    } catch (error) {
+        console.error('Fetch latest records error:', error);
+        return [];
+    }
+}
+
+// TC-Funktionen: Team-Werber für Gebietszuordnung
+async function fetchTeamWerber() {
+    if (!currentUser) return [];
+
+    try {
+        const kw = getCurrentKW();
+        const year = getCurrentYear();
+
+        // Hole die Zuordnungen für diese KW
+        const { data: assignments } = await supabase
+            .from('campaign_assignment_werber')
+            .select(`
+                id,
+                werber_id,
+                campaign_area_id,
+                users!campaign_assignment_werber_werber_id_fkey (id, name),
+                campaign_areas (id, name)
+            `)
+            .eq('teamchef_id', currentUser.id)
+            .eq('kw', kw)
+            .eq('year', year);
+
+        return assignments || [];
+    } catch (error) {
+        console.error('Fetch team werber error:', error);
+        return [];
+    }
+}
+
+// TC-Funktionen: Verfügbare Gebiete laden
+async function fetchAvailableAreas() {
+    try {
+        const { data } = await supabase
+            .from('campaign_areas')
+            .select('id, name, region')
+            .eq('status', 'aktiv')
+            .order('name');
+
+        return data || [];
+    } catch (error) {
+        console.error('Fetch available areas error:', error);
+        return [];
+    }
+}
+
+// TC-Funktionen: Werber einem Gebiet zuordnen
+async function assignWerberToArea(assignmentId, areaId) {
+    try {
+        const { error } = await supabase
+            .from('campaign_assignment_werber')
+            .update({ campaign_area_id: areaId })
+            .eq('id', assignmentId);
+
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.error('Assign werber error:', error);
+        alert('Fehler beim Zuordnen: ' + error.message);
+        return false;
+    }
+}
+
 // ========== VIEWS ==========
 const views = {
     dashboard: async () => {
@@ -711,17 +835,7 @@ const views = {
                 `}
             </div>
 
-            ${currentRole === 'teamleiter' || currentRole === 'teamchef' || currentRole === 'admin' ? `
-                <div style="margin-top: 32px;">
-                    <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Teamleiter-Funktionen</h3>
-                    <button class="btn-secondary" style="margin-bottom: 8px;" onclick="openWerberZuordnung()">
-                        📋 Werber zuordnen
-                    </button>
-                    <button class="btn-secondary" onclick="showTeamStats()">
-                        📊 Team-Statistiken
-                    </button>
-                </div>
-            ` : ''}
+            ${currentRole === 'teamleiter' || currentRole === 'teamchef' || currentRole === 'admin' ? await renderTCSection() : ''}
         </div>
     `;
     },
@@ -1082,6 +1196,137 @@ const views = {
         </div>
     `
 };
+
+// ========== TC SECTION RENDER ==========
+async function renderTCSection() {
+    const latestRecords = await fetchLatestRecords();
+    const teamWerber = await fetchTeamWerber();
+
+    // Format timestamp
+    const formatTime = (dateStr) => {
+        const date = new Date(dateStr);
+        const hours = date.getHours().toString().padStart(2, '0');
+        const mins = date.getMinutes().toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        return `${day}.${month}. ${hours}:${mins}`;
+    };
+
+    return `
+        <div style="margin-top: 32px;">
+            <!-- Letzte Schriebe Kärtchen -->
+            <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+                📝 Letzte Schriebe
+            </h3>
+            <div class="latest-records-grid">
+                ${latestRecords.length > 0 ? latestRecords.map(record => `
+                    <div class="record-card">
+                        <div class="record-card-header">
+                            <span class="record-name">${record.first_name || ''} ${record.last_name || ''}</span>
+                            <span class="record-time">${formatTime(record.created_at)}</span>
+                        </div>
+                        <div class="record-card-body">
+                            <div class="record-status">
+                                <span class="status-badge ${record.email ? 'status-ok' : 'status-warn'}">
+                                    ${record.email ? '✉️ E-Mail' : '⚠️ Keine E-Mail'}
+                                </span>
+                                <span class="status-badge ${record.iban ? 'status-ok' : 'status-warn'}">
+                                    ${record.iban ? '💳 IBAN' : '⚠️ Keine IBAN'}
+                                </span>
+                            </div>
+                            <div class="record-werber">
+                                👤 ${record.users?.name || 'Unbekannt'}
+                            </div>
+                        </div>
+                    </div>
+                `).join('') : `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 24px; color: var(--text-secondary);">
+                        Noch keine Datensätze vorhanden
+                    </div>
+                `}
+            </div>
+
+            <!-- Werber-Zuordnung -->
+            <h3 style="font-size: 14px; color: var(--text-secondary); margin: 24px 0 12px; text-transform: uppercase; letter-spacing: 0.5px;">
+                📋 Werber-Zuordnung (KW ${getCurrentKW()})
+            </h3>
+            <div class="werber-assignment-list" id="werberAssignmentList">
+                ${teamWerber.length > 0 ? teamWerber.map(w => `
+                    <div class="werber-assignment-item">
+                        <div class="werber-name">${w.users?.name || 'Unbekannt'}</div>
+                        <select class="werber-area-select" onchange="handleAreaChange('${w.id}', this.value)">
+                            <option value="">-- Gebiet wählen --</option>
+                            ${w.campaign_areas ? `<option value="${w.campaign_area_id}" selected>${w.campaign_areas.name}</option>` : ''}
+                        </select>
+                    </div>
+                `).join('') : `
+                    <div style="text-align: center; padding: 16px; color: var(--text-secondary);">
+                        Keine Werber zugewiesen. Bitte im Office zuweisen.
+                    </div>
+                `}
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 8px; margin-top: 16px;">
+                <button class="btn-secondary" onclick="refreshTCSection()">
+                    🔄 Aktualisieren
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// TC: Area change handler
+async function handleAreaChange(assignmentId, areaId) {
+    if (!areaId) return;
+
+    const success = await assignWerberToArea(assignmentId, areaId);
+    if (success) {
+        // Visual feedback
+        const select = document.querySelector(`select[onchange*="${assignmentId}"]`);
+        if (select) {
+            select.style.borderColor = 'var(--success)';
+            setTimeout(() => {
+                select.style.borderColor = '';
+            }, 2000);
+        }
+    }
+}
+
+// TC: Refresh the TC section
+async function refreshTCSection() {
+    showLoading(true);
+    await loadView('team');
+    showLoading(false);
+}
+
+// Load available areas into selects
+async function loadAreasIntoSelects() {
+    const areas = await fetchAvailableAreas();
+    const selects = document.querySelectorAll('.werber-area-select');
+
+    selects.forEach(select => {
+        const currentValue = select.value;
+        // Keep first option and selected
+        const firstOption = select.querySelector('option:first-child');
+        const selectedOption = select.querySelector('option[selected]');
+        select.innerHTML = '';
+        if (firstOption) select.appendChild(firstOption);
+
+        areas.forEach(area => {
+            const opt = document.createElement('option');
+            opt.value = area.id;
+            opt.textContent = area.name;
+            if (area.id === currentValue) opt.selected = true;
+            select.appendChild(opt);
+        });
+
+        // Re-add selected if it exists
+        if (selectedOption && !select.querySelector(`option[value="${selectedOption.value}"]`)) {
+            select.insertBefore(selectedOption, select.firstChild.nextSibling);
+        }
+    });
+}
 
 // ========== ADDITIONAL FUNCTIONS ==========
 async function switchRankingPeriod(period) {

@@ -2779,3 +2779,735 @@ select.form-input {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
+
+/* ========== TC FUNKTIONEN (Teamchef) ========== */
+
+/* Letzte Schriebe Grid - 2 Reihen á 5 */
+.latest-records-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1024px) {
+    .latest-records-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .latest-records-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .latest-records-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Record Card */
+.record-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    border: 1px solid var(--border-color);
+    transition: var(--transition-fast);
+    min-width: 140px;
+}
+
+.record-card:hover {
+    border-color: var(--accent-primary);
+    box-shadow: var(--shadow-sm);
+}
+
+.record-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-xs);
+    gap: 4px;
+}
+
+.record-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.record-time {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+}
+
+.record-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.record-status {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.status-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+}
+
+.status-ok {
+    background: rgba(0, 230, 118, 0.15);
+    color: var(--success);
+}
+
+.status-warn {
+    background: rgba(255, 193, 7, 0.15);
+    color: var(--warning);
+}
+
+.record-werber {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+/* Werber Assignment List */
+.werber-assignment-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.werber-assignment-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--border-color);
+}
+
+.werber-assignment-item .werber-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.werber-area-select {
+    flex: 1;
+    max-width: 200px;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    font-size: 13px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.werber-area-select:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.werber-area-select:hover {
+    border-color: var(--accent-primary);
+}
+
+/* ========== iPad OPTIMIERUNG ========== */
+/* iPad Mini & Air (Portrait): 768px - 834px */
+/* iPad Pro 11" & Air (Landscape): 834px - 1024px */
+/* iPad Pro 12.9" (Portrait): 1024px */
+
+/* General iPad Styles (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+
+    /* Größere Basis-Schrift für bessere Lesbarkeit */
+    html {
+        font-size: 17px;
+    }
+
+    /* Mehr Padding für bessere Touch-Bereiche */
+    body {
+        padding-bottom: calc(var(--bottom-nav-height) + var(--safe-area-inset-bottom) + 20px);
+    }
+
+    /* App Content - Mehr Platz */
+    .app-content {
+        padding: var(--spacing-xl);
+        padding-top: calc(var(--spacing-xl) + var(--safe-area-inset-top));
+        padding-bottom: calc(var(--spacing-xxl) + var(--bottom-nav-height));
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    /* View Container breiter */
+    .view-container {
+        max-width: 800px;
+    }
+
+    /* View Title größer */
+    .view-title {
+        font-size: 38px;
+    }
+
+    /* ========== TOUCH TARGETS MIN 44px ========== */
+
+    /* Bottom Navigation - Größere Touch-Bereiche */
+    .bottom-nav {
+        height: calc(90px + var(--safe-area-inset-bottom));
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    .nav-item {
+        min-height: 70px;
+        padding: var(--spacing-md) 0;
+    }
+
+    .nav-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .nav-icon svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .nav-label {
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    /* Side Menu Items - Touch-freundlich */
+    .side-menu {
+        width: 340px;
+    }
+
+    .side-menu-item {
+        min-height: 52px;
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: 16px;
+    }
+
+    .side-menu-item .icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    /* Avatar größer & Touch-freundlich */
+    .header-avatar {
+        right: var(--spacing-xl);
+        top: calc(var(--spacing-xl) + var(--safe-area-inset-top));
+    }
+
+    .header-avatar img {
+        width: 56px;
+        height: 56px;
+    }
+
+    /* Buttons - Größere Touch-Targets */
+    .btn-primary,
+    .btn-secondary {
+        min-height: 50px;
+        padding: var(--spacing-md) var(--spacing-lg);
+        font-size: 17px;
+    }
+
+    .btn-logout {
+        min-height: 52px;
+        padding: var(--spacing-md) var(--spacing-lg);
+    }
+
+    /* ========== STATS GRID - iPad Layout ========== */
+
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-md);
+    }
+
+    .stat-card {
+        padding: var(--spacing-lg);
+    }
+
+    .stat-value {
+        font-size: 42px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+    }
+
+    /* Mini Stats Grid - 4 Spalten auf iPad */
+    .mini-stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-md);
+    }
+
+    .mini-stat {
+        padding: var(--spacing-md) var(--spacing-lg);
+        min-height: 100px;
+    }
+
+    .mini-stat-value {
+        font-size: 28px;
+    }
+
+    .mini-stat-label {
+        font-size: 12px;
+    }
+
+    /* Hero Stat - iPad angepasst */
+    .hero-stat {
+        padding: var(--spacing-xxl);
+    }
+
+    .hero-stat-value {
+        font-size: 84px;
+    }
+
+    .hero-stat-label {
+        font-size: 14px;
+    }
+
+    .hero-stat-subtitle {
+        font-size: 18px;
+    }
+
+    /* ========== RANKING - iPad Layout ========== */
+
+    .ranking-tabs {
+        padding: var(--spacing-sm);
+    }
+
+    .ranking-tab {
+        min-height: 52px;
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: 12px;
+    }
+
+    .ranking-tab svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .flashy-ranking-item {
+        padding: var(--spacing-md);
+        gap: var(--spacing-md);
+    }
+
+    .rank-badge {
+        width: 56px;
+        height: 56px;
+        font-size: 20px;
+    }
+
+    .rank-name {
+        font-size: 17px;
+    }
+
+    .rank-team {
+        font-size: 14px;
+    }
+
+    .rank-score .score-value {
+        font-size: 28px;
+    }
+
+    .rank-score .score-label {
+        font-size: 12px;
+    }
+
+    /* Your Position Card */
+    .your-position-card {
+        padding: var(--spacing-xl);
+    }
+
+    .position-rank {
+        font-size: 64px;
+    }
+
+    .position-total {
+        font-size: 15px;
+    }
+
+    /* Champion Banner */
+    .champion-banner-fixed {
+        padding: var(--spacing-lg) var(--spacing-xl);
+    }
+
+    .champion-banner-fixed .winner-crown {
+        width: 56px;
+        height: 56px;
+    }
+
+    .champion-banner-fixed .winner-name {
+        font-size: 20px;
+    }
+
+    /* ========== TEAM VIEW - iPad Layout ========== */
+
+    .area-card {
+        padding: var(--spacing-lg);
+    }
+
+    .area-card h3 {
+        font-size: 18px;
+    }
+
+    .area-card p {
+        font-size: 15px;
+    }
+
+    /* ========== PROFILE - iPad Layout ========== */
+
+    .profile-header {
+        padding: var(--spacing-xl);
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+    }
+
+    .profile-name {
+        font-size: 28px;
+    }
+
+    .profile-role-badge {
+        font-size: 14px;
+        padding: 8px 20px;
+    }
+
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+    }
+
+    .form-input {
+        min-height: 48px;
+        padding: var(--spacing-md);
+        font-size: 16px;
+    }
+
+    .form-label {
+        font-size: 14px;
+    }
+
+    .upload-box {
+        min-height: 180px;
+        padding: var(--spacing-xl);
+    }
+
+    .upload-icon {
+        width: 48px;
+        height: 48px;
+    }
+
+    .upload-label {
+        font-size: 15px;
+    }
+
+    /* ========== TC FUNKTIONEN - iPad Layout ========== */
+
+    .latest-records-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-md);
+    }
+
+    .record-card {
+        padding: var(--spacing-md);
+        min-width: 160px;
+    }
+
+    .record-name {
+        font-size: 14px;
+    }
+
+    .record-time {
+        font-size: 11px;
+    }
+
+    .status-badge {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+
+    .record-werber {
+        font-size: 12px;
+    }
+
+    .werber-assignment-item {
+        padding: var(--spacing-md) var(--spacing-lg);
+        min-height: 56px;
+    }
+
+    .werber-assignment-item .werber-name {
+        font-size: 16px;
+    }
+
+    .werber-area-select {
+        min-height: 44px;
+        padding: 12px 16px;
+        font-size: 15px;
+        max-width: 260px;
+    }
+
+    /* ========== QUICK ACTIONS - iPad Layout ========== */
+
+    .quick-actions-scroll {
+        gap: var(--spacing-lg);
+    }
+
+    .action-card {
+        min-width: 120px;
+        padding: var(--spacing-lg);
+    }
+
+    .action-icon {
+        width: 48px;
+        height: 48px;
+    }
+
+    .action-label {
+        font-size: 13px;
+    }
+
+    /* ========== MODALS - iPad optimiert ========== */
+
+    .modal-content {
+        max-width: 480px;
+        padding: var(--spacing-xl);
+    }
+
+    .modal-header h2 {
+        font-size: 24px;
+    }
+
+    .modal-close {
+        width: 44px;
+        height: 44px;
+    }
+
+    #loginForm .form-input {
+        min-height: 52px;
+        padding: 16px 18px;
+        font-size: 17px;
+    }
+
+    .btn-login {
+        min-height: 52px;
+        font-size: 17px;
+    }
+
+    /* ========== CHARTS - iPad Layout ========== */
+
+    .chart-card {
+        padding: var(--spacing-md);
+    }
+
+    .chart-header {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .chart-title {
+        font-size: 13px;
+    }
+
+    .chart-value {
+        font-size: 28px;
+    }
+
+    .chart-canvas {
+        height: 160px;
+    }
+
+    /* ========== LEADERBOARD - iPad Layout ========== */
+
+    .leaderboard-item {
+        padding: var(--spacing-md) var(--spacing-lg);
+        min-height: 72px;
+    }
+
+    .leaderboard-position {
+        width: 56px;
+        height: 56px;
+        font-size: 22px;
+    }
+
+    .leaderboard-name {
+        font-size: 17px;
+    }
+
+    .leaderboard-team {
+        font-size: 14px;
+    }
+
+    .score-value {
+        font-size: 28px;
+    }
+
+    /* ========== SECTION HEADERS ========== */
+
+    .section-header h3 {
+        font-size: 16px;
+    }
+
+    .section-link {
+        font-size: 14px;
+    }
+}
+
+/* ========== iPad LANDSCAPE (> 1024px width) ========== */
+@media (min-width: 1024px) and (max-width: 1400px) {
+
+    /* Breiter View Container */
+    .view-container {
+        max-width: 960px;
+    }
+
+    .app-content {
+        max-width: 1100px;
+    }
+
+    /* 5-Spalten Grid für Letzte Schriebe */
+    .latest-records-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    /* Stats Grid - volle 4 Spalten */
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .mini-stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ========== iPad PORTRAIT Specific (768px - 834px) ========== */
+@media (min-width: 768px) and (max-width: 834px) and (orientation: portrait) {
+
+    /* 3-Spalten Grid für kompaktere Ansicht */
+    .latest-records-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    /* Stats 2x2 Grid */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .mini-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hero-stat-value {
+        font-size: 72px;
+    }
+}
+
+/* ========== iPad Pro 12.9" (1024px+) ========== */
+@media (min-width: 1024px) {
+
+    html {
+        font-size: 18px;
+    }
+
+    .view-container {
+        max-width: 1000px;
+    }
+
+    .app-content {
+        max-width: 1200px;
+        padding: var(--spacing-xxl);
+    }
+
+    .view-title {
+        font-size: 42px;
+    }
+
+    .hero-stat-value {
+        font-size: 96px;
+    }
+
+    /* Breites Side Menu */
+    .side-menu {
+        width: 380px;
+    }
+
+    .side-menu-item {
+        font-size: 17px;
+        padding: var(--spacing-lg) var(--spacing-xl);
+    }
+}
+
+/* ========== TOUCH-FRIENDLY ALLGEMEIN (für alle Touch-Geräte) ========== */
+@media (hover: none) and (pointer: coarse) {
+
+    /* Alle klickbaren Elemente mindestens 44px */
+    button,
+    .btn-primary,
+    .btn-secondary,
+    .nav-item,
+    .side-menu-item,
+    .ranking-tab,
+    .action-card,
+    .werber-area-select {
+        min-height: 44px;
+    }
+
+    /* Links & Touch-Bereiche */
+    a {
+        padding: 4px 0;
+    }
+
+    /* Form Inputs größer */
+    input,
+    select,
+    textarea {
+        min-height: 44px;
+        font-size: 16px; /* Verhindert Auto-Zoom auf iOS */
+    }
+
+    /* Mehr Platz zwischen Touch-Elementen */
+    .ranking-list,
+    .flashy-ranking-list,
+    .area-list,
+    .werber-assignment-list {
+        gap: var(--spacing-md);
+    }
+
+    /* Hover-Effekte für Touch entfernen */
+    .nav-item:hover,
+    .side-menu-item:hover,
+    .action-card:hover,
+    .mini-stat:hover {
+        transform: none;
+    }
+
+    /* Active States statt Hover */
+    .nav-item:active,
+    .side-menu-item:active,
+    .action-card:active,
+    .mini-stat:active {
+        transform: scale(0.97);
+        opacity: 0.9;
+    }
+}
