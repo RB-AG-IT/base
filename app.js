@@ -91,7 +91,7 @@ async function handleLogin(e) {
     loginError.style.display = 'none';
 
     try {
-        const { data, error } = await supabaseClientClient.auth.signInWithPassword({
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: password
         });
@@ -120,7 +120,7 @@ async function handleLogout() {
 
     try {
         showLoading(true);
-        await supabaseClientClient.auth.signOut();
+        await supabaseClient.auth.signOut();
         currentUser = null;
         currentUserData = null;
         currentRole = 'werber';
@@ -138,7 +138,7 @@ async function checkAuthState() {
     showLoading(true);
 
     try {
-        const { data: { session } } = await supabaseClientClient.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
 
         if (session) {
             currentUser = session.user;
