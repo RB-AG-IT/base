@@ -1840,7 +1840,8 @@ const streetResults = data.results.filter(result => {
         // ================================================================
         const SUPABASE_URL = 'https://lgztglycqtiwcmiydxnm.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzgwNzYxNSwiZXhwIjoyMDc5MzgzNjE1fQ.54kSk9ZSUdQt6LKYWkblqgR6Sjev80W80qkNHYEbPgk';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Nicht 'supabase' nennen - kollidiert mit window.supabase vom CDN
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // Get current KW
         function getCurrentKW() {
@@ -1975,7 +1976,7 @@ const streetResults = data.results.filter(result => {
             }
 
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('records')
                     .insert(recordData)
                     .select()

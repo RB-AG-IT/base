@@ -1,9 +1,9 @@
 // ========== SUPABASE SETUP ==========
-const SUPABASE_URL = 'https://lgztglycqtiwcmiydxnm.supabase.co';
+const SUPABASE_URL = 'https://lgztglycqtiwcmiydxnm.supabaseClient.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzgwNzYxNSwiZXhwIjoyMDc5MzgzNjE1fQ.54kSk9ZSUdQt6LKYWkblqgR6Sjev80W80qkNHYEbPgk';
 
-// Supabase Client
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Supabase Client (nicht 'supabase' nennen - kollidiert mit window.supabase vom CDN)
+const supabaseClient = window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ========== STATE MANAGEMENT ==========
 let currentUser = null;
@@ -78,7 +78,7 @@ async function handleLogin(e) {
     loginError.style.display = 'none';
 
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabaseClientClient.auth.signInWithPassword({
             email: email,
             password: password
         });
@@ -107,7 +107,7 @@ async function handleLogout() {
 
     try {
         showLoading(true);
-        await supabase.auth.signOut();
+        await supabaseClientClient.auth.signOut();
         currentUser = null;
         currentUserData = null;
         currentRole = 'werber';
@@ -125,7 +125,7 @@ async function checkAuthState() {
     showLoading(true);
 
     try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClientClient.auth.getSession();
 
         if (session) {
             currentUser = session.user;
@@ -147,7 +147,7 @@ async function loadUserData() {
     if (!currentUser) return;
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('users')
             .select('*')
             .eq('id', currentUser.id)
@@ -206,7 +206,7 @@ function updateAuthUI() {
 }
 
 // Listen for auth state changes
-supabase.auth.onAuthStateChange((event, session) => {
+supabaseClient.auth.onAuthStateChange((event, session) => {
     if (event === 'SIGNED_IN' && session) {
         currentUser = session.user;
         loadUserData().then(() => {
@@ -233,7 +233,7 @@ async function fetchDashboardStats() {
 
     try {
         // EH aus provisions_ledger
-        const { data: ehData } = await supabase
+        const { data: ehData } = await supabaseClient
             .from('provisions_ledger')
             .select('einheiten, created_at, kw')
             .eq('user_id', userId)
@@ -241,7 +241,7 @@ async function fetchDashboardStats() {
             .eq('year', year);
 
         // Records zählen
-        const { data: recordsData } = await supabase
+        const { data: recordsData } = await supabaseClient
             .from('records')
             .select('id, created_at, record_status')
             .eq('werber_id', userId)
@@ -308,7 +308,7 @@ function getWeekNumber(date) {
 async function fetchUserRank(userId, year) {
     try {
         // Alle Werber mit EH
-        const { data } = await supabase
+        const { data } = await supabaseClient
             .from('provisions_ledger')
             .select('user_id, einheiten')
             .eq('kategorie', 'werben')
@@ -338,7 +338,7 @@ async function fetchRankingData(period = 'month') {
     const kw = getCurrentKW();
 
     try {
-        let query = supabase
+        let query = supabaseClient
             .from('provisions_ledger')
             .select('user_id, einheiten, kw, created_at')
             .eq('kategorie', 'werben')
@@ -372,7 +372,7 @@ async function fetchRankingData(period = 'month') {
         const userIds = Object.keys(userTotals);
         if (userIds.length === 0) return [];
 
-        const { data: users } = await supabase
+        const { data: users } = await supabaseClient
             .from('users')
             .select('id, name, team')
             .in('id', userIds);
@@ -412,7 +412,7 @@ async function fetchTeamAreas() {
         const year = getCurrentYear();
 
         // Werbegebiete für aktuellen User
-        const { data: assignments } = await supabase
+        const { data: assignments } = await supabaseClient
             .from('campaign_assignment_werber')
             .select(`
                 id,
@@ -436,14 +436,14 @@ async function fetchTeamAreas() {
             const areaId = a.campaign_area_id;
 
             // Records für dieses Gebiet zählen
-            const { count: todayCount } = await supabase
+            const { count: todayCount } = await supabaseClient
                 .from('records')
                 .select('*', { count: 'exact', head: true })
                 .eq('werber_id', currentUser.id)
                 .eq('campaign_area_id', areaId)
                 .gte('created_at', new Date().toISOString().split('T')[0]);
 
-            const { count: weekCount } = await supabase
+            const { count: weekCount } = await supabaseClient
                 .from('records')
                 .select('*', { count: 'exact', head: true })
                 .eq('werber_id', currentUser.id)
@@ -488,7 +488,7 @@ async function fetchLatestRecords() {
         const year = getCurrentYear();
 
         // Hol alle Werber die dem TC zugeordnet sind
-        const { data: teamWerber } = await supabase
+        const { data: teamWerber } = await supabaseClient
             .from('campaign_assignment_werber')
             .select('werber_id')
             .eq('teamchef_id', currentUser.id)
@@ -497,7 +497,7 @@ async function fetchLatestRecords() {
 
         if (!teamWerber || teamWerber.length === 0) {
             // Fallback: eigene Records
-            const { data } = await supabase
+            const { data } = await supabaseClient
                 .from('records')
                 .select(`
                     id,
@@ -518,7 +518,7 @@ async function fetchLatestRecords() {
 
         const werberIds = teamWerber.map(w => w.werber_id);
 
-        const { data } = await supabase
+        const { data } = await supabaseClient
             .from('records')
             .select(`
                 id,
@@ -550,7 +550,7 @@ async function fetchTeamWerber() {
         const year = getCurrentYear();
 
         // Hole die Zuordnungen für diese KW
-        const { data: assignments } = await supabase
+        const { data: assignments } = await supabaseClient
             .from('campaign_assignment_werber')
             .select(`
                 id,
@@ -573,7 +573,7 @@ async function fetchTeamWerber() {
 // TC-Funktionen: Verfügbare Gebiete laden
 async function fetchAvailableAreas() {
     try {
-        const { data } = await supabase
+        const { data } = await supabaseClient
             .from('campaign_areas')
             .select('id, name, region')
             .eq('status', 'aktiv')
@@ -589,7 +589,7 @@ async function fetchAvailableAreas() {
 // TC-Funktionen: Werber einem Gebiet zuordnen
 async function assignWerberToArea(assignmentId, areaId) {
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('campaign_assignment_werber')
             .update({ campaign_area_id: areaId })
             .eq('id', assignmentId);
@@ -1399,7 +1399,7 @@ async function saveProfile() {
             updateData.name = `${updateData.vorname} ${updateData.nachname}`;
         }
 
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('users')
             .update(updateData)
             .eq('id', currentUser.id);
@@ -1428,7 +1428,7 @@ async function syncOfflineRecords() {
         const records = JSON.parse(offlineData);
 
         for (const record of records) {
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('records')
                 .insert(record.data);
 
