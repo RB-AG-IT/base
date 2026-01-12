@@ -864,7 +864,6 @@ const views = {
                 </div>
                 <div class="campaign-info">
                     <div class="campaign-name">${currentUserData.current_campaign}</div>
-                    <div class="campaign-team">Team: ${currentUserData.team || 'Nicht zugewiesen'}</div>
                 </div>
                 <div class="campaign-status">Aktiv</div>
             </div>
@@ -897,10 +896,8 @@ const views = {
             <h1 class="view-title">Mein Team</h1>
 
             <div style="background: var(--bg-card); border-radius: 12px; padding: 16px; margin-bottom: 24px; box-shadow: var(--shadow-sm);">
-                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Kampagne</div>
-                <div style="font-weight: 600; margin-bottom: 8px;">${currentUserData?.current_campaign || 'Keine aktive Kampagne'}</div>
-                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Team</div>
-                <div style="font-weight: 600;">${currentUserData?.team || 'Nicht zugewiesen'}</div>
+                <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Zugewiesene Kampagne</div>
+                <div style="font-weight: 600;">${currentUserData?.current_campaign || 'Keine aktive Kampagne'}</div>
             </div>
 
             <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Meine Werbegebiete</h3>
@@ -1173,6 +1170,18 @@ const views = {
                         <label class="form-label">Stadt</label>
                         <input type="text" class="form-input" id="profileCity" placeholder="Berlin" value="${user.city || ''}">
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">Bundesland</label>
+                        <input type="text" class="form-input" id="profileState" placeholder="Bayern" value="${user.state || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Land</label>
+                        <input type="text" class="form-input" id="profileCountry" placeholder="Deutschland" value="${user.country || ''}">
+                    </div>
+                    <div class="form-group form-group-2col">
+                        <label class="form-label">Adresszusatz</label>
+                        <input type="text" class="form-input" id="profileAddressExtra" placeholder="Apartment 4B" value="${user.address_extra || ''}">
+                    </div>
                 </div>
             </div>
 
@@ -1199,9 +1208,9 @@ const views = {
                 </div>
             </div>
 
-            <!-- Tax Information Section -->
+            <!-- Tax Information Section (Privatperson) -->
             <div class="profile-form-section">
-                <h3 class="section-title">Steuerinformationen</h3>
+                <h3 class="section-title">Steuer (Privatperson)</h3>
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Steuer-ID</label>
@@ -1210,6 +1219,52 @@ const views = {
                     <div class="form-group">
                         <label class="form-label">SV-Nummer</label>
                         <input type="text" class="form-input" id="profileSvNumber" placeholder="12 345678 A 123" value="${user.social_security_number || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">KVNR</label>
+                        <input type="text" class="form-input" id="profileKvnr" placeholder="A123456789" value="${user.kvnr || ''}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tax Information Section (Gewerbe) -->
+            <div class="profile-form-section">
+                <h3 class="section-title">Steuer (Gewerbe)</h3>
+                <div class="form-grid">
+                    <div class="form-group form-group-2col">
+                        <label class="form-label">Firmenname</label>
+                        <input type="text" class="form-input" id="profileCompanyName" placeholder="Musterfirma GmbH" value="${user.company_name || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Steuernummer</label>
+                        <input type="text" class="form-input" id="profileTaxNumber" placeholder="123/456/78901" value="${user.tax_number || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">USt-IdNr</label>
+                        <input type="text" class="form-input" id="profileVatId" placeholder="DE123456789" value="${user.vat_id || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">USt-pflichtig</label>
+                        <select class="form-input" id="profileVatLiable">
+                            <option value="">Bitte wählen</option>
+                            <option value="true" ${user.is_vat_liable === true ? 'selected' : ''}>Ja</option>
+                            <option value="false" ${user.is_vat_liable === false ? 'selected' : ''}>Nein</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Change Section -->
+            <div class="profile-form-section">
+                <h3 class="section-title">Passwort ändern</h3>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Neues Passwort</label>
+                        <input type="password" class="form-input" id="profileNewPassword" placeholder="••••••••">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Passwort bestätigen</label>
+                        <input type="password" class="form-input" id="profileConfirmPassword" placeholder="••••••••">
                     </div>
                 </div>
             </div>
@@ -1250,10 +1305,6 @@ const views = {
                 <div class="profile-item">
                     <span class="profile-label">Im Ranking anzeigen</span>
                     <input type="checkbox" id="settingRankingVisible" ${currentUserData?.ranking_enabled !== false ? 'checked' : ''} onchange="updateUserSetting('ranking_enabled', this.checked)" style="width: 20px; height: 20px;">
-                </div>
-                <div class="profile-item">
-                    <span class="profile-label">Ghost-Modus</span>
-                    <input type="checkbox" id="settingGhostMode" ${currentUserData?.ghost_mode ? 'checked' : ''} onchange="updateUserSetting('ghost_mode', this.checked)" style="width: 20px; height: 20px;">
                 </div>
             </div>
 
@@ -1468,6 +1519,37 @@ async function saveProfile() {
     showLoading(true);
 
     try {
+        // Passwort ändern (falls eingegeben)
+        const newPassword = document.getElementById('profileNewPassword')?.value;
+        const confirmPassword = document.getElementById('profileConfirmPassword')?.value;
+
+        if (newPassword) {
+            if (newPassword !== confirmPassword) {
+                alert('Passwörter stimmen nicht überein!');
+                showLoading(false);
+                return;
+            }
+            if (newPassword.length < 6) {
+                alert('Passwort muss mindestens 6 Zeichen haben!');
+                showLoading(false);
+                return;
+            }
+
+            const { error: pwError } = await supabaseClient.auth.updateUser({
+                password: newPassword
+            });
+
+            if (pwError) {
+                alert('Passwort konnte nicht geändert werden: ' + pwError.message);
+                showLoading(false);
+                return;
+            }
+
+            // Felder leeren nach erfolgreicher Änderung
+            document.getElementById('profileNewPassword').value = '';
+            document.getElementById('profileConfirmPassword').value = '';
+        }
+
         // User Profiles Daten (Hauptprofil)
         const profileData = {
             first_name: document.getElementById('profileFirstname')?.value || '',
@@ -1479,12 +1561,21 @@ async function saveProfile() {
             house_number: document.getElementById('profileHouseNumber')?.value || '',
             postal_code: document.getElementById('profileZip')?.value || '',
             city: document.getElementById('profileCity')?.value || '',
+            state: document.getElementById('profileState')?.value || '',
+            country: document.getElementById('profileCountry')?.value || '',
+            address_extra: document.getElementById('profileAddressExtra')?.value || '',
             account_holder: document.getElementById('profileAccountHolder')?.value || '',
             iban: document.getElementById('profileIban')?.value || '',
             bic: document.getElementById('profileBic')?.value || '',
             bank_name: document.getElementById('profileBank')?.value || '',
             tax_id: document.getElementById('profileTaxId')?.value || '',
-            social_security_number: document.getElementById('profileSvNumber')?.value || ''
+            social_security_number: document.getElementById('profileSvNumber')?.value || '',
+            kvnr: document.getElementById('profileKvnr')?.value || '',
+            company_name: document.getElementById('profileCompanyName')?.value || '',
+            tax_number: document.getElementById('profileTaxNumber')?.value || '',
+            vat_id: document.getElementById('profileVatId')?.value || '',
+            is_vat_liable: document.getElementById('profileVatLiable')?.value === 'true' ? true :
+                           document.getElementById('profileVatLiable')?.value === 'false' ? false : null
         };
 
         const { error: profileError } = await supabaseClient
