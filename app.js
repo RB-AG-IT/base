@@ -653,7 +653,7 @@ async function fetchLatestRecords() {
         let query = supabaseClient
             .from('records')
             .select(`
-                id, first_name, last_name, created_at, werber_id, einheiten,
+                id, first_name, last_name, created_at, werber_id, yearly_amount,
                 users!records_werber_id_fkey (name),
                 campaign_areas (id, name)
             `)
@@ -1442,7 +1442,7 @@ async function renderTCSection() {
                     <div class="record-card">
                         <div class="record-card-header">
                             <span class="record-name">${record.first_name || ''} ${record.last_name || ''}</span>
-                            <span class="record-eh">${record.einheiten || 0} EH</span>
+                            <span class="record-eh">${record.yearly_amount || 0} EH</span>
                         </div>
                         <div class="record-card-body">
                             <div class="record-meta">
