@@ -1137,7 +1137,7 @@ const views = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">GameTag</label>
-                        <input type="text" class="form-input" id="profileGametag" placeholder="Dein GameTag" value="${user.gametag || ''}">
+                        <input type="text" class="form-input" id="profileGametag" placeholder="Dein GameTag" value="${user.game_tag || ''}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Kleidergröße</label>
@@ -1478,7 +1478,7 @@ async function saveProfile() {
             nachname: document.getElementById('profileLastname')?.value || '',
             email: document.getElementById('profileEmail')?.value || '',
             telefon: document.getElementById('profilePhone')?.value || '',
-            gametag: document.getElementById('profileGametag')?.value || '',
+            game_tag: document.getElementById('profileGametag')?.value || '',
             kleidergroesse: document.getElementById('profileClothingSize')?.value || '',
             strasse: document.getElementById('profileStreet')?.value || '',
             hausnummer: document.getElementById('profileHouseNumber')?.value || '',
