@@ -616,6 +616,7 @@ async function fetchLatestRecords() {
             .from('campaign_assignments')
             .select(`
                 id,
+                campaign_id,
                 campaign_assignment_werber (werber_id)
             `)
             .eq('teamchef_id', currentUser.id)
@@ -636,9 +637,11 @@ async function fetchLatestRecords() {
             return data || [];
         }
 
-        // Extract werber IDs from nested structure
+        // Extract werber IDs and campaign IDs from nested structure
         const werberIds = [];
+        const campaignIds = [];
         tcAssignment.forEach(a => {
+            if (a.campaign_id) campaignIds.push(a.campaign_id);
             a.campaign_assignment_werber?.forEach(w => {
                 if (w.werber_id) werberIds.push(w.werber_id);
             });
@@ -646,14 +649,22 @@ async function fetchLatestRecords() {
 
         if (werberIds.length === 0) return [];
 
-        const { data } = await supabaseClient
+        // Query mit Kampagnen-Filter
+        let query = supabaseClient
             .from('records')
             .select(`
                 id, first_name, last_name, email, iban, created_at, werber_id,
                 users!records_werber_id_fkey (name),
                 campaign_areas (id, name)
             `)
-            .in('werber_id', werberIds)
+            .in('werber_id', werberIds);
+
+        // Nach Kampagne filtern falls vorhanden
+        if (campaignIds.length > 0) {
+            query = query.in('campaign_id', campaignIds);
+        }
+
+        const { data } = await query
             .order('created_at', { ascending: false })
             .limit(10);
 
