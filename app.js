@@ -653,7 +653,7 @@ async function fetchLatestRecords() {
         let query = supabaseClient
             .from('records')
             .select(`
-                id, first_name, last_name, email, iban, created_at, werber_id,
+                id, first_name, last_name, created_at, werber_id, einheiten,
                 users!records_werber_id_fkey (name),
                 campaign_areas (id, name)
             `)
@@ -1423,19 +1423,14 @@ async function renderTCSection() {
                     <div class="record-card">
                         <div class="record-card-header">
                             <span class="record-name">${record.first_name || ''} ${record.last_name || ''}</span>
-                            <span class="record-time">${formatTime(record.created_at)}</span>
+                            <span class="record-eh">${record.einheiten || 0} EH</span>
                         </div>
                         <div class="record-card-body">
-                            <div class="record-status">
-                                <span class="status-badge ${record.email ? 'status-ok' : 'status-warn'}">
-                                    ${record.email ? 'E-Mail' : 'Keine E-Mail'}
-                                </span>
-                                <span class="status-badge ${record.iban ? 'status-ok' : 'status-warn'}">
-                                    ${record.iban ? 'IBAN' : 'Keine IBAN'}
-                                </span>
+                            <div class="record-meta">
+                                <span class="record-time">${formatTime(record.created_at)}</span>
+                                ${record.campaign_areas?.name ? `<span class="record-area">${record.campaign_areas.name}</span>` : ''}
                             </div>
                             <div class="record-werber">${record.users?.name || 'Unbekannt'}</div>
-                            ${record.campaign_areas?.name ? `<div class="record-area">${record.campaign_areas.name}</div>` : ''}
                         </div>
                     </div>
                 `).join('') : `

@@ -2925,9 +2925,13 @@ select.form-input {
     flex: 1;
 }
 
-.record-time {
-    font-size: 10px;
-    color: var(--text-tertiary);
+.record-eh {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-primary);
+    background: rgba(227, 6, 19, 0.1);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
     white-space: nowrap;
 }
 
@@ -2937,33 +2941,32 @@ select.form-input {
     gap: 4px;
 }
 
-.record-status {
+.record-meta {
     display: flex;
-    gap: 4px;
+    align-items: center;
+    gap: 8px;
     flex-wrap: wrap;
 }
 
-.status-badge {
+.record-time {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+}
+
+.record-area {
     font-size: 10px;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
     padding: 2px 6px;
     border-radius: var(--radius-sm);
     white-space: nowrap;
 }
 
-.status-ok {
-    background: rgba(0, 230, 118, 0.15);
-    color: var(--success);
-}
-
-.status-warn {
-    background: rgba(255, 193, 7, 0.15);
-    color: var(--warning);
-}
-
 .record-werber {
     font-size: 11px;
     color: var(--text-secondary);
-    margin-top: 4px;
+    font-weight: 500;
 }
 
 /* Werber Assignment List */
@@ -3322,13 +3325,17 @@ select.form-input {
         font-size: 14px;
     }
 
-    .record-time {
-        font-size: 11px;
+    .record-eh {
+        font-size: 13px;
+        padding: 3px 10px;
     }
 
-    .status-badge {
+    .record-time {
+        font-size: 12px;
+    }
+
+    .record-area {
         font-size: 11px;
-        padding: 3px 8px;
     }
 
     .record-werber {
