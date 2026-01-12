@@ -307,6 +307,7 @@ async function fetchDashboardStats() {
         // Heute
         const today = new Date().toISOString().split('T')[0];
         const todayRecords = recordsData?.filter(r => r.created_at?.startsWith(today)).length || 0;
+        const todayEH = ehData?.filter(r => r.created_at?.startsWith(today)).reduce((sum, r) => sum + (r.einheiten || 0), 0) || 0;
 
         // Diese Woche
         const weekRecords = recordsData?.filter(r => {
@@ -341,6 +342,7 @@ async function fetchDashboardStats() {
 
         return {
             today: todayRecords,
+            todayEH: todayEH,
             week: weekRecords,
             month: monthRecords,
             total: totalRecords,
@@ -712,7 +714,7 @@ const views = {
             <!-- Hero Stats (Big & Bold) -->
             <div class="hero-stat">
                 <div class="hero-stat-label">Heute erfasst</div>
-                <div class="hero-stat-value">${stats.today}</div>
+                <div class="hero-stat-value">${stats.today} / ${stats.todayEH} EH</div>
                 <div class="hero-stat-subtitle">Neue Mitglieder</div>
             </div>
 
