@@ -712,7 +712,7 @@ const views = {
                 <h3>Schnellzugriff</h3>
             </div>
             <div class="quick-actions-scroll">
-                <a href="formular/" class="action-card">
+                <a href="https://office.rb-inside.de/formular/" class="action-card">
                     <div class="action-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -828,7 +828,7 @@ const views = {
             <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Meine Werbegebiete</h3>
             <div class="area-list">
                 ${areas.length > 0 ? areas.map(area => `
-                    <a href="formular/?area=${area.id}" class="area-card">
+                    <a href="https://office.rb-inside.de/formular/?werbegebiet=${area.id}" class="area-card">
                         <h3>${area.name}</h3>
                         <p>Heute: ${area.today} Mitglieder • Diese Woche: ${area.week} Mitglieder</p>
                         <span class="area-badge" style="background: ${area.active ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)' : '#eeeeee'}; color: ${area.active ? 'white' : '#757575'};">
@@ -1550,7 +1550,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // FAB button
     document.getElementById('fab').addEventListener('click', () => {
-        window.location.href = 'formular/';
+        window.location.href = 'https://office.rb-inside.de/formular/';
     });
 
     // Logout button
