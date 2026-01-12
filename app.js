@@ -59,6 +59,51 @@ function getCurrentYear() {
     return new Date().getFullYear();
 }
 
+// ========== TOAST NOTIFICATIONS ==========
+function showToast(message, type = 'info') {
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) existingToast.remove();
+
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    toast.innerHTML = `
+        <span class="toast-icon">${type === 'error' ? '!' : type === 'success' ? '!' : 'i'}</span>
+        <span class="toast-message">${message}</span>
+    `;
+
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+// ========== FORMULAR HELPER ==========
+async function openFormular() {
+    if (!currentUser) {
+        showToast('Bitte zuerst anmelden', 'error');
+        return;
+    }
+
+    const areas = await fetchTeamAreas();
+
+    if (areas.length === 0) {
+        showToast('Kein Gebiet zugewiesen. Bitte wende dich an deinen Teamchef.', 'error');
+        return;
+    }
+
+    const area = areas[0];
+    const url = new URL('https://office.rb-inside.de/formular/');
+    url.searchParams.set('botschafter', currentUser.id);
+    url.searchParams.set('werbegebiet', area.id);
+    if (area.campaign_id) {
+        url.searchParams.set('kampagne', area.campaign_id);
+    }
+
+    window.location.href = url.toString();
+}
+
 // ========== AUTH FUNCTIONS ==========
 function openLoginModal() {
     document.getElementById('loginModal').classList.add('active');
@@ -422,31 +467,44 @@ async function fetchTeamAreas() {
 
     try {
         const kw = getCurrentKW();
-        const year = getCurrentYear();
 
-        // Werbegebiete für aktuellen User
-        const { data: assignments } = await supabaseClient
+        // Get all assignments for current user in current KW via campaign_assignments
+        const { data: parentAssignments } = await supabaseClient
+            .from('campaign_assignments')
+            .select('id, campaign_id')
+            .eq('kw', kw);
+
+        if (!parentAssignments || parentAssignments.length === 0) {
+            return [];
+        }
+
+        const assignmentIds = parentAssignments.map(a => a.id);
+
+        // Get user's werber assignments for these parent assignments
+        const { data: werberAssignments } = await supabaseClient
             .from('campaign_assignment_werber')
             .select(`
                 id,
+                assignment_id,
                 campaign_area_id,
                 campaign_areas (
                     id,
                     name,
-                    region
+                    region,
+                    campaign_id
                 )
             `)
             .eq('werber_id', currentUser.id)
-            .eq('kw', kw)
-            .eq('year', year);
+            .in('assignment_id', assignmentIds);
 
-        if (!assignments || assignments.length === 0) {
+        if (!werberAssignments || werberAssignments.length === 0) {
             return [];
         }
 
         // Stats für jedes Gebiet
-        const areas = await Promise.all(assignments.map(async (a) => {
+        const areas = await Promise.all(werberAssignments.map(async (a) => {
             const areaId = a.campaign_area_id;
+            if (!areaId) return null;
 
             // Records für dieses Gebiet zählen
             const { count: todayCount } = await supabaseClient
@@ -467,13 +525,14 @@ async function fetchTeamAreas() {
                 id: areaId,
                 name: a.campaign_areas?.name || 'Unbekannt',
                 region: a.campaign_areas?.region || '',
+                campaign_id: a.campaign_areas?.campaign_id || null,
                 today: todayCount || 0,
                 week: weekCount || 0,
                 active: true
             };
         }));
 
-        return areas;
+        return areas.filter(a => a !== null);
     } catch (error) {
         console.error('Fetch team areas error:', error);
         return [];
@@ -498,50 +557,48 @@ async function fetchLatestRecords() {
 
     try {
         const kw = getCurrentKW();
-        const year = getCurrentYear();
 
-        // Hol alle Werber die dem TC zugeordnet sind
-        const { data: teamWerber } = await supabaseClient
-            .from('campaign_assignment_werber')
-            .select('werber_id')
+        // Get TC's assignment for current KW via campaign_assignments table
+        const { data: tcAssignment } = await supabaseClient
+            .from('campaign_assignments')
+            .select(`
+                id,
+                campaign_assignment_werber (werber_id)
+            `)
             .eq('teamchef_id', currentUser.id)
-            .eq('kw', kw)
-            .eq('year', year);
+            .eq('kw', kw);
 
-        if (!teamWerber || teamWerber.length === 0) {
+        if (!tcAssignment || tcAssignment.length === 0) {
             // Fallback: eigene Records
             const { data } = await supabaseClient
                 .from('records')
                 .select(`
-                    id,
-                    first_name,
-                    last_name,
-                    email,
-                    iban,
-                    created_at,
-                    werber_id,
-                    users!records_werber_id_fkey (name)
+                    id, first_name, last_name, email, iban, created_at, werber_id,
+                    users!records_werber_id_fkey (name),
+                    campaign_areas (id, name)
                 `)
                 .eq('werber_id', currentUser.id)
                 .order('created_at', { ascending: false })
                 .limit(10);
-
             return data || [];
         }
 
-        const werberIds = teamWerber.map(w => w.werber_id);
+        // Extract werber IDs from nested structure
+        const werberIds = [];
+        tcAssignment.forEach(a => {
+            a.campaign_assignment_werber?.forEach(w => {
+                if (w.werber_id) werberIds.push(w.werber_id);
+            });
+        });
+
+        if (werberIds.length === 0) return [];
 
         const { data } = await supabaseClient
             .from('records')
             .select(`
-                id,
-                first_name,
-                last_name,
-                email,
-                iban,
-                created_at,
-                werber_id,
-                users!records_werber_id_fkey (name)
+                id, first_name, last_name, email, iban, created_at, werber_id,
+                users!records_werber_id_fkey (name),
+                campaign_areas (id, name)
             `)
             .in('werber_id', werberIds)
             .order('created_at', { ascending: false })
@@ -556,14 +613,25 @@ async function fetchLatestRecords() {
 
 // TC-Funktionen: Team-Werber für Gebietszuordnung
 async function fetchTeamWerber() {
-    if (!currentUser) return [];
+    if (!currentUser) return { campaignId: null, werber: [] };
 
     try {
         const kw = getCurrentKW();
-        const year = getCurrentYear();
 
-        // Hole die Zuordnungen für diese KW
-        const { data: assignments } = await supabaseClient
+        // Get TC's assignment for current KW via campaign_assignments table
+        const { data: tcAssignment } = await supabaseClient
+            .from('campaign_assignments')
+            .select('id, campaign_id')
+            .eq('teamchef_id', currentUser.id)
+            .eq('kw', kw)
+            .single();
+
+        if (!tcAssignment) {
+            return { campaignId: null, werber: [] };
+        }
+
+        // Get all Werber for this assignment
+        const { data: werberAssignments } = await supabaseClient
             .from('campaign_assignment_werber')
             .select(`
                 id,
@@ -572,24 +640,27 @@ async function fetchTeamWerber() {
                 users!campaign_assignment_werber_werber_id_fkey (id, name),
                 campaign_areas (id, name)
             `)
-            .eq('teamchef_id', currentUser.id)
-            .eq('kw', kw)
-            .eq('year', year);
+            .eq('assignment_id', tcAssignment.id);
 
-        return assignments || [];
+        return {
+            campaignId: tcAssignment.campaign_id,
+            werber: werberAssignments || []
+        };
     } catch (error) {
         console.error('Fetch team werber error:', error);
-        return [];
+        return { campaignId: null, werber: [] };
     }
 }
 
-// TC-Funktionen: Verfügbare Gebiete laden
-async function fetchAvailableAreas() {
+// TC-Funktionen: Verfügbare Gebiete laden (filtered by campaign)
+async function fetchAvailableAreas(campaignId) {
+    if (!campaignId) return [];
+
     try {
         const { data } = await supabaseClient
             .from('campaign_areas')
-            .select('id, name, region')
-            .eq('status', 'aktiv')
+            .select('id, name, plz')
+            .eq('campaign_id', campaignId)
             .order('name');
 
         return data || [];
@@ -712,7 +783,7 @@ const views = {
                 <h3>Schnellzugriff</h3>
             </div>
             <div class="quick-actions-scroll">
-                <a href="https://office.rb-inside.de/formular/" class="action-card">
+                <a href="#" onclick="openFormular(); return false;" class="action-card">
                     <div class="action-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -828,7 +899,7 @@ const views = {
             <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Meine Werbegebiete</h3>
             <div class="area-list">
                 ${areas.length > 0 ? areas.map(area => `
-                    <a href="https://office.rb-inside.de/formular/?werbegebiet=${area.id}" class="area-card">
+                    <a href="https://office.rb-inside.de/formular/?botschafter=${currentUser.id}&werbegebiet=${area.id}${area.campaign_id ? '&kampagne=' + area.campaign_id : ''}" class="area-card">
                         <h3>${area.name}</h3>
                         <p>Heute: ${area.today} Mitglieder • Diese Woche: ${area.week} Mitglieder</p>
                         <span class="area-badge" style="background: ${area.active ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)' : '#eeeeee'}; color: ${area.active ? 'white' : '#757575'};">
@@ -1212,8 +1283,10 @@ const views = {
 
 // ========== TC SECTION RENDER ==========
 async function renderTCSection() {
+    const teamData = await fetchTeamWerber();
     const latestRecords = await fetchLatestRecords();
-    const teamWerber = await fetchTeamWerber();
+    const availableAreas = await fetchAvailableAreas(teamData.campaignId);
+    const teamWerber = teamData.werber || [];
 
     // Format timestamp
     const formatTime = (dateStr) => {
@@ -1227,9 +1300,9 @@ async function renderTCSection() {
 
     return `
         <div style="margin-top: 32px;">
-            <!-- Letzte Schriebe Kärtchen -->
+            <!-- Letzte Schriebe -->
             <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">
-                📝 Letzte Schriebe
+                Letzte Schriebe
             </h3>
             <div class="latest-records-grid">
                 ${latestRecords.length > 0 ? latestRecords.map(record => `
@@ -1241,15 +1314,14 @@ async function renderTCSection() {
                         <div class="record-card-body">
                             <div class="record-status">
                                 <span class="status-badge ${record.email ? 'status-ok' : 'status-warn'}">
-                                    ${record.email ? '✉️ E-Mail' : '⚠️ Keine E-Mail'}
+                                    ${record.email ? 'E-Mail' : 'Keine E-Mail'}
                                 </span>
                                 <span class="status-badge ${record.iban ? 'status-ok' : 'status-warn'}">
-                                    ${record.iban ? '💳 IBAN' : '⚠️ Keine IBAN'}
+                                    ${record.iban ? 'IBAN' : 'Keine IBAN'}
                                 </span>
                             </div>
-                            <div class="record-werber">
-                                👤 ${record.users?.name || 'Unbekannt'}
-                            </div>
+                            <div class="record-werber">${record.users?.name || 'Unbekannt'}</div>
+                            ${record.campaign_areas?.name ? `<div class="record-area">${record.campaign_areas.name}</div>` : ''}
                         </div>
                     </div>
                 `).join('') : `
@@ -1261,7 +1333,7 @@ async function renderTCSection() {
 
             <!-- Werber-Zuordnung -->
             <h3 style="font-size: 14px; color: var(--text-secondary); margin: 24px 0 12px; text-transform: uppercase; letter-spacing: 0.5px;">
-                📋 Werber-Zuordnung (KW ${getCurrentKW()})
+                Werber-Zuordnung (KW ${getCurrentKW()})
             </h3>
             <div class="werber-assignment-list" id="werberAssignmentList">
                 ${teamWerber.length > 0 ? teamWerber.map(w => `
@@ -1269,7 +1341,11 @@ async function renderTCSection() {
                         <div class="werber-name">${w.users?.name || 'Unbekannt'}</div>
                         <select class="werber-area-select" onchange="handleAreaChange('${w.id}', this.value)">
                             <option value="">-- Gebiet wählen --</option>
-                            ${w.campaign_areas ? `<option value="${w.campaign_area_id}" selected>${w.campaign_areas.name}</option>` : ''}
+                            ${availableAreas.map(area => `
+                                <option value="${area.id}" ${w.campaign_area_id === area.id ? 'selected' : ''}>
+                                    ${area.name}${area.plz ? ` (${area.plz})` : ''}
+                                </option>
+                            `).join('')}
                         </select>
                     </div>
                 `).join('') : `
@@ -1282,7 +1358,7 @@ async function renderTCSection() {
             <!-- Action Buttons -->
             <div style="display: flex; gap: 8px; margin-top: 16px;">
                 <button class="btn-secondary" onclick="refreshTCSection()">
-                    🔄 Aktualisieren
+                    Aktualisieren
                 </button>
             </div>
         </div>
@@ -1548,9 +1624,31 @@ document.addEventListener('DOMContentLoaded', async function() {
         closeSidebar();
     });
 
-    // FAB button
-    document.getElementById('fab').addEventListener('click', () => {
-        window.location.href = 'https://office.rb-inside.de/formular/';
+    // FAB button - with area validation
+    document.getElementById('fab').addEventListener('click', async () => {
+        if (!currentUser) {
+            showToast('Bitte zuerst anmelden', 'error');
+            return;
+        }
+
+        // Get user's assigned areas for current KW
+        const areas = await fetchTeamAreas();
+
+        if (areas.length === 0) {
+            showToast('Kein Gebiet zugewiesen. Bitte wende dich an deinen Teamchef.', 'error');
+            return;
+        }
+
+        // Use first assigned area
+        const area = areas[0];
+        const url = new URL('https://office.rb-inside.de/formular/');
+        url.searchParams.set('botschafter', currentUser.id);
+        url.searchParams.set('werbegebiet', area.id);
+        if (area.campaign_id) {
+            url.searchParams.set('kampagne', area.campaign_id);
+        }
+
+        window.location.href = url.toString();
     });
 
     // Logout button
