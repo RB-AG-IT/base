@@ -1157,6 +1157,39 @@ const views = {
                 </div>
             </div>
 
+            <!-- Profilbilder -->
+            <div class="profile-form-section">
+                <h3 class="section-title">Profilbilder</h3>
+                <div class="photo-upload-row">
+                    <div class="photo-upload-box">
+                        <div class="photo-upload-area" onclick="document.getElementById('photoInternInput').click()">
+                            ${user.photo_intern_url
+                                ? `<img src="${user.photo_intern_url}" class="photo-preview">`
+                                : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="photo-placeholder">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                   </svg>`
+                            }
+                        </div>
+                        <span class="photo-label">Intern</span>
+                        <input type="file" id="photoInternInput" accept="image/*" hidden onchange="uploadProfilePhoto('intern', this)">
+                    </div>
+                    <div class="photo-upload-box">
+                        <div class="photo-upload-area" onclick="document.getElementById('photoExternInput').click()">
+                            ${user.photo_extern_url
+                                ? `<img src="${user.photo_extern_url}" class="photo-preview">`
+                                : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="photo-placeholder">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                   </svg>`
+                            }
+                        </div>
+                        <span class="photo-label">Extern (DRK)</span>
+                        <input type="file" id="photoExternInput" accept="image/*" hidden onchange="uploadProfilePhoto('extern', this)">
+                    </div>
+                </div>
+            </div>
+
             <!-- Personal Data Section -->
             <div class="profile-form-section">
                 <h3 class="section-title">Persönliche Daten</h3>
@@ -1331,51 +1364,6 @@ const views = {
         <div class="view-container">
             <h1 class="view-title">Einstellungen</h1>
 
-            <!-- Profilbilder -->
-            <div class="profile-section">
-                <h3>Profilbilder</h3>
-                <div class="photo-upload-row">
-                    <div class="photo-upload-box">
-                        <div class="photo-upload-area" onclick="document.getElementById('photoInternInput').click()">
-                            ${currentUserData?.photo_intern_url
-                                ? `<img src="${currentUserData.photo_intern_url}" class="photo-preview">`
-                                : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="photo-placeholder">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="12" cy="7" r="4"></circle>
-                                   </svg>`
-                            }
-                        </div>
-                        <span class="photo-label">Intern</span>
-                        <input type="file" id="photoInternInput" accept="image/*" hidden onchange="uploadProfilePhoto('intern', this)">
-                    </div>
-                    <div class="photo-upload-box">
-                        <div class="photo-upload-area" onclick="document.getElementById('photoExternInput').click()">
-                            ${currentUserData?.photo_extern_url
-                                ? `<img src="${currentUserData.photo_extern_url}" class="photo-preview">`
-                                : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="photo-placeholder">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="12" cy="7" r="4"></circle>
-                                   </svg>`
-                            }
-                        </div>
-                        <span class="photo-label">Extern (DRK)</span>
-                        <input type="file" id="photoExternInput" accept="image/*" hidden onchange="uploadProfilePhoto('extern', this)">
-                    </div>
-                </div>
-            </div>
-
-            <div class="profile-section">
-                <h3>Allgemein</h3>
-                <div class="profile-item">
-                    <span class="profile-label">Benachrichtigungen</span>
-                    <input type="checkbox" checked style="width: 20px; height: 20px;">
-                </div>
-                <div class="profile-item">
-                    <span class="profile-label">Offline-Modus</span>
-                    <input type="checkbox" checked style="width: 20px; height: 20px;">
-                </div>
-            </div>
-
             <div class="profile-section">
                 <h3>Sichtbarkeit</h3>
                 <div class="profile-item">
@@ -1384,19 +1372,7 @@ const views = {
                 </div>
             </div>
 
-            <div class="profile-section">
-                <h3>Über</h3>
-                <div class="profile-item">
-                    <span class="profile-label">Version</span>
-                    <span class="profile-value">2.0.0</span>
-                </div>
-                <div class="profile-item">
-                    <span class="profile-label">Build</span>
-                    <span class="profile-value">${new Date().toISOString().split('T')[0]}</span>
-                </div>
-            </div>
-
-            <button class="btn-secondary" style="margin-top: 16px; background: ${currentUser ? '#ffebee' : 'var(--accent-gradient)'}; color: ${currentUser ? '#c62828' : 'white'}; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="${currentUser ? 'handleLogout()' : 'openLoginModal()'}">
+            <button class="btn-secondary" style="margin-top: 24px; background: ${currentUser ? '#ffebee' : 'var(--accent-gradient)'}; color: ${currentUser ? '#c62828' : 'white'}; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="${currentUser ? 'handleLogout()' : 'openLoginModal()'}">
                 <svg style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                     <polyline points="16 17 21 12 16 7"></polyline>
@@ -1638,7 +1614,7 @@ async function uploadProfilePhoto(type, input) {
 
         // UI aktualisieren
         if (currentUserData) currentUserData[urlField] = url;
-        loadView('einstellungen');
+        loadView('profil');
 
         alert('Foto erfolgreich hochgeladen!');
     } catch (error) {
