@@ -1331,6 +1331,39 @@ const views = {
         <div class="view-container">
             <h1 class="view-title">Einstellungen</h1>
 
+            <!-- Profilbilder -->
+            <div class="profile-section">
+                <h3>Profilbilder</h3>
+                <div class="photo-upload-row">
+                    <div class="photo-upload-box">
+                        <div class="photo-upload-area" onclick="document.getElementById('photoInternInput').click()">
+                            ${currentUserData?.photo_intern_url
+                                ? `<img src="${currentUserData.photo_intern_url}" class="photo-preview">`
+                                : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="photo-placeholder">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                   </svg>`
+                            }
+                        </div>
+                        <span class="photo-label">Intern</span>
+                        <input type="file" id="photoInternInput" accept="image/*" hidden onchange="uploadProfilePhoto('intern', this)">
+                    </div>
+                    <div class="photo-upload-box">
+                        <div class="photo-upload-area" onclick="document.getElementById('photoExternInput').click()">
+                            ${currentUserData?.photo_extern_url
+                                ? `<img src="${currentUserData.photo_extern_url}" class="photo-preview">`
+                                : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="photo-placeholder">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                   </svg>`
+                            }
+                        </div>
+                        <span class="photo-label">Extern (DRK)</span>
+                        <input type="file" id="photoExternInput" accept="image/*" hidden onchange="uploadProfilePhoto('extern', this)">
+                    </div>
+                </div>
+            </div>
+
             <div class="profile-section">
                 <h3>Allgemein</h3>
                 <div class="profile-item">
@@ -1554,6 +1587,67 @@ async function updateUserSetting(field, value) {
         .eq('user_id', currentUser.id);
 
     if (currentUserData) currentUserData[field] = value;
+}
+
+async function uploadProfilePhoto(type, input) {
+    if (!currentUser || !input.files[0]) return;
+
+    const file = input.files[0];
+
+    // Nur Bilder erlauben
+    if (!file.type.startsWith('image/')) {
+        alert('Bitte nur Bilddateien auswählen');
+        return;
+    }
+
+    // Max 5MB
+    if (file.size > 5 * 1024 * 1024) {
+        alert('Datei zu groß (max. 5MB)');
+        return;
+    }
+
+    showLoading(true);
+
+    try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `photo_${type}_url-${Date.now()}.${fileExt}`;
+        const filePath = `${currentUser.id}/${fileName}`;
+
+        // Upload zu Supabase Storage
+        const { error: uploadError } = await supabaseClient.storage
+            .from('user-files')
+            .upload(filePath, file, { upsert: true });
+
+        if (uploadError) throw uploadError;
+
+        // Public URL holen
+        const { data: urlData } = supabaseClient.storage
+            .from('user-files')
+            .getPublicUrl(filePath);
+
+        const url = urlData.publicUrl;
+        const urlField = type === 'intern' ? 'photo_intern_url' : 'photo_extern_url';
+
+        // In DB speichern
+        const { error: dbError } = await supabaseClient
+            .from('user_profiles')
+            .update({ [urlField]: url })
+            .eq('user_id', currentUser.id);
+
+        if (dbError) throw dbError;
+
+        // UI aktualisieren
+        if (currentUserData) currentUserData[urlField] = url;
+        loadView('einstellungen');
+
+        alert('Foto erfolgreich hochgeladen!');
+    } catch (error) {
+        console.error('Upload error:', error);
+        alert('Fehler beim Hochladen: ' + error.message);
+    } finally {
+        showLoading(false);
+        input.value = '';
+    }
 }
 
 async function saveProfile() {
