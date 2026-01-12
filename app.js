@@ -751,11 +751,15 @@ async function fetchAvailableAreas(campaignId) {
 
 // TC-Funktionen: Werber einem Gebiet zuordnen
 async function assignWerberToArea(assignmentId, areaId) {
+    console.log('assignWerberToArea called:', { assignmentId, areaId });
     try {
-        const { error } = await supabaseClient
+        const { data, error } = await supabaseClient
             .from('campaign_assignment_werber')
             .update({ campaign_area_id: areaId })
-            .eq('id', assignmentId);
+            .eq('id', assignmentId)
+            .select();
+
+        console.log('Update result:', { data, error });
 
         if (error) throw error;
         return true;
