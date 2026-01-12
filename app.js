@@ -204,16 +204,25 @@ async function loadUserData() {
     if (!currentUser) return;
 
     try {
-        const { data, error } = await supabaseClient
+        // Users Tabelle
+        const { data: userData, error: userError } = await supabaseClient
             .from('users')
             .select('*')
             .eq('id', currentUser.id)
             .single();
 
-        if (error) throw error;
+        if (userError) throw userError;
 
-        currentUserData = data;
-        currentRole = data.role || 'werber';
+        // User Profiles Tabelle
+        const { data: profileData } = await supabaseClient
+            .from('user_profiles')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .single();
+
+        // Merge: Profile überschreibt Users
+        currentUserData = { ...userData, ...profileData };
+        currentRole = userData.role || 'werber';
         updateAuthUI();
     } catch (error) {
         console.error('Load user data error:', error);
@@ -431,22 +440,22 @@ async function fetchRankingData(period = 'month') {
         const userIds = Object.keys(userTotals);
         if (userIds.length === 0) return [];
 
-        const { data: users } = await supabaseClient
-            .from('users')
-            .select('id, game_tag, first_name, last_name, team')
-            .in('id', userIds);
+        const { data: profiles } = await supabaseClient
+            .from('user_profiles')
+            .select('user_id, game_tag, first_name, last_name')
+            .in('user_id', userIds);
 
         const userMap = {};
-        users?.forEach(u => {
-            userMap[u.id] = u;
+        profiles?.forEach(p => {
+            userMap[p.user_id] = p;
         });
 
         // Ranking erstellen
         const ranking = Object.entries(userTotals)
             .map(([userId, eh]) => ({
                 userId,
-                name: userMap[userId]?.game_tag || 'Unbekannt',
-                team: userMap[userId]?.team || '',
+                name: userMap[userId]?.game_tag || `${userMap[userId]?.first_name || ''} ${userMap[userId]?.last_name || ''}`.trim() || 'Unbekannt',
+                team: '',
                 score: eh,
                 isCurrentUser: userId === currentUser?.id
             }))
@@ -1106,7 +1115,7 @@ const views = {
             <!-- Profile Header -->
             <div class="profile-header">
                 <div class="profile-avatar-section">
-                    <img src="${user.foto_intern || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23d97706'/%3E%3Ctext x='50' y='68' text-anchor='middle' font-size='40' fill='white' font-family='Arial'%3E${initials}%3C/text%3E%3C/svg%3E`}"
+                    <img src="${user.photo_intern_url || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23d97706'/%3E%3Ctext x='50' y='68' text-anchor='middle' font-size='40' fill='white' font-family='Arial'%3E${initials}%3C/text%3E%3C/svg%3E`}"
                          class="profile-avatar" id="profileAvatar">
                 </div>
                 <div class="profile-header-info">
@@ -1121,11 +1130,11 @@ const views = {
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Vorname *</label>
-                        <input type="text" class="form-input" id="profileFirstname" placeholder="Vorname" value="${user.vorname || ''}">
+                        <input type="text" class="form-input" id="profileFirstname" placeholder="Vorname" value="${user.first_name || ''}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Nachname *</label>
-                        <input type="text" class="form-input" id="profileLastname" placeholder="Nachname" value="${user.nachname || ''}">
+                        <input type="text" class="form-input" id="profileLastname" placeholder="Nachname" value="${user.last_name || ''}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">E-Mail *</label>
@@ -1133,7 +1142,7 @@ const views = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Telefon</label>
-                        <input type="tel" class="form-input" id="profilePhone" placeholder="+49 123 456789" value="${user.telefon || ''}">
+                        <input type="tel" class="form-input" id="profilePhone" placeholder="+49 123 456789" value="${user.phone || ''}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">GameTag</label>
@@ -1144,7 +1153,7 @@ const views = {
                         <select class="form-input" id="profileClothingSize">
                             <option value="">Bitte wählen</option>
                             ${['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'].map(size =>
-                                `<option value="${size}" ${user.kleidergroesse === size ? 'selected' : ''}>${size}</option>`
+                                `<option value="${size}" ${user.clothing_size === size ? 'selected' : ''}>${size}</option>`
                             ).join('')}
                         </select>
                     </div>
@@ -1157,19 +1166,19 @@ const views = {
                 <div class="form-grid">
                     <div class="form-group form-group-2col">
                         <label class="form-label">Straße</label>
-                        <input type="text" class="form-input" id="profileStreet" placeholder="Musterstraße" value="${user.strasse || ''}">
+                        <input type="text" class="form-input" id="profileStreet" placeholder="Musterstraße" value="${user.street || ''}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Hausnummer</label>
-                        <input type="text" class="form-input" id="profileHouseNumber" placeholder="42" value="${user.hausnummer || ''}">
+                        <input type="text" class="form-input" id="profileHouseNumber" placeholder="42" value="${user.house_number || ''}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">PLZ</label>
-                        <input type="text" class="form-input" id="profileZip" placeholder="12345" value="${user.plz || ''}">
+                        <input type="text" class="form-input" id="profileZip" placeholder="12345" value="${user.postal_code || ''}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Stadt</label>
-                        <input type="text" class="form-input" id="profileCity" placeholder="Berlin" value="${user.stadt || ''}">
+                        <input type="text" class="form-input" id="profileCity" placeholder="Berlin" value="${user.city || ''}">
                     </div>
                 </div>
             </div>
@@ -1180,7 +1189,7 @@ const views = {
                 <div class="form-grid">
                     <div class="form-group form-group-2col">
                         <label class="form-label">Kontoinhaber</label>
-                        <input type="text" class="form-input" id="profileAccountHolder" placeholder="Max Mustermann" value="${user.kontoinhaber || ''}">
+                        <input type="text" class="form-input" id="profileAccountHolder" placeholder="Max Mustermann" value="${user.account_holder || ''}">
                     </div>
                     <div class="form-group form-group-2col">
                         <label class="form-label">IBAN</label>
@@ -1192,7 +1201,7 @@ const views = {
                     </div>
                     <div class="form-group">
                         <label class="form-label">Bank</label>
-                        <input type="text" class="form-input" id="profileBank" placeholder="Commerzbank" value="${user.bank || ''}">
+                        <input type="text" class="form-input" id="profileBank" placeholder="Commerzbank" value="${user.bank_name || ''}">
                     </div>
                 </div>
             </div>
@@ -1203,11 +1212,11 @@ const views = {
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Steuer-ID</label>
-                        <input type="text" class="form-input" id="profileTaxId" placeholder="12 345 678 901" value="${user.steuer_id || ''}">
+                        <input type="text" class="form-input" id="profileTaxId" placeholder="12 345 678 901" value="${user.tax_id || ''}">
                     </div>
                     <div class="form-group">
                         <label class="form-label">SV-Nummer</label>
-                        <input type="text" class="form-input" id="profileSvNumber" placeholder="12 345678 A 123" value="${user.sv_nummer || ''}">
+                        <input type="text" class="form-input" id="profileSvNumber" placeholder="12 345678 A 123" value="${user.social_security_number || ''}">
                     </div>
                 </div>
             </div>
@@ -1460,9 +1469,9 @@ async function updateUserSetting(field, value) {
     if (!currentUser) return;
 
     await supabaseClient
-        .from('users')
+        .from('user_profiles')
         .update({ [field]: value })
-        .eq('id', currentUser.id);
+        .eq('user_id', currentUser.id);
 
     if (currentUserData) currentUserData[field] = value;
 }
@@ -1473,36 +1482,40 @@ async function saveProfile() {
     showLoading(true);
 
     try {
-        const updateData = {
-            vorname: document.getElementById('profileFirstname')?.value || '',
-            nachname: document.getElementById('profileLastname')?.value || '',
-            email: document.getElementById('profileEmail')?.value || '',
-            telefon: document.getElementById('profilePhone')?.value || '',
+        // User Profiles Daten (Hauptprofil)
+        const profileData = {
+            first_name: document.getElementById('profileFirstname')?.value || '',
+            last_name: document.getElementById('profileLastname')?.value || '',
+            phone: document.getElementById('profilePhone')?.value || '',
             game_tag: document.getElementById('profileGametag')?.value || '',
-            kleidergroesse: document.getElementById('profileClothingSize')?.value || '',
-            strasse: document.getElementById('profileStreet')?.value || '',
-            hausnummer: document.getElementById('profileHouseNumber')?.value || '',
-            plz: document.getElementById('profileZip')?.value || '',
-            stadt: document.getElementById('profileCity')?.value || '',
-            kontoinhaber: document.getElementById('profileAccountHolder')?.value || '',
+            clothing_size: document.getElementById('profileClothingSize')?.value || '',
+            street: document.getElementById('profileStreet')?.value || '',
+            house_number: document.getElementById('profileHouseNumber')?.value || '',
+            postal_code: document.getElementById('profileZip')?.value || '',
+            city: document.getElementById('profileCity')?.value || '',
+            account_holder: document.getElementById('profileAccountHolder')?.value || '',
             iban: document.getElementById('profileIban')?.value || '',
             bic: document.getElementById('profileBic')?.value || '',
-            bank: document.getElementById('profileBank')?.value || '',
-            steuer_id: document.getElementById('profileTaxId')?.value || '',
-            sv_nummer: document.getElementById('profileSvNumber')?.value || ''
+            bank_name: document.getElementById('profileBank')?.value || '',
+            tax_id: document.getElementById('profileTaxId')?.value || '',
+            social_security_number: document.getElementById('profileSvNumber')?.value || ''
         };
 
-        // Update name from vorname + nachname
-        if (updateData.vorname && updateData.nachname) {
-            updateData.name = `${updateData.vorname} ${updateData.nachname}`;
-        }
+        const { error: profileError } = await supabaseClient
+            .from('user_profiles')
+            .update(profileData)
+            .eq('user_id', currentUser.id);
 
-        const { error } = await supabaseClient
+        if (profileError) throw profileError;
+
+        // Users Tabelle: Name und Email
+        const email = document.getElementById('profileEmail')?.value || '';
+        const name = `${profileData.first_name} ${profileData.last_name}`.trim();
+
+        await supabaseClient
             .from('users')
-            .update(updateData)
+            .update({ name, email })
             .eq('id', currentUser.id);
-
-        if (error) throw error;
 
         // Reload user data
         await loadUserData();
