@@ -240,11 +240,12 @@ function updateAuthUI() {
         if (userName) userName.textContent = currentUserData.name || 'Unbekannt';
         if (userRole) userRole.textContent = getRoleLabel(currentRole);
 
-        // Avatar update
+        // Avatar update - Profilbild oder Initialen-Fallback
         const initials = getInitials(currentUserData.name);
-        const avatarSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='24' fill='%23d97706'/%3E%3Ctext x='24' y='32' text-anchor='middle' font-size='18' fill='white' font-family='Arial' font-weight='bold'%3E${initials}%3C/text%3E%3C/svg%3E`;
-        if (headerAvatar) headerAvatar.src = avatarSvg;
-        if (sideMenuAvatar) sideMenuAvatar.src = avatarSvg.replace('48', '60').replace('32', '40').replace('18', '24');
+        const fallbackAvatar = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='24' fill='%23d97706'/%3E%3Ctext x='24' y='32' text-anchor='middle' font-size='18' fill='white' font-family='Arial' font-weight='bold'%3E${initials}%3C/text%3E%3C/svg%3E`;
+        const avatarUrl = currentUserData.photo_intern_url || fallbackAvatar;
+        if (headerAvatar) headerAvatar.src = avatarUrl;
+        if (sideMenuAvatar) sideMenuAvatar.src = avatarUrl;
     } else {
         if (userName) userName.textContent = 'Nicht angemeldet';
         if (userRole) userRole.textContent = 'Gast';
