@@ -1397,7 +1397,7 @@ button {
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     margin-bottom: var(--spacing-xl);
-    padding-bottom: var(--spacing-xs);
+    padding: 8px var(--spacing-xs) 12px;
 }
 
 .quick-actions-scroll::-webkit-scrollbar {
@@ -1432,11 +1432,11 @@ button {
 }
 
 .action-card:hover {
-    transform: translateY(-10px) scale(1.1);
+    transform: translateY(-4px) scale(1.03);
     border-color: var(--accent-primary);
     box-shadow:
-        0 15px 35px rgba(217, 119, 6, 0.4),
-        0 0 30px rgba(217, 119, 6, 0.2);
+        0 10px 25px rgba(217, 119, 6, 0.4),
+        0 0 20px rgba(217, 119, 6, 0.2);
 }
 
 .action-card:hover::before {
@@ -1445,12 +1445,12 @@ button {
 }
 
 .action-card:hover .action-icon {
-    transform: scale(1.3) rotate(10deg);
-    filter: drop-shadow(0 0 10px rgba(217, 119, 6, 0.8));
+    transform: scale(1.1) rotate(5deg);
+    filter: drop-shadow(0 0 8px rgba(217, 119, 6, 0.8));
 }
 
 .action-card:active {
-    transform: translateY(-5px) scale(1.05);
+    transform: translateY(-2px) scale(1.01);
 }
 
 .action-icon {
