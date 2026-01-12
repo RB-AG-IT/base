@@ -489,7 +489,6 @@ async function fetchTeamAreas() {
                 campaign_areas (
                     id,
                     name,
-                    region,
                     campaign_id
                 )
             `)
@@ -523,7 +522,6 @@ async function fetchTeamAreas() {
             return {
                 id: areaId,
                 name: a.campaign_areas?.name || 'Unbekannt',
-                region: a.campaign_areas?.region || '',
                 campaign_id: a.campaign_areas?.campaign_id || null,
                 today: todayCount || 0,
                 week: weekCount || 0,
