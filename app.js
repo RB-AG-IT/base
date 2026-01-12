@@ -442,7 +442,7 @@ async function fetchRankingData(period = 'month') {
 
         const { data: profiles } = await supabaseClient
             .from('user_profiles')
-            .select('user_id, game_tag, first_name, last_name')
+            .select('user_id, game_tag, first_name, last_name, photo_intern_url')
             .in('user_id', userIds);
 
         const userMap = {};
@@ -455,6 +455,7 @@ async function fetchRankingData(period = 'month') {
             .map(([userId, eh]) => ({
                 userId,
                 name: userMap[userId]?.game_tag || `${userMap[userId]?.first_name || ''} ${userMap[userId]?.last_name || ''}`.trim() || 'Unbekannt',
+                photo: userMap[userId]?.photo_intern_url || null,
                 team: '',
                 score: eh,
                 isCurrentUser: userId === currentUser?.id
@@ -1004,14 +1005,7 @@ const views = {
                     ${ranking.length > 0 ? ranking.map(item => `
                         <div class="flashy-ranking-item rank-${item.position} ${item.isCurrentUser ? 'is-you' : ''}">
                             ${item.position <= 3 ? `<div class="rank-particles"></div>` : ''}
-                            <div class="rank-badge ${item.position === 1 ? 'gold' : item.position === 2 ? 'silver' : item.position === 3 ? 'bronze' : ''}">
-                                ${item.position <= 3 ? `
-                                    <div class="medal-shine"></div>
-                                    <svg class="medal-icon" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12 2L15 9L22 9.5L17 15L18.5 22L12 18L5.5 22L7 15L2 9.5L9 9L12 2Z"/>
-                                    </svg>
-                                ` : item.position}
-                            </div>
+                            <img src="${item.photo || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23d97706'/%3E%3Ctext x='20' y='26' text-anchor='middle' font-size='16' fill='white' font-family='Arial'%3E${item.name.charAt(0)}%3C/text%3E%3C/svg%3E`}" class="rank-avatar">
                             <div class="rank-info">
                                 <div class="rank-name">${item.name} ${item.isCurrentUser ? '<span class="you-badge">Du</span>' : ''}</div>
                                 <div class="rank-team">${item.team || ''}</div>
@@ -1439,14 +1433,7 @@ async function switchRankingPeriod(period) {
         listEl.innerHTML = ranking.length > 0 ? ranking.map(item => `
             <div class="flashy-ranking-item rank-${item.position} ${item.isCurrentUser ? 'is-you' : ''}">
                 ${item.position <= 3 ? `<div class="rank-particles"></div>` : ''}
-                <div class="rank-badge ${item.position === 1 ? 'gold' : item.position === 2 ? 'silver' : item.position === 3 ? 'bronze' : ''}">
-                    ${item.position <= 3 ? `
-                        <div class="medal-shine"></div>
-                        <svg class="medal-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2L15 9L22 9.5L17 15L18.5 22L12 18L5.5 22L7 15L2 9.5L9 9L12 2Z"/>
-                        </svg>
-                    ` : item.position}
-                </div>
+                <img src="${item.photo || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23d97706'/%3E%3Ctext x='20' y='26' text-anchor='middle' font-size='16' fill='white' font-family='Arial'%3E${item.name.charAt(0)}%3C/text%3E%3C/svg%3E`}" class="rank-avatar">
                 <div class="rank-info">
                     <div class="rank-name">${item.name} ${item.isCurrentUser ? '<span class="you-badge">Du</span>' : ''}</div>
                     <div class="rank-team">${item.team || ''}</div>
