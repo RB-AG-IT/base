@@ -220,8 +220,45 @@ async function loadUserData() {
             .eq('user_id', currentUser.id)
             .single();
 
-        // Merge: Profile überschreibt Users
-        currentUserData = { ...userData, ...profileData };
+        // Aktuelle Kampagne laden
+        let currentCampaign = null;
+        const kw = getCurrentKW();
+
+        // Finde Kampagnenzuweisung für aktuelle KW
+        const { data: assignments } = await supabaseClient
+            .from('campaign_assignments')
+            .select('id, campaign_id')
+            .eq('kw', kw);
+
+        if (assignments && assignments.length > 0) {
+            const assignmentIds = assignments.map(a => a.id);
+
+            // Prüfe ob User in dieser Kampagne zugewiesen ist
+            const { data: werberAssignment } = await supabaseClient
+                .from('campaign_assignment_werber')
+                .select('assignment_id')
+                .eq('werber_id', currentUser.id)
+                .in('assignment_id', assignmentIds)
+                .limit(1)
+                .single();
+
+            if (werberAssignment) {
+                const assignment = assignments.find(a => a.id === werberAssignment.assignment_id);
+                if (assignment?.campaign_id) {
+                    // Kampagnen-Name laden
+                    const { data: campaign } = await supabaseClient
+                        .from('campaigns')
+                        .select('name')
+                        .eq('id', assignment.campaign_id)
+                        .single();
+
+                    currentCampaign = campaign?.name || null;
+                }
+            }
+        }
+
+        // Merge: Profile überschreibt Users + Kampagne hinzufügen
+        currentUserData = { ...userData, ...profileData, current_campaign: currentCampaign };
         currentRole = userData.role || 'werber';
         updateAuthUI();
     } catch (error) {
