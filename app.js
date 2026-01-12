@@ -402,7 +402,7 @@ async function fetchUserRank(userId, year) {
     }
 }
 
-async function fetchRankingData(period = 'month') {
+async function fetchRankingData(period = 'day') {
     const year = getCurrentYear();
     const kw = getCurrentKW();
 
@@ -717,7 +717,7 @@ const views = {
         }
 
         const stats = await fetchDashboardStats();
-        const ranking = await fetchRankingData('month');
+        const ranking = await fetchRankingData('day');
         const topRanking = ranking.slice(0, 3);
 
         return `
@@ -934,7 +934,7 @@ const views = {
     },
 
     ranking: async () => {
-        const ranking = await fetchRankingData('month');
+        const ranking = await fetchRankingData('day');
         const champion = ranking[0];
 
         return `
@@ -957,7 +957,7 @@ const views = {
         <div class="view-container">
             <!-- Period Tabs -->
             <div class="ranking-tabs">
-                <button class="ranking-tab" data-period="day" onclick="switchRankingPeriod('day')">
+                <button class="ranking-tab active" data-period="day" onclick="switchRankingPeriod('day')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="5"></circle>
                         <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -974,7 +974,7 @@ const views = {
                     </svg>
                     Woche
                 </button>
-                <button class="ranking-tab active" data-period="month" onclick="switchRankingPeriod('month')">
+                <button class="ranking-tab" data-period="month" onclick="switchRankingPeriod('month')">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="16" y1="2" x2="16" y2="6"></line>
