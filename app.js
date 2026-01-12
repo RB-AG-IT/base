@@ -28,7 +28,6 @@ function getRoleLabel(role) {
     const labels = {
         werber: 'Werber',
         teamleiter: 'Teamleiter',
-        teamchef: 'Teamchef',
         admin: 'Administrator',
         quality: 'Quality Manager'
     };
@@ -919,7 +918,7 @@ const views = {
                 `}
             </div>
 
-            ${currentRole === 'teamleiter' || currentRole === 'teamchef' || currentRole === 'admin' ? await renderTCSection() : ''}
+            ${currentRole === 'teamleiter' || currentRole === 'admin' ? await renderTCSection() : ''}
         </div>
     `;
     },
