@@ -1508,6 +1508,19 @@ button {
     background: var(--bg-elevated);
 }
 
+/* Leaderboard Avatar */
+.leaderboard-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--border-color);
+    flex-shrink: 0;
+}
+.leaderboard-item.rank-1 .leaderboard-avatar { border-color: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
+.leaderboard-item.rank-2 .leaderboard-avatar { border-color: #c0c0c0; box-shadow: 0 0 8px rgba(192, 192, 192, 0.3); }
+.leaderboard-item.rank-3 .leaderboard-avatar { border-color: #cd7f32; box-shadow: 0 0 6px rgba(205, 127, 50, 0.3); }
+
 .leaderboard-item:nth-child(1) { animation-delay: 0.1s; }
 .leaderboard-item:nth-child(2) { animation-delay: 0.2s; }
 .leaderboard-item:nth-child(3) { animation-delay: 0.3s; }
@@ -1721,10 +1734,7 @@ button {
     font-weight: 900;
     color: #000;
     text-shadow: 0 1px 5px rgba(255, 255, 255, 0.5);
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    flex: 1;
 }
 
 .champion-banner-fixed .winner-score {

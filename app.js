@@ -838,10 +838,8 @@ const views = {
             </div>
             <div class="leaderboard">
                 ${topRanking.length > 0 ? topRanking.map(item => `
-                    <div class="leaderboard-item ${item.isCurrentUser ? 'is-you' : ''}">
-                        <div class="leaderboard-position ${item.position === 1 ? 'gold' : item.position === 2 ? 'silver' : 'bronze'}">
-                            ${item.position}
-                        </div>
+                    <div class="leaderboard-item ${item.isCurrentUser ? 'is-you' : ''} rank-${item.position}">
+                        <img src="${item.photo || `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23d97706'/%3E%3Ctext x='20' y='26' text-anchor='middle' font-size='16' fill='white' font-family='Arial'%3E${item.name.charAt(0)}%3C/text%3E%3C/svg%3E`}" class="leaderboard-avatar">
                         <div class="leaderboard-info">
                             <div class="leaderboard-name">${item.name}${item.isCurrentUser ? ' (Du)' : ''}</div>
                             <div class="leaderboard-team">${item.team || ''}</div>
