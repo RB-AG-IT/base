@@ -675,15 +675,14 @@ async function fetchLatestRecords() {
     }
 }
 
-// TC-Funktionen: Prüft ob User als TC für aktuelle Kampagne/KW eingetragen ist
+// TC-Funktionen: Prüft ob User als TC für aktuelle KW eingetragen ist
 async function isUserTC() {
-    if (!currentUser || !currentCampaign) return false;
+    if (!currentUser) return false;
     const kw = getCurrentKW();
 
     const { data } = await supabaseClient
         .from('campaign_assignments')
         .select('id')
-        .eq('campaign_id', currentCampaign.id)
         .eq('kw', kw)
         .eq('teamchef_id', currentUser.id)
         .maybeSingle();
