@@ -675,6 +675,22 @@ async function fetchLatestRecords() {
     }
 }
 
+// TC-Funktionen: Prüft ob User als TC für aktuelle Kampagne/KW eingetragen ist
+async function isUserTC() {
+    if (!currentUser || !currentCampaign) return false;
+    const kw = getCurrentKW();
+
+    const { data } = await supabaseClient
+        .from('campaign_assignments')
+        .select('id')
+        .eq('campaign_id', currentCampaign.id)
+        .eq('kw', kw)
+        .eq('teamchef_id', currentUser.id)
+        .maybeSingle();
+
+    return !!data;
+}
+
 // TC-Funktionen: Team-Werber für Gebietszuordnung
 async function fetchTeamWerber() {
     if (!currentUser) return { campaignId: null, werber: [] };
@@ -977,7 +993,7 @@ const views = {
                 `}
             </div>
 
-            ${currentRole === 'teamleiter' || currentRole === 'admin' ? await renderTCSection() : ''}
+            ${currentRole === 'admin' || await isUserTC() ? await renderTCSection() : ''}
         </div>
     `;
     },
@@ -1697,10 +1713,15 @@ async function saveProfile() {
                            document.getElementById('profileVatLiable')?.value === 'false' ? false : null
         };
 
+        // Upsert: Update wenn existiert, sonst Insert
         const { error: profileError } = await supabaseClient
             .from('user_profiles')
-            .update(profileData)
-            .eq('user_id', currentUser.id);
+            .upsert({
+                user_id: currentUser.id,
+                ...profileData
+            }, {
+                onConflict: 'user_id'
+            });
 
         if (profileError) throw profileError;
 
