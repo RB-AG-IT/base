@@ -433,7 +433,7 @@ async function fetchRankingData(period = 'month') {
 
         const { data: users } = await supabaseClient
             .from('users')
-            .select('id, first_name, last_name, team')
+            .select('id, game_tag, first_name, last_name, team')
             .in('id', userIds);
 
         const userMap = {};
@@ -445,7 +445,7 @@ async function fetchRankingData(period = 'month') {
         const ranking = Object.entries(userTotals)
             .map(([userId, eh]) => ({
                 userId,
-                name: userMap[userId] ? `${userMap[userId].first_name || ''} ${userMap[userId].last_name || ''}`.trim() || 'Unbekannt' : 'Unbekannt',
+                name: userMap[userId]?.game_tag || 'Unbekannt',
                 team: userMap[userId]?.team || '',
                 score: eh,
                 isCurrentUser: userId === currentUser?.id
