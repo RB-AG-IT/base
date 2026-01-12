@@ -715,7 +715,6 @@ const views = {
             <div class="hero-stat">
                 <div class="hero-stat-label">Heute erfasst</div>
                 <div class="hero-stat-value">${stats.today} / ${stats.todayEH} EH</div>
-                <div class="hero-stat-subtitle">Neue Mitglieder</div>
             </div>
 
             <!-- Mini Stats Grid (2x2) -->
