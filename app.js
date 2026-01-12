@@ -474,22 +474,28 @@ async function fetchRankingData(period = 'day') {
             userTotals[r.user_id] = (userTotals[r.user_id] || 0) + (r.einheiten || 0);
         });
 
-        // User-Namen holen
+        // User-Namen holen (nur sichtbare User: ranking_enabled=true, ghost_mode=false)
         const userIds = Object.keys(userTotals);
         if (userIds.length === 0) return [];
 
         const { data: profiles } = await supabaseClient
             .from('user_profiles')
-            .select('user_id, game_tag, first_name, last_name, photo_intern_url')
+            .select('user_id, game_tag, first_name, last_name, photo_intern_url, ranking_enabled, ghost_mode')
             .in('user_id', userIds);
 
+        // Filtere User die nicht im Ranking angezeigt werden sollen
+        const visibleProfiles = profiles?.filter(p =>
+            p.ranking_enabled !== false && p.ghost_mode !== true
+        ) || [];
+
         const userMap = {};
-        profiles?.forEach(p => {
+        visibleProfiles.forEach(p => {
             userMap[p.user_id] = p;
         });
 
-        // Ranking erstellen
+        // Ranking erstellen (nur sichtbare User)
         const ranking = Object.entries(userTotals)
+            .filter(([userId]) => userMap[userId]) // Nur User die sichtbar sind
             .map(([userId, eh]) => ({
                 userId,
                 name: userMap[userId]?.game_tag || `${userMap[userId]?.first_name || ''} ${userMap[userId]?.last_name || ''}`.trim() || 'Unbekannt',
