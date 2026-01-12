@@ -1717,10 +1717,14 @@ button {
 }
 
 .champion-banner-fixed .winner-name {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 900;
     color: #000;
     text-shadow: 0 1px 5px rgba(255, 255, 255, 0.5);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .champion-banner-fixed .winner-score {

@@ -948,8 +948,8 @@ const views = {
             </div>
             <div class="winner-content">
                 <div class="winner-label">Champion</div>
-                <div class="winner-name">${champion.name.split(' ')[0]}</div>
-                <div class="winner-score">${champion.score}</div>
+                <div class="winner-name">${champion.name}</div>
+                <div class="winner-score">${champion.score} EH</div>
             </div>
         </div>
         ` : ''}
