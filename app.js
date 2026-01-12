@@ -1247,11 +1247,11 @@ const views = {
                 <h3>Sichtbarkeit</h3>
                 <div class="profile-item">
                     <span class="profile-label">Im Ranking anzeigen</span>
-                    <input type="checkbox" id="settingRankingVisible" ${currentUserData?.ranking_visible !== false ? 'checked' : ''} style="width: 20px; height: 20px;">
+                    <input type="checkbox" id="settingRankingVisible" ${currentUserData?.ranking_enabled !== false ? 'checked' : ''} onchange="updateUserSetting('ranking_enabled', this.checked)" style="width: 20px; height: 20px;">
                 </div>
                 <div class="profile-item">
                     <span class="profile-label">Ghost-Modus</span>
-                    <input type="checkbox" id="settingGhostMode" ${currentUserData?.ghost_mode ? 'checked' : ''} style="width: 20px; height: 20px;">
+                    <input type="checkbox" id="settingGhostMode" ${currentUserData?.ghost_mode ? 'checked' : ''} onchange="updateUserSetting('ghost_mode', this.checked)" style="width: 20px; height: 20px;">
                 </div>
             </div>
 
@@ -1454,6 +1454,17 @@ async function switchRankingPeriod(period) {
             </div>
         `;
     }
+}
+
+async function updateUserSetting(field, value) {
+    if (!currentUser) return;
+
+    await supabaseClient
+        .from('users')
+        .update({ [field]: value })
+        .eq('id', currentUser.id);
+
+    if (currentUserData) currentUserData[field] = value;
 }
 
 async function saveProfile() {
