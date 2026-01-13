@@ -100,7 +100,7 @@ async function openFormular() {
         url.searchParams.set('kampagne', area.campaign_id);
     }
 
-    window.location.href = url.toString();
+    window.open(url.toString(), '_blank');
 }
 
 // ========== AUTH FUNCTIONS ==========
