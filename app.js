@@ -364,29 +364,31 @@ function updateAuthUI() {
 }
 
 // Listen for auth state changes
-let initialAuthDone = false;
 supabaseClient.auth.onAuthStateChange((event, session) => {
-    // Ignoriere INITIAL_SESSION und TOKEN_REFRESHED - diese verursachen doppelte Loads
-    if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
-        if (!initialAuthDone && session) {
-            currentUser = session.user;
-            initialAuthDone = true;
-        }
-        return;
-    }
+    console.log('Auth event:', event, 'User before:', currentUser?.id, 'Session:', session?.user?.id);
 
+    // Bei SIGNED_IN: Nur laden wenn es ein ECHTER Login ist (User war vorher nicht da)
     if (event === 'SIGNED_IN' && session) {
+        const wasLoggedOut = !currentUser;
         currentUser = session.user;
-        initialAuthDone = true;
-        loadUserData().then(() => {
-            const currentHash = window.location.hash.substring(1) || 'dashboard';
-            loadView(currentHash);
-        });
+
+        // Nur bei echtem Login (nicht bei Tab-Wechsel/Session-Refresh)
+        if (wasLoggedOut) {
+            loadUserData().then(() => {
+                const currentHash = window.location.hash.substring(1) || 'dashboard';
+                loadView(currentHash);
+            });
+        }
+    } else if (event === 'INITIAL_SESSION' && session) {
+        // Initiale Session - User setzen aber nicht laden (DOMContentLoaded macht das)
+        currentUser = session.user;
+    } else if (event === 'TOKEN_REFRESHED' && session) {
+        // Token refresh - nur User aktualisieren
+        currentUser = session.user;
     } else if (event === 'SIGNED_OUT') {
         currentUser = null;
         currentUserData = null;
         currentRole = 'werber';
-        initialAuthDone = false;
         updateAuthUI();
     }
 });
