@@ -23,6 +23,53 @@ let currentUser = null;
 let currentUserData = null; // User-Daten aus users-Tabelle
 let currentRole = 'werber';
 
+// ========== CACHE SYSTEM ==========
+const CACHE_PREFIX = 'base_cache_';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 Minuten
+
+function cacheSet(key, data) {
+    try {
+        const cacheItem = {
+            data: data,
+            timestamp: Date.now()
+        };
+        localStorage.setItem(CACHE_PREFIX + key, JSON.stringify(cacheItem));
+    } catch (e) {
+        console.warn('Cache write failed:', e);
+    }
+}
+
+function cacheGet(key, maxAge = CACHE_DURATION) {
+    try {
+        const item = localStorage.getItem(CACHE_PREFIX + key);
+        if (!item) return null;
+
+        const cacheItem = JSON.parse(item);
+        const age = Date.now() - cacheItem.timestamp;
+
+        // Daten zurückgeben auch wenn abgelaufen (stale-while-revalidate)
+        return {
+            data: cacheItem.data,
+            isStale: age > maxAge
+        };
+    } catch (e) {
+        return null;
+    }
+}
+
+function cacheClear() {
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+        if (key.startsWith(CACHE_PREFIX)) {
+            localStorage.removeItem(key);
+        }
+    });
+}
+
+function cacheInvalidate(key) {
+    localStorage.removeItem(CACHE_PREFIX + key);
+}
+
 // ========== HELPER FUNCTIONS ==========
 function getRoleLabel(role) {
     const labels = {
@@ -143,9 +190,10 @@ async function handleLogin(e) {
         if (error) throw error;
 
         currentUser = data.user;
+        cacheClear(); // Cache löschen bei neuem Login
         await loadUserData();
         closeLoginModal();
-        loadView('dashboard');
+        loadView('dashboard', true); // Force refresh
 
     } catch (error) {
         console.error('Login error:', error);
@@ -164,12 +212,13 @@ async function handleLogout() {
 
     try {
         showLoading(true);
+        cacheClear(); // Cache löschen bei Logout
         await supabaseClient.auth.signOut();
         currentUser = null;
         currentUserData = null;
         currentRole = 'werber';
         updateAuthUI();
-        loadView('dashboard');
+        loadView('dashboard', true); // Force refresh
     } catch (error) {
         console.error('Logout error:', error);
         alert('Fehler beim Abmelden: ' + error.message);
@@ -1512,9 +1561,12 @@ async function handleAreaChange(assignmentId, areaId) {
 
 // TC: Refresh the TC section
 async function refreshTCSection() {
-    showLoading(true);
-    await loadView('team');
-    showLoading(false);
+    try {
+        showLoading(true);
+        await loadView('team', true); // Force refresh
+    } finally {
+        showLoading(false);
+    }
 }
 
 // Load available areas into selects
@@ -1782,54 +1834,81 @@ async function syncOfflineRecords() {
 }
 
 // ========== ROUTER ==========
-async function loadView(viewName) {
+async function loadView(viewName, forceRefresh = false) {
     const content = document.getElementById('appContent');
 
     if (!views[viewName]) {
         viewName = 'dashboard';
     }
 
-    showLoading(true);
+    const cacheKey = `view_${viewName}_${currentUser?.id || 'anon'}`;
+
+    // Prüfe Cache
+    const cached = cacheGet(cacheKey);
+    const hasCache = cached && cached.data;
+
+    // Sofort aus Cache anzeigen (kein Ladescreen)
+    if (hasCache && !forceRefresh) {
+        content.innerHTML = cached.data;
+        updateNavigation(viewName);
+    } else {
+        // Kein Cache - Ladescreen anzeigen
+        showLoading(true);
+    }
 
     try {
-        // Get view content (can be async)
+        // Daten im Hintergrund holen
         const viewContent = await views[viewName]();
-        content.innerHTML = viewContent;
 
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'instant' });
-        content.scrollTop = 0;
+        // Nur updaten wenn sich Inhalt geändert hat oder kein Cache
+        if (!hasCache || cached.data !== viewContent || forceRefresh) {
+            content.innerHTML = viewContent;
+            cacheSet(cacheKey, viewContent);
+        }
 
-        // Update active nav item
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-            if (item.getAttribute('data-view') === viewName) {
-                item.classList.add('active');
-            }
-        });
+        // Scroll to top nur bei erstem Laden (kein Cache)
+        if (!hasCache) {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            content.scrollTop = 0;
+        }
 
-        // Update active sidebar item
-        document.querySelectorAll('.side-menu-item').forEach(item => {
-            item.classList.remove('active');
-            const href = item.getAttribute('href');
-            if (href === '#' + viewName) {
-                item.classList.add('active');
-            }
-        });
+        updateNavigation(viewName);
 
     } catch (error) {
         console.error('Load view error:', error);
-        content.innerHTML = `
-            <div class="view-container">
-                <div class="empty-state">
-                    <div class="empty-state-title">Fehler</div>
-                    <div class="empty-state-text">Die Ansicht konnte nicht geladen werden.</div>
+        // Bei Fehler: Cache behalten falls vorhanden, sonst Fehler anzeigen
+        if (!hasCache) {
+            content.innerHTML = `
+                <div class="view-container">
+                    <div class="empty-state">
+                        <div class="empty-state-title">Fehler</div>
+                        <div class="empty-state-text">Die Ansicht konnte nicht geladen werden.</div>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }
     } finally {
         showLoading(false);
     }
+}
+
+function updateNavigation(viewName) {
+    // Update active nav item
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-view') === viewName) {
+            item.classList.add('active');
+        }
+    });
+
+    // Update active sidebar item
+    document.querySelectorAll('.side-menu-item').forEach(item => {
+        item.classList.remove('active');
+        const href = item.getAttribute('href');
+        if (href === '#' + viewName) {
+            item.classList.add('active');
+        }
+    });
 }
 
 // ========== EVENT LISTENERS ==========
