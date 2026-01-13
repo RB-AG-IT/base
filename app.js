@@ -967,7 +967,7 @@ const views = {
                             <div class="leaderboard-team">${item.team || ''}</div>
                         </div>
                         <div class="leaderboard-score">
-                            <div class="score-value">${item.score}</div>
+                            <div class="score-value">${item.score.toFixed(2)}</div>
                             <div class="score-label">EH</div>
                         </div>
                     </div>
@@ -1066,7 +1066,7 @@ const views = {
             <div class="winner-content">
                 <div class="winner-label">Champion</div>
                 <div class="winner-name">${champion.name}</div>
-                <div class="winner-score">${champion.score} EH</div>
+                <div class="winner-score">${champion.score.toFixed(2)} EH</div>
             </div>
         </div>
         ` : ''}
@@ -1129,7 +1129,7 @@ const views = {
                                 <div class="rank-team">${item.team || ''}</div>
                             </div>
                             <div class="rank-score">
-                                <div class="score-value">${item.score}</div>
+                                <div class="score-value">${item.score.toFixed(2)}</div>
                                 <div class="score-label">EH</div>
                             </div>
                         </div>
@@ -1621,7 +1621,7 @@ async function switchRankingPeriod(period) {
                     <div class="rank-team">${item.team || ''}</div>
                 </div>
                 <div class="rank-score">
-                    <div class="score-value">${item.score}</div>
+                    <div class="score-value">${item.score.toFixed(2)}</div>
                     <div class="score-label">EH</div>
                 </div>
             </div>
