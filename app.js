@@ -128,9 +128,13 @@ async function openFormular() {
         return;
     }
 
+    // Fenster SOFORT öffnen (iOS blockiert window.open nach await)
+    const newWindow = window.open('about:blank', '_blank');
+
     const areas = await fetchTeamAreas();
 
     if (areas.length === 0) {
+        if (newWindow) newWindow.close();
         showToast('Kein Gebiet zugewiesen. Bitte wende dich an deinen Teamchef.', 'error');
         return;
     }
@@ -143,7 +147,12 @@ async function openFormular() {
         url.searchParams.set('kampagne', area.campaign_id);
     }
 
-    window.open(url.toString(), '_blank');
+    if (newWindow) {
+        newWindow.location.href = url.toString();
+    } else {
+        // Fallback falls Popup blockiert
+        window.location.href = url.toString();
+    }
 }
 
 // ========== AUTH FUNCTIONS ==========
