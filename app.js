@@ -384,7 +384,7 @@ async function fetchDashboardStats() {
         // EH aus provisions_ledger
         const { data: ehData } = await supabaseClient
             .from('provisions_ledger')
-            .select('einheiten, created_at, kw')
+            .select('einheiten, referenz_datum, kw')
             .eq('user_id', userId)
             .eq('kategorie', 'werben')
             .eq('year', year);
@@ -399,7 +399,7 @@ async function fetchDashboardStats() {
         // Heute
         const today = new Date().toISOString().split('T')[0];
         const todayRecords = recordsData?.filter(r => r.start_date === today).length || 0;
-        const todayEH = ehData?.filter(r => r.created_at?.startsWith(today)).reduce((sum, r) => sum + (r.einheiten || 0), 0) || 0;
+        const todayEH = ehData?.filter(r => r.referenz_datum === today).reduce((sum, r) => sum + (r.einheiten || 0), 0) || 0;
 
         // Diese Woche
         const weekRecords = recordsData?.filter(r => {
