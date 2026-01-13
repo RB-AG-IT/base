@@ -1168,13 +1168,16 @@ const views = {
                 </div>
 
                 <div class="area-list">
-                    ${offlineRecords.map(item => `
+                    ${offlineRecords.map(item => {
+                        const timestamp = item.createdAt ? new Date(item.createdAt).toLocaleString('de-DE') : '';
+                        const name = item.name || `${item.first_name || ''} ${item.last_name || ''}`.trim() || 'Unbekannt';
+                        return `
                         <div class="area-card">
-                            <h3>${item.name || 'Unbekannt'}</h3>
+                            <h3>${name}</h3>
                             <p>Werbegebiet: ${item.area || 'Unbekannt'}</p>
-                            <p style="font-size: 12px; color: var(--text-tertiary); margin-top: 4px;">${item.timestamp || ''}</p>
+                            <p style="font-size: 12px; color: var(--text-tertiary); margin-top: 4px;">Erstellt: ${timestamp}</p>
                         </div>
-                    `).join('')}
+                    `}).join('')}
                 </div>
 
                 <button class="btn-primary" style="margin-top: 16px; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="syncOfflineRecords()">
@@ -1809,21 +1812,44 @@ async function syncOfflineRecords() {
 
     try {
         const records = JSON.parse(offlineData);
+        const failedRecords = [];
+        let successCount = 0;
 
         for (const record of records) {
-            const { error } = await supabaseClient
-                .from('records')
-                .insert(record.data);
+            // Offline-spezifische Felder entfernen, nur DB-Felder behalten
+            const { offlineId, createdAt, name, area, werber, ...dbRecord } = record;
 
-            if (error) {
-                console.error('Sync error for record:', error);
+            // Status für Online-Speicherung aktualisieren
+            dbRecord.status = 'success';
+            dbRecord.synced = true;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('records')
+                    .insert(dbRecord);
+
+                if (error) {
+                    console.error('Sync error for record:', error);
+                    failedRecords.push(record);
+                } else {
+                    successCount++;
+                }
+            } catch (e) {
+                console.error('Sync exception:', e);
+                failedRecords.push(record);
             }
         }
 
-        // Clear offline storage
-        localStorage.removeItem('offlineRecords');
-        alert('Alle Datensätze erfolgreich synchronisiert!');
-        loadView('offline');
+        // Nur fehlgeschlagene Records behalten
+        if (failedRecords.length > 0) {
+            localStorage.setItem('offlineRecords', JSON.stringify(failedRecords));
+            alert(`${successCount} von ${records.length} Datensätzen synchronisiert.\n\n${failedRecords.length} Datensätze konnten nicht hochgeladen werden und bleiben offline gespeichert.`);
+        } else {
+            localStorage.removeItem('offlineRecords');
+            alert(`Alle ${successCount} Datensätze erfolgreich synchronisiert!`);
+        }
+
+        loadView('offline', true);
 
     } catch (error) {
         console.error('Sync error:', error);

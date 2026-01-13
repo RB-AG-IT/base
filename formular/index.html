@@ -1965,6 +1965,84 @@ const streetResults = data.results.filter(result => {
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzgwNzYxNSwiZXhwIjoyMDc5MzgzNjE1fQ.54kSk9ZSUdQt6LKYWkblqgR6Sjev80W80qkNHYEbPgk';
         const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // ============================================
+        // OFFLINE-SPEICHERUNG (BULLETPROOF)
+        // ============================================
+        const OFFLINE_STORAGE_KEY = 'offlineRecords';
+
+        // Eindeutige Offline-ID generieren
+        function generateOfflineId() {
+            return 'offline_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Offline-Records laden
+        function getOfflineRecords() {
+            try {
+                const data = localStorage.getItem(OFFLINE_STORAGE_KEY);
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                console.error('Fehler beim Laden der Offline-Records:', e);
+                return [];
+            }
+        }
+
+        // Offline-Record speichern
+        function saveOfflineRecord(record) {
+            try {
+                const records = getOfflineRecords();
+                records.push(record);
+                localStorage.setItem(OFFLINE_STORAGE_KEY, JSON.stringify(records));
+                console.log('Offline gespeichert:', record.offlineId);
+                return true;
+            } catch (e) {
+                console.error('Fehler beim Offline-Speichern:', e);
+                // Bei Quota-Fehler: Alte Records löschen und erneut versuchen
+                if (e.name === 'QuotaExceededError') {
+                    try {
+                        const records = getOfflineRecords();
+                        if (records.length > 0) {
+                            // Ältesten Record entfernen
+                            records.shift();
+                            records.push(record);
+                            localStorage.setItem(OFFLINE_STORAGE_KEY, JSON.stringify(records));
+                            return true;
+                        }
+                    } catch (e2) {
+                        console.error('Kritischer Speicherfehler:', e2);
+                    }
+                }
+                return false;
+            }
+        }
+
+        // Verbindung prüfen (echter Test, nicht nur navigator.onLine)
+        async function checkConnection(timeout = 5000) {
+            // Schneller Check: navigator.onLine
+            if (!navigator.onLine) {
+                return false;
+            }
+
+            // Echter Test: Supabase Health-Check mit Timeout
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+                const response = await fetch(SUPABASE_URL + '/rest/v1/', {
+                    method: 'HEAD',
+                    signal: controller.signal,
+                    headers: {
+                        'apikey': SUPABASE_KEY
+                    }
+                });
+
+                clearTimeout(timeoutId);
+                return response.ok || response.status === 400; // 400 = no table specified, aber Server erreichbar
+            } catch (e) {
+                console.warn('Verbindungstest fehlgeschlagen:', e.message);
+                return false;
+            }
+        }
+
         // URL-Parameter für Formular-Kontext
         const urlParams = new URLSearchParams(window.location.search);
         const formContext = {
@@ -2487,166 +2565,251 @@ const streetResults = data.results.filter(result => {
 
             console.log('Form data to submit:', formData);
 
-            try {
-                // DUPLIKAT-PRÜFUNG: Suche nach existierendem Record mit gleichen Daten
-                const cleanIban = formData.iban.replace(/\s/g, '');
-                const { data: existingRecords, error: searchError } = await supabaseClient
-                    .from('records')
-                    .select('id, first_name, last_name, birth_date, iban, created_at')
-                    .eq('first_name', formData.firstName)
-                    .eq('last_name', formData.lastName)
-                    .limit(100);
+            // Kontext aus formContext verwenden
+            const werberId = formContext.botschafter_id;
+            const areaId = formContext.campaign_area_id;
+            const campaignId = formContext.campaign_id;
+            const customerId = formContext.customer_id;
+            const teamchefId = formContext.teamchef_id;
+            const currentKW = formContext.kw;
 
-                if (searchError) {
-                    console.error('Fehler bei Duplikat-Prüfung:', searchError);
+            // Validierung: Diese Felder müssen vorhanden sein
+            if (!werberId || !areaId || !campaignId) {
+                btn.disabled = false;
+                btn.innerHTML = 'Jetzt überprüfen';
+                alert('❌ Fehler: Kontext fehlt!\n\nDas Formular muss über das Portal aufgerufen werden (Botschafter, Werbegebiet und Kampagne müssen ausgewählt sein).');
+                console.error('Fehlende URL-Parameter:', { werberId, areaId, campaignId });
+                return;
+            }
+
+            // Record-Objekt vorbereiten (für Online und Offline gleich)
+            const recordData = {
+                // Kontext-Verknüpfungen
+                werber_id: werberId,
+                campaign_area_id: areaId,
+                campaign_id: campaignId,
+                customer_id: customerId,
+                teamchef_id: teamchefId || null,
+                kw: currentKW || null,
+
+                // Datensatz-Typ
+                record_type: formData.type === 'ERH' ? 'erhoehung' : 'neumitglied',
+                record_status: 'aktiv',
+
+                // Persönliche Daten
+                salutation: formData.salutation,
+                title: formData.title,
+                first_name: formData.firstName,
+                last_name: formData.lastName,
+                company: formData.company,
+                birth_date: formData.birthDate || null,
+                email: formData.email,
+                phone_fixed: formData.phoneFixed,
+                phone_mobile: formData.phoneMobile,
+
+                // Adresse
+                street: formData.street,
+                house_number: formData.houseNumber,
+                zip_code: formData.zipCode,
+                city: formData.city,
+                country: formData.country,
+
+                // Zahlungsdaten
+                iban: formData.iban,
+                bic: formData.bic,
+                bank_name: formData.bankName,
+                account_holder: formData.accountHolder,
+
+                // Beiträge
+                amount: formData.amount,
+                yearly_amount: formData.yearlyAmount,
+                interval: formData.interval,
+                donation_receipt: formData.spendenquittung,
+
+                // Erhöhungs-spezifisch
+                member_number: formData.memberNumber || null,
+                member_since: formData.memberSince || null,
+                old_amount: formData.oldAmount || null,
+                old_interval: formData.oldInterval || null,
+
+                // Aufnahmedatum
+                start_date: formData.laterStartDate ? formData.laterStartDate + 'T12:00:00' : new Date().toISOString(),
+
+                // Einwilligungen
+                contact_email: formData.contactEmail,
+                contact_phone: formData.contactPhone,
+
+                // Sonstiges
+                notes: formData.notes,
+                signature: formData.signature,
+
+                // Zusätzliche Daten als JSON
+                data: {
+                    consent1: formData.consent1,
+                    consent2: formData.consent2,
+                    consent3: formData.consent3
                 }
+            };
 
-                // Prüfe auf echtes Duplikat (Name + Geburtsdatum + IBAN)
-                const duplicateFound = existingRecords?.find(record => {
-                    const existingIban = (record.iban || '').replace(/\s/g, '');
-                    return record.first_name === formData.firstName &&
-                           record.last_name === formData.lastName &&
-                           record.birth_date === formData.birthDate &&
-                           existingIban === cleanIban;
-                });
+            // ============================================
+            // ONLINE-SPEICHERUNG VERSUCHEN
+            // ============================================
+            let savedOnline = false;
+            let insertedRecord = null;
 
-                if (duplicateFound) {
-                    const dupDate = new Date(duplicateFound.created_at).toLocaleDateString('de-DE');
-                    btn.disabled = false;
-                    btn.innerHTML = 'Jetzt überprüfen';
-                    alert(`❌ Duplikat gefunden!\n\nEin Datensatz mit diesen Daten existiert bereits (erstellt am ${dupDate}).\n\nBitte prüfen Sie die Eingaben.`);
-                    return;
-                }
+            // Verbindung prüfen
+            const isOnline = await checkConnection(8000);
+            console.log('Verbindungsstatus:', isOnline ? 'Online' : 'Offline');
 
-                // Kontext aus formContext verwenden (wurde beim Laden bereits ermittelt)
-                const werberId = formContext.botschafter_id;
-                const areaId = formContext.campaign_area_id;
-                const campaignId = formContext.campaign_id;
-                const customerId = formContext.customer_id;
+            if (isOnline) {
+                try {
+                    // DUPLIKAT-PRÜFUNG (nur wenn online)
+                    const cleanIban = formData.iban.replace(/\s/g, '');
+                    const { data: existingRecords, error: searchError } = await supabaseClient
+                        .from('records')
+                        .select('id, first_name, last_name, birth_date, iban, created_at')
+                        .eq('first_name', formData.firstName)
+                        .eq('last_name', formData.lastName)
+                        .limit(100);
 
-                // Validierung: Diese Felder sind in der DB NOT NULL
-                if (!werberId || !areaId || !campaignId) {
-                    btn.disabled = false;
-                    btn.innerHTML = 'Jetzt überprüfen';
-                    alert('❌ Fehler: Kontext fehlt!\n\nDas Formular muss über das Portal aufgerufen werden (Botschafter, Werbegebiet und Kampagne müssen ausgewählt sein).');
-                    console.error('Fehlende URL-Parameter:', { werberId, areaId, campaignId });
-                    return;
-                }
+                    if (!searchError) {
+                        const duplicateFound = existingRecords?.find(record => {
+                            const existingIban = (record.iban || '').replace(/\s/g, '');
+                            return record.first_name === formData.firstName &&
+                                   record.last_name === formData.lastName &&
+                                   record.birth_date === formData.birthDate &&
+                                   existingIban === cleanIban;
+                        });
 
-                // Teamchef und KW aus formContext holen
-                const teamchefId = formContext.teamchef_id;
-                const currentKW = formContext.kw;
-
-                // In Supabase speichern - alle Felder direkt in DB-Spalten
-                const { data: insertedRecord, error: insertError } = await supabaseClient
-                    .from('records')
-                    .insert({
-                        // Kontext-Verknüpfungen
-                        werber_id: werberId,
-                        campaign_area_id: areaId,
-                        campaign_id: campaignId,
-                        customer_id: customerId,
-                        teamchef_id: teamchefId || null,
-                        kw: currentKW || null,
-                        status: 'success',
-                        synced: true,
-
-                        // Datensatz-Typ (neumitglied / erhoehung)
-                        record_type: formData.type === 'ERH' ? 'erhoehung' : 'neumitglied',
-                        record_status: 'aktiv',
-
-                        // Persönliche Daten
-                        salutation: formData.salutation,
-                        title: formData.title,
-                        first_name: formData.firstName,
-                        last_name: formData.lastName,
-                        company: formData.company,
-                        birth_date: formData.birthDate || null,
-                        email: formData.email,
-                        phone_fixed: formData.phoneFixed,
-                        phone_mobile: formData.phoneMobile,
-
-                        // Adresse
-                        street: formData.street,
-                        house_number: formData.houseNumber,
-                        zip_code: formData.zipCode,
-                        city: formData.city,
-                        country: formData.country,
-
-                        // Zahlungsdaten
-                        iban: formData.iban,
-                        bic: formData.bic,
-                        bank_name: formData.bankName,
-                        account_holder: formData.accountHolder,
-
-                        // Beiträge
-                        amount: formData.amount,
-                        yearly_amount: formData.yearlyAmount,
-                        interval: formData.interval,
-                        donation_receipt: formData.spendenquittung,
-
-                        // Erhöhungs-spezifisch
-                        member_number: formData.memberNumber || null,
-                        member_since: formData.memberSince || null,
-                        old_amount: formData.oldAmount || null,
-                        old_interval: formData.oldInterval || null,
-
-                        // Aufnahmedatum: Späteres Datum wenn angegeben, sonst aktueller Zeitpunkt
-                        start_date: formData.laterStartDate ? formData.laterStartDate + 'T12:00:00' : new Date().toISOString(),
-
-                        // Einwilligungen
-                        contact_email: formData.contactEmail,
-                        contact_phone: formData.contactPhone,
-
-                        // Sonstiges
-                        notes: formData.notes,
-                        signature: formData.signature,
-
-                        // Zusätzliche Daten als JSON (nur noch Consents)
-                        data: {
-                            consent1: formData.consent1,
-                            consent2: formData.consent2,
-                            consent3: formData.consent3
+                        if (duplicateFound) {
+                            const dupDate = new Date(duplicateFound.created_at).toLocaleDateString('de-DE');
+                            btn.disabled = false;
+                            btn.innerHTML = 'Jetzt überprüfen';
+                            alert(`❌ Duplikat gefunden!\n\nEin Datensatz mit diesen Daten existiert bereits (erstellt am ${dupDate}).\n\nBitte prüfen Sie die Eingaben.`);
+                            return;
                         }
-                    })
-                    .select()
-                    .single();
+                    }
 
-                if (insertError) {
-                    throw insertError;
+                    // In Supabase speichern mit Timeout
+                    const insertPromise = supabaseClient
+                        .from('records')
+                        .insert({
+                            ...recordData,
+                            status: 'success',
+                            synced: true
+                        })
+                        .select()
+                        .single();
+
+                    // Timeout: 15 Sekunden
+                    const timeoutPromise = new Promise((_, reject) => {
+                        setTimeout(() => reject(new Error('Timeout')), 15000);
+                    });
+
+                    const result = await Promise.race([insertPromise, timeoutPromise]);
+
+                    if (result.error) {
+                        throw result.error;
+                    }
+
+                    insertedRecord = result.data;
+                    savedOnline = true;
+                    console.log('Online gespeichert:', insertedRecord);
+
+                    // Bestätigungsmail senden (nur für NMG und wenn E-Mail vorhanden)
+                    if (formData.type === 'NMG' && formData.email) {
+                        // Mail im Hintergrund senden, nicht auf Ergebnis warten
+                        sendConfirmationEmail(formData, formContext.werbegebiet_name || 'DRK Mitgliederwerbung')
+                            .catch(e => console.warn('E-Mail-Versand fehlgeschlagen:', e));
+                    }
+
+                } catch (error) {
+                    console.warn('Online-Speicherung fehlgeschlagen:', error.message);
+                    savedOnline = false;
+                }
+            }
+
+            // ============================================
+            // OFFLINE-FALLBACK (wenn Online fehlgeschlagen)
+            // ============================================
+            if (!savedOnline) {
+                console.log('Speichere offline...');
+
+                const offlineRecord = {
+                    offlineId: generateOfflineId(),
+                    createdAt: new Date().toISOString(),
+                    ...recordData,
+                    status: 'pending',
+                    synced: false,
+                    // Zusätzliche Anzeige-Infos für Base App
+                    name: `${formData.firstName} ${formData.lastName}`,
+                    area: formContext.werbegebiet_name || 'Unbekannt',
+                    werber: formContext.botschafter_name || 'Unbekannt'
+                };
+
+                const saved = saveOfflineRecord(offlineRecord);
+
+                if (!saved) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Jetzt überprüfen';
+                    alert('❌ Kritischer Fehler!\n\nDer Datensatz konnte weder online noch offline gespeichert werden.\n\nBitte notieren Sie die Daten manuell und versuchen Sie es später erneut.');
+                    return;
                 }
 
-                console.log('Record gespeichert:', insertedRecord);
-
-                // Bestätigungsmail senden (nur für NMG und wenn E-Mail vorhanden)
-                if (formData.type === 'NMG' && formData.email) {
-                    await sendConfirmationEmail(formData, formContext.werbegebiet_name || 'DRK Mitgliederwerbung');
-                }
-
-                // Show success page
+                // Offline-Erfolg anzeigen
                 document.querySelector('.container').innerHTML = `
                     <div class="header">
                         <div class="drk-logo" style="margin: 0 auto; width: 100px; height: 100px;">DRK</div>
                     </div>
                     <div style="padding: 40px; text-align: center;">
-                        <h1 style="color: #667eea; margin-bottom: 20px;">Vielen Dank!</h1>
-                        <p class="text-normal" style="margin-bottom: 30px;">
-                            Ihre Fördermitgliedschaft wurde erfolgreich registriert.
+                        <div style="width: 80px; height: 80px; background: #ff9800; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+                            <svg style="width: 40px; height: 40px; color: white;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                        </div>
+                        <h1 style="color: #ff9800; margin-bottom: 20px;">Offline gespeichert</h1>
+                        <p class="text-normal" style="margin-bottom: 20px;">
+                            Der Datensatz wurde lokal auf diesem Gerät gespeichert.
                         </p>
-                        <p class="text-klein">
-                            Sie erhalten in Kürze eine Bestätigungs-E-Mail mit allen Details.
+                        <p class="text-klein" style="color: #666; margin-bottom: 30px;">
+                            Bitte öffnen Sie die Base-App sobald Sie wieder Internet haben,<br>
+                            um die Daten zu synchronisieren.
                         </p>
-                        <button onclick="location.reload()" class="submit-btn" style="margin-top: 30px;">
+                        <button onclick="location.reload()" class="submit-btn" style="margin-top: 20px;">
                             Neues Formular
                         </button>
                     </div>
                 `;
-            } catch (error) {
-                console.error('Fehler beim Speichern:', error);
-                btn.disabled = false;
-                btn.innerHTML = 'Jetzt überprüfen';
-                alert(`❌ Fehler beim Speichern:\n\n${error.message || 'Unbekannter Fehler'}\n\nBitte versuchen Sie es erneut.`);
+                return;
             }
+
+            // ============================================
+            // ONLINE-ERFOLG ANZEIGEN
+            // ============================================
+            document.querySelector('.container').innerHTML = `
+                <div class="header">
+                    <div class="drk-logo" style="margin: 0 auto; width: 100px; height: 100px;">DRK</div>
+                </div>
+                <div style="padding: 40px; text-align: center;">
+                    <div style="width: 80px; height: 80px; background: #4caf50; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
+                        <svg style="width: 40px; height: 40px; color: white;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                    <h1 style="color: #4caf50; margin-bottom: 20px;">Erfolgreich gespeichert!</h1>
+                    <p class="text-normal" style="margin-bottom: 30px;">
+                        Die Fördermitgliedschaft wurde erfolgreich registriert.
+                    </p>
+                    <p class="text-klein">
+                        ${formData.email ? 'Eine Bestätigungs-E-Mail wird versendet.' : ''}
+                    </p>
+                    <button onclick="location.reload()" class="submit-btn" style="margin-top: 30px;">
+                        Neues Formular
+                    </button>
+                </div>
+            `;
         }
 
         // ============================================
