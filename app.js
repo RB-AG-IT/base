@@ -678,7 +678,7 @@ async function fetchLatestRecords() {
                 .select(`
                     id, first_name, last_name, email, iban, created_at, werber_id,
                     users!records_werber_id_fkey (name),
-                    campaign_areas (id, name)
+                    campaign_areas (id, name, customer_areas (vereinstyp, vereinsname))
                 `)
                 .eq('werber_id', currentUser.id)
                 .order('created_at', { ascending: false })
@@ -704,7 +704,7 @@ async function fetchLatestRecords() {
             .select(`
                 id, first_name, last_name, created_at, werber_id, yearly_amount,
                 users!records_werber_id_fkey (name),
-                campaign_areas (id, name)
+                campaign_areas (id, name, customer_areas (vereinstyp, vereinsname))
             `)
             .in('werber_id', werberIds);
 
@@ -1499,7 +1499,7 @@ async function renderTCSection() {
                         <div class="record-card-body">
                             <div class="record-meta">
                                 <span class="record-time">${formatTime(record.created_at)}</span>
-                                ${record.campaign_areas?.name ? `<span class="record-area">${record.campaign_areas.name}</span>` : ''}
+                                ${record.campaign_areas?.customer_areas ? `<span class="record-area">${record.campaign_areas.customer_areas.vereinstyp} ${record.campaign_areas.customer_areas.vereinsname}</span>` : ''}
                             </div>
                             <div class="record-werber">${record.users?.name || 'Unbekannt'}</div>
                         </div>
