@@ -1856,9 +1856,14 @@ const streetResults = data.results.filter(result => {
         }
 
         function validateForm() {
-            const required = ['salutation', 'firstName', 'lastName', 'birthDate', 
+            // ERH: Weniger Pflichtfelder
+            const requiredERH = ['firstName', 'lastName', 'street', 'houseNumber', 'zipCode', 'city'];
+            // NMG: Alle Pflichtfelder
+            const requiredNMG = ['salutation', 'firstName', 'lastName', 'birthDate',
                              'street', 'houseNumber', 'zipCode', 'city'];
-            
+
+            const required = isERHMode ? requiredERH : requiredNMG;
+
             let isValid = true;
             let firstError = null;
 
@@ -1879,8 +1884,8 @@ const streetResults = data.results.filter(result => {
                 }
             });
 
-            // Validate birth date (18+ check)
-            if (!validateBirthDate()) {
+            // Validate birth date (18+ check) - nur bei NMG
+            if (!isERHMode && !validateBirthDate()) {
                 isValid = false;
                 if (!firstError) firstError = document.getElementById('birthDate');
             }
@@ -1894,10 +1899,10 @@ const streetResults = data.results.filter(result => {
             // Check if "IBAN selbst ausfüllen" is active
             const ibanLaterCheckEl = document.getElementById('ibanLaterCheck');
             const ibanLaterActive = ibanLaterCheckEl ? ibanLaterCheckEl.style.display !== 'none' : false;
-            
-            // Payment field validation depends on mode (NMG vs ERH)
-            if (!ibanLaterActive) {
-                // Always check Kontoinhaber (both NMG and ERH)
+
+            // Payment field validation - nur bei NMG
+            if (!isERHMode && !ibanLaterActive) {
+                // Check Kontoinhaber
                 const accountHolder = document.getElementById('accountHolder');
                 if (accountHolder && !accountHolder.value) {
                     accountHolder.style.borderColor = '#ff4444';
@@ -1907,48 +1912,26 @@ const streetResults = data.results.filter(result => {
                     accountHolder.style.borderColor = '#e0e0e0';
                 }
 
-                if (isERHMode && selectedMember) {
-                    // ERH Mode: Only validate last 4 digits of IBAN
-                    const ibanEl = document.getElementById('iban');
-                    const ibanInput = ibanEl ? ibanEl.value.replace(/\s/g, '') : '';
-                    const storedIbanLast4 = selectedMember.iban.slice(-4);
-                    
-                    if (!ibanInput || ibanInput.length !== 4) {
-                        if (ibanEl) ibanEl.style.borderColor = '#ff4444';
+                // NMG Mode: Validate full payment fields
+                const paymentFields = ['iban', 'bankName', 'bic'];
+                paymentFields.forEach(id => {
+                    const field = document.getElementById(id);
+                    if (!field) return;
+                    if (!field.value) {
+                        field.style.borderColor = '#ff4444';
                         isValid = false;
-                        if (!firstError) firstError = ibanEl;
-                    } else if (ibanInput !== storedIbanLast4) {
-                        if (ibanEl) ibanEl.style.borderColor = '#ff4444';
-                        alert('❌ Die eingegebenen IBAN-Ziffern stimmen nicht überein.');
-                        isValid = false;
-                        if (!firstError) firstError = ibanEl;
+                        if (!firstError) firstError = field;
                     } else {
-                        if (ibanEl) ibanEl.style.borderColor = '#e0e0e0';
+                        field.style.borderColor = '#e0e0e0';
                     }
+                });
 
-                    // Bank and BIC are pre-filled in ERH, not validated as required
-                } else {
-                    // NMG Mode: Validate full payment fields
-                    const paymentFields = ['iban', 'bankName', 'bic'];
-                    paymentFields.forEach(id => {
-                        const field = document.getElementById(id);
-                        if (!field) return;
-                        if (!field.value) {
-                            field.style.borderColor = '#ff4444';
-                            isValid = false;
-                            if (!firstError) firstError = field;
-                        } else {
-                            field.style.borderColor = '#e0e0e0';
-                        }
-                    });
-
-                    // Extra IBAN validation for NMG
-                    const ibanFieldNMG = document.getElementById('iban');
-                    const ibanValueNMG = ibanFieldNMG ? ibanFieldNMG.value.replace(/\s/g, '') : '';
-                    if (ibanValueNMG && !isValidIBAN(ibanValueNMG)) {
-                        if (ibanFieldNMG) ibanFieldNMG.style.borderColor = '#ff4444';
-                        isValid = false;
-                    }
+                // Extra IBAN validation for NMG
+                const ibanFieldNMG = document.getElementById('iban');
+                const ibanValueNMG = ibanFieldNMG ? ibanFieldNMG.value.replace(/\s/g, '') : '';
+                if (ibanValueNMG && !isValidIBAN(ibanValueNMG)) {
+                    if (ibanFieldNMG) ibanFieldNMG.style.borderColor = '#ff4444';
+                    isValid = false;
                 }
             }
 
