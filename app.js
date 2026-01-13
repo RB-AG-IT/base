@@ -1804,6 +1804,71 @@ async function saveProfile() {
     }
 }
 
+// Auto-Sync beim App-Start
+async function autoSyncOfflineRecords() {
+    const offlineData = localStorage.getItem('offlineRecords');
+    if (!offlineData) return;
+
+    try {
+        const records = JSON.parse(offlineData);
+        if (records.length === 0) return;
+
+        // Prüfen ob online
+        if (!navigator.onLine) {
+            console.log('Auto-Sync: Offline, überspringe');
+            return;
+        }
+
+        console.log(`Auto-Sync: ${records.length} Offline-Records gefunden`);
+        showToast(`${records.length} Offline-Datensätze werden synchronisiert...`, 'info');
+
+        // Kurz warten damit Toast sichtbar ist
+        await new Promise(r => setTimeout(r, 500));
+
+        const failedRecords = [];
+        let successCount = 0;
+
+        for (const record of records) {
+            const { offlineId, createdAt, name, area, werber, ...dbRecord } = record;
+            dbRecord.status = 'success';
+            dbRecord.synced = true;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('records')
+                    .insert(dbRecord);
+
+                if (error) {
+                    console.error('Auto-Sync error:', error);
+                    failedRecords.push(record);
+                } else {
+                    successCount++;
+                }
+            } catch (e) {
+                failedRecords.push(record);
+            }
+        }
+
+        // Ergebnis speichern
+        if (failedRecords.length > 0) {
+            localStorage.setItem('offlineRecords', JSON.stringify(failedRecords));
+            showToast(`${successCount} synchronisiert, ${failedRecords.length} fehlgeschlagen`, 'warning');
+        } else {
+            localStorage.removeItem('offlineRecords');
+            showToast(`${successCount} Datensätze erfolgreich synchronisiert!`, 'success');
+        }
+
+        // View aktualisieren falls auf Offline-Seite
+        if (window.location.hash === '#offline') {
+            loadView('offline', true);
+        }
+
+    } catch (e) {
+        console.error('Auto-Sync Fehler:', e);
+    }
+}
+
+// Manuelle Sync-Funktion (Button)
 async function syncOfflineRecords() {
     const offlineData = localStorage.getItem('offlineRecords');
     if (!offlineData) return;
@@ -1941,6 +2006,9 @@ function updateNavigation(viewName) {
 document.addEventListener('DOMContentLoaded', async function() {
     // Check auth state first
     await checkAuthState();
+
+    // Auto-Sync: Offline-Records automatisch hochladen wenn online
+    autoSyncOfflineRecords();
 
     // Navigation click handlers
     document.querySelectorAll('.nav-item').forEach(item => {
