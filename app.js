@@ -798,7 +798,7 @@ const views = {
             <!-- Hero Stats (Big & Bold) -->
             <div class="hero-stat">
                 <div class="hero-stat-label">Heute erfasst</div>
-                <div class="hero-stat-value">Mitglieder: ${stats.today} Einheiten: ${stats.todayEH}</div>
+                <div class="hero-stat-value">Mitglieder: ${stats.today} Einheiten: ${stats.todayEH.toFixed(2)}</div>
             </div>
 
             <!-- Mini Stats Grid (2x2) -->
