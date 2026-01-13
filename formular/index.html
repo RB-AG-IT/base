@@ -892,13 +892,11 @@ input[type="radio"][name="type"]:checked::after {
                     <input type="number" id="customAmount" placeholder="Betrag in Euro eingeben" step="0.01" min="5" style="width: 100%;">
                 </div>
 
-                <div style="display: flex; justify-content: center; margin-top: 50px;">
-                    <div style="display: grid; grid-template-columns: repeat(4, 210px); gap: 15px;">
-                        <button type="button" class="interval-btn active" data-interval="monthly">Monatlich</button>
-                        <button type="button" class="interval-btn" data-interval="quarterly">Vierteljährlich</button>
-                        <button type="button" class="interval-btn" data-interval="halfyearly">Halbjährlich</button>
-                        <button type="button" class="interval-btn" data-interval="yearly">Jährlich</button>
-                    </div>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 50px;">
+                    <button type="button" class="interval-btn active" data-interval="monthly">Monatlich</button>
+                    <button type="button" class="interval-btn" data-interval="quarterly">Vierteljährlich</button>
+                    <button type="button" class="interval-btn" data-interval="halfyearly">Halbjährlich</button>
+                    <button type="button" class="interval-btn" data-interval="yearly">Jährlich</button>
                 </div>
             </div>
 
