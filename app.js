@@ -914,7 +914,7 @@ const views = {
                 <h3>Schnellzugriff</h3>
             </div>
             <div class="quick-actions-scroll">
-                <a href="#" onclick="openFormular(); return false;" class="action-card">
+                <a href="javascript:void(0)" onclick="openFormular()" class="action-card">
                     <div class="action-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
