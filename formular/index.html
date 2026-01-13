@@ -1,0 +1,2852 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRK Fördermitgliedschaft</title>
+    <!-- Zentrale Styles -->
+    <link rel="stylesheet" href="../../css/styles.css">
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: white;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            overflow: hidden;
+        }
+
+        .header {
+    background: #E30613;
+    color: white;
+    padding: 20px 30px;
+    position: relative;
+}
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .drk-logo {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: var(--fett);
+            color: #e01e26;
+            font-size: 20px;
+        }
+
+        .werber-info {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .werber-bild {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e01e26;
+            font-size: var(--text-klein);
+        }
+
+        .werber-name {
+            font-size: var(--text-normal);
+            opacity: 0.9;
+        }
+
+        .verband-name {
+            font-size: 32px;
+            font-weight: var(--fett);
+            margin-bottom: 5px;
+        }
+
+        .verband-adresse {
+            font-size: var(--text-normal);
+            opacity: 0.9;
+        }
+
+        .form-section {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-row.spaced {
+    margin-bottom: 35px;
+}
+
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            font-size: var(--text-klein);
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+      input, select, textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: var(--text-normal);
+    transition: all 0.3s;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: white;
+}
+
+input[type="text"], input[type="email"], input[type="tel"], input[type="date"], input[type="number"], select, textarea {
+    min-height: 38px;
+    font-size: var(--text-normal) !important;
+    font-family: inherit;
+}
+
+/* Datumsfelder: Browser-interne Elemente anpassen */
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+select {
+    background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3e%3cpolyline points="6 9 12 15 18 9"%3e%3c/polyline%3e%3c/svg%3e');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 32px;
+}
+
+        /* Custom Checkbox Styling */
+input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ddd;
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    background-color: white;
+}
+
+input[type="checkbox"]:checked {
+    background-color: white;
+    border-color: #667eea;
+}
+
+input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: #667eea;
+    font-size: var(--text-normal);
+    font-weight: var(--fett);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+        /* Custom Radio Button Styling */
+input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+}
+
+input[type="radio"]:checked {
+    border-color: #667eea;
+}
+
+input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: #667eea;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Custom Radio Styling für NMG/ERH */
+input[type="radio"][name="type"] {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    background-color: white;
+    margin: 0 !important;
+    margin-right: 5px !important;
+}
+
+input[type="radio"][name="type"]:checked {
+    border-color: #667eea;
+    background-color: white;
+}
+
+input[type="radio"][name="type"]:checked::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: #667eea;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+        
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .radio-option {
+            position: relative;
+        }
+
+        .radio-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+        .radio-option label {
+            display: inline-block;
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: var(--text-klein);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .radio-option input[type="radio"]:checked + label {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    font-weight: var(--fett);
+}
+
+        .amount-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .amount-btn {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .amount-btn:hover {
+            border-color: #667eea;
+        }
+
+        .amount-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .interval-btn {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: var(--text-normal);
+        }
+
+        .interval-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .interval-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .preset-option:hover {
+            background: #f5f5f5;
+        }
+
+        .checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+            margin-top: 3px;
+        }
+
+        .checkbox-group label {
+            flex: 1;
+            margin-bottom: 0;
+            font-size: var(--text-normal);
+        }
+
+        .signature-pad {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            height: 150px;
+            position: relative;
+            background: white;
+        }
+
+        .signature-clear {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: var(--text-klein);
+        }
+
+        .collapsible {
+            margin-top: 20px;
+        }
+
+        .collapsible-header {
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .collapsible-content {
+            display: none;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 0 0 8px 8px;
+            margin-top: -8px;
+        }
+
+        .collapsible-content.show {
+            display: block;
+        }
+
+        .submit-section {
+            padding: 30px;
+            background: #f8f8f8;
+            text-align: center;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: var(--text-normal);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .error {
+            color: #ff4444;
+            font-size: var(--text-klein);
+            margin-top: 5px;
+        }
+
+        .success {
+            color: #00c853;
+            font-size: var(--text-klein);
+            margin-top: 5px;
+        }
+
+        .iban-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: var(--text-normal);
+        }
+
+        .iban-valid {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #4caf50;
+        }
+
+        .iban-invalid {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #f44336;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 4px;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+       .search-result-item {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+}
+
+        .search-result-item:hover {
+            background: #f8f8f8;
+        }
+
+        .search-result-item strong {
+    font-size: var(--text-klein);
+}
+
+.search-result-item small {
+    font-size: var(--text-klein);
+}
+
+        .footer-text {
+            font-size: var(--text-klein);
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .interval-display {
+            text-align: center;
+            padding: 20px;
+            background: #f0f7ff;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .interval-amount {
+            font-size: 32px;
+            font-weight: var(--fett);
+            color: #667eea;
+        }
+
+        .interval-period {
+            font-size: var(--text-normal);
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                border-radius: 0;
+            }
+            
+            .form-section {
+                padding: 20px;
+            }
+            
+            .amount-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row, .form-row-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Canvas for signature */
+        #signatureCanvas {
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        /* Loading spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <div style="background: white; padding: 15px; border-radius: 12px; display: inline-block;">
+    <img src="logo.png" width="200" height="auto" alt="Logo" style="display: block; max-height: 100px; object-fit: contain;">
+</div>
+                <div class="werber-info">
+                    <div class="werber-bild" id="werberBild" style="background: white; overflow: hidden;">
+                        <img id="werberFoto" src="" alt="Werber" style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                        <span id="werberPlaceholder">Foto</span>
+                    </div>
+                    <div class="werber-name" id="werberName">-</div>
+                </div>
+            </div>
+            <div class="verband-name" id="verbandName">DRK Kreisverband Musterstadt</div>
+            <div class="verband-adresse" id="verbandAdresse">Musterstraße 123, 12345 Musterstadt</div>
+        </div>
+        
+        <!-- Gruppenbild -->
+        <div id="gruppenbildContainer" style="width: 100%; height: 400px; background: #f5f5f5 center center no-repeat; background-size: cover; display: none;">
+        </div>
+        
+        <div style="text-align: right; padding: 10px 30px;">
+            <span class="text-klein" style="display: inline-flex; align-items: center;">
+                <label style="cursor: pointer; display: inline-flex; align-items: center;">
+    <input type="radio" name="type" value="NMG" checked style="margin: 0; margin-right: 5px;">
+    <span>NMG</span>
+</label>
+<span style="color: #ccc; margin: 0 8px;">/</span>
+<label style="cursor: pointer; display: inline-flex; align-items: center;">
+    <input type="radio" name="type" value="ERH" style="margin: 0; margin-right: 5px;">
+    <span>ERH</span>
+</label>
+            </span>
+        </div>
+
+        <!-- Form -->
+        <form id="membershipForm">
+            <!-- Member search bar - appears when ERH is selected -->
+            <div id="memberSearchBar" class="hidden" style="text-align: center; padding: 20px 30px; background: #f9f9f9;">
+                <div style="position: relative; display: inline-block; width: 50%; max-width: 400px;">
+                    <input type="text" id="memberSearch" class="text-normal" placeholder="Bestandsmitglied suchen..." style="width: 100%; padding: 8px 12px;">
+                    <div id="searchResults" class="search-results hidden"></div>
+                </div>
+            </div>
+            
+            <!-- ERH specific fields - appear when ERH is selected -->
+            <div id="erhFields" class="hidden" style="padding: 20px 30px; background: #f9f9f9; border-bottom: 1px solid #e0e0e0;">
+                <div class="form-row">
+                    <div>
+                        <label>Mitglied seit:</label>
+                        <input type="date" id="memberSince" value="2020-01-15" readonly style="background: #f0f0f0;">
+                    </div>
+                    <div>
+                        <label>Buchungsintervall:</label>
+                        <input type="text" id="oldInterval" value="Monatlich" readonly style="background: #f0f0f0;">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>Alter Monatsbeitrag:</label>
+                        <input type="number" id="oldAmount" step="0.01" value="10.00" readonly style="background: #f0f0f0;">
+                    </div>
+                    <div>
+                        <label>Mitgliedsnummer:</label>
+                        <input type="text" id="memberNumber" value="M-2020-001" readonly style="background: #f0f0f0;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Persönliche Daten -->
+            <div class="form-section">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                    <div class="text-ueberschrift-abschnitt" style="margin-bottom: 0;">Persönliche Daten</div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label>Anrede:</label>
+                        <select id="salutation" required>
+                            <option value="">Wählen</option>
+                            <option value="Herr">Herr</option>
+                            <option value="Frau">Frau</option>
+                            <option value="Divers">Divers</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Titel:</label>
+                        <select id="title">
+                            <option value="">Kein</option>
+                            <option value="Dr.">Dr.</option>
+                            <option value="Prof.">Prof.</option>
+                            <option value="Prof. Dr.">Prof. Dr.</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Firmenname (optional):</label>
+                        <input type="text" id="company">
+                    </div>
+                </div>
+
+                <div class="form-row spaced">
+    <div>
+        <label>Vorname:</label>
+        <input type="text" id="firstName" required>
+    </div>
+    <div>
+        <label>Nachname:</label>
+        <input type="text" id="lastName" required>
+    </div>
+</div>
+
+                <div class="form-row">
+                    <div>
+                        <label>Geburtsdatum:</label>
+                        <input type="date" id="birthDate" required>
+                        <div id="birthDateError" class="error hidden" style="text-align: right;">Mindestalter: 18 Jahre</div>
+                    </div>
+                    <div>
+                        <label>E-Mail:</label>
+                        <input type="email" id="email">
+                        <div id="emailError" class="error hidden">Bitte geben Sie eine gültige E-Mail-Adresse ein</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label>Telefon (Mobil):</label>
+                        <input type="tel" id="phoneMobile">
+                    </div>
+                    <div>
+                        <label>Telefon (Festnetz):</label>
+                        <input type="tel" id="phoneFixed">
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 30px;">
+
+            <!-- Anschrift -->
+            <div class="form-section">
+                <div class="text-ueberschrift-abschnitt" style="margin-bottom: 20px;">Anschrift</div>
+                
+                <div style="display: grid; grid-template-columns: 5fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div style="position: relative;">
+                        <label>Straße:</label>
+                        <input type="text" id="street" required placeholder="Beginnen Sie zu tippen für Vorschläge...">
+                        <div id="streetSuggestions" class="search-results hidden"></div>
+                    </div>
+                    <div>
+                        <label>Nr.:</label>
+                        <input type="text" id="houseNumber" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 15px;">
+                    <div>
+                        <label>PLZ:</label>
+                        <input type="text" id="zipCode" required maxlength="5">
+                    </div>
+                    <div>
+                        <label>Ort:</label>
+                        <input type="text" id="city" required>
+                    </div>
+                    <div>
+                        <label>Land:</label>
+                        <select id="country">
+                            <option value="Deutschland" selected>Deutschland</option>
+                            <option value="Österreich">Österreich</option>
+                            <option value="Schweiz">Schweiz</option>
+                            <option value="Luxemburg">Luxemburg</option>
+                            <option value="Frankreich">Frankreich</option>
+                            <option value="Niederlande">Niederlande</option>
+                            <option value="Belgien">Belgien</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 30px;">
+
+            <!-- Zahlungsinformation -->
+<div class="form-section">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div class="text-ueberschrift-abschnitt" style="margin-bottom: 0;">Zahlungsinformation</div>
+                    <div style="position: relative;">
+                        <button type="button" id="paymentMenu" style="background: none; border: none; cursor: pointer; padding: 5px;">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="#999">
+                                <circle cx="10" cy="4" r="2"/>
+                                <circle cx="10" cy="10" r="2"/>
+                                <circle cx="10" cy="16" r="2"/>
+                            </svg>
+                        </button>
+                        <div id="paymentDropdown" class="hidden" style="position: absolute; right: 0; top: 30px; background: white; border: 1px solid #ddd; border-radius: 4px; padding: 5px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 100; min-width: 180px;">
+                            <div class="payment-option text-klein" style="padding: 8px 15px; cursor: pointer;" data-action="iban-later">
+                                <span id="ibanLaterCheck" style="display: none;">✓ </span>IBAN selbst ausfüllen
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-row" style="margin-top: 20px;">
+                    <div>
+                        <label>Kontoinhaber:</label>
+                        <input type="text" id="accountHolder">
+                    </div>
+                    <div>
+                        <label id="ibanLabel">IBAN:</label>
+                        <input type="text" id="iban" placeholder="DE00 0000 0000 0000 0000 00" maxlength="42">
+                        <div id="ibanStatus" class="text-klein" style="text-align: right; margin-top: 3px;"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label>Bank:</label>
+                        <input type="text" id="bankName" placeholder="Wird automatisch ausgefüllt">
+                    </div>
+                    <div>
+                       <label>BIC:</label>
+                       <input type="text" id="bic" placeholder="Wird automatisch ausgefüllt">
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 30px;">
+
+            <!-- Unterstützungsbeitrag -->
+            <div class="form-section">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: baseline;">
+                        <div class="text-ueberschrift-abschnitt" style="margin-bottom: 0; margin-right: 15px;">Unterstützungsbeitrag</div>
+                        <span id="yearlyDisplay" class="text-klein" style="border: 1px solid #e0e0e0; padding: 2px 8px; border-radius: 3px;">0 EUR / Jahr</span>
+                    </div>
+                    <div style="position: relative;">
+                        <button type="button" id="presetMenu" style="background: none; border: none; cursor: pointer; padding: 5px;">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="#999">
+                                <circle cx="10" cy="4" r="2"/>
+                                <circle cx="10" cy="10" r="2"/>
+                                <circle cx="10" cy="16" r="2"/>
+                            </svg>
+                        </button>
+<div id="presetDropdown" class="hidden" style="position: absolute; right: 0; bottom: 30px; background: white; border: 1px solid #ddd; border-radius: 4px; padding: 5px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 100; min-width: 180px;">
+                            <div class="preset-option text-klein" style="padding: 8px 15px; cursor: pointer;" data-preset="standard">Standard (5/10/15)</div>
+                            <div id="userVorlagenOptions"></div>
+                            <div class="preset-option text-klein" style="padding: 8px 15px; cursor: pointer;" data-preset="individual">Individuell</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="standardAmounts" style="margin-top: 30px;">
+                    <div id="amountButtonsContainer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
+                        <button type="button" class="amount-btn" data-amount="5" style="height: 110px; display: grid; grid-template-rows: 1fr auto 1fr; align-items: center; justify-items: center; padding: 10px; row-gap: 8px;">
+                            <span class="amount-text-oben text-normal--fett" style="align-self: end;"></span>
+                            <span class="amount-value text-ueberschrift" style="font-size: 28px;">5 €</span>
+                            <span class="amount-text-unten text-normal" style="align-self: start;">Studenten</span>
+                        </button>
+                        <button type="button" class="amount-btn" data-amount="10" style="height: 110px; display: grid; grid-template-rows: 1fr auto 1fr; align-items: center; justify-items: center; padding: 10px; row-gap: 8px;">
+                            <span class="amount-text-oben text-normal--fett" style="align-self: end;"></span>
+                            <span class="amount-value text-ueberschrift" style="font-size: 28px;">10 €</span>
+                            <span class="amount-text-unten text-normal" style="align-self: start;">Durchschnitt</span>
+                        </button>
+                        <button type="button" class="amount-btn" data-amount="15" style="height: 110px; display: grid; grid-template-rows: 1fr auto 1fr; align-items: center; justify-items: center; padding: 10px; row-gap: 8px;">
+                            <span class="amount-text-oben text-normal--fett" style="align-self: end;"></span>
+                            <span class="amount-value text-ueberschrift" style="font-size: 28px;">15 €</span>
+                            <span class="amount-text-unten text-normal" style="align-self: start;">Familien</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="individualAmount" class="hidden" style="margin-top: 30px;">
+                    <input type="number" id="customAmount" placeholder="Betrag in Euro eingeben" step="0.01" min="5" style="width: 100%;">
+                </div>
+
+                <div style="display: flex; justify-content: center; margin-top: 50px;">
+                    <div style="display: grid; grid-template-columns: repeat(4, 210px); gap: 15px;">
+                        <button type="button" class="interval-btn active" data-interval="monthly">Monatlich</button>
+                        <button type="button" class="interval-btn" data-interval="quarterly">Vierteljährlich</button>
+                        <button type="button" class="interval-btn" data-interval="halfyearly">Halbjährlich</button>
+                        <button type="button" class="interval-btn" data-interval="yearly">Jährlich</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spendenquittung -->
+            <div class="form-section">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="spendenquittung">
+                    <label for="spendenquittung">Ich benötige eine Spendenquittung</label>
+                </div>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 30px;">
+
+            <!-- Rechtliche Hinweise -->
+            <div class="form-section">
+                <div class="text-ueberschrift-abschnitt" style="margin-bottom: 20px;">Rechtliche Hinweise</div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="consent1" required>
+                    <label for="consent1">Mir ist bewusst, dass es sich nicht um eine einmalige Spende handelt.</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="consent2" required>
+                    <label for="consent2">Durch meine Unterschrift werde ich Fördermitglied und unterstütze die gemeinnützige Organisation regelmäßig.</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="consent3" required>
+                    <label for="consent3">Mir ist bewusst, dass ich die Spende jederzeit formlos anpassen oder fristlos beenden kann.</label>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <label class="text-klein">Ich habe keine Einwände, informiert und kontaktiert zu werden, hinsichtlich gemeinnütziger oder artverwandter Angelegenheiten.</label>
+                    <div style="display: flex; gap: 20px; margin-top: 10px;">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="contactEmail" checked>
+                            <label for="contactEmail">E-Mail</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="contactPhone" checked>
+                            <label for="contactPhone">Telefon</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 30px;">
+
+            <!-- Unterschrift -->
+            <div class="form-section">
+                <div class="text-ueberschrift-abschnitt" style="margin-bottom: 20px;">Unterschrift</div>
+                <div class="signature-pad" style="height: 200px;">
+                    <canvas id="signatureCanvas"></canvas>
+                    <button type="button" class="signature-clear" id="clearSignature">Löschen</button>
+                </div>
+            </div>
+
+            <!-- Submit und Weitere Optionen -->
+            <div class="form-section" style="text-align: center;">
+                <button type="button" class="submit-btn text-ueberschrift" id="validateBtn" style="background: #4caf50; border-radius: 8px; margin-bottom: 15px; padding: 20px 50px;">Jetzt überprüfen</button>
+                
+                <div class="collapsible" style="margin-top: 40px;">
+                    <div class="collapsible-header text-klein" style="padding: 10px; background: #fafafa;">
+                        <span>Weitere Optionen</span>
+                        <span>▼</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="form-group">
+                            <label>Späteres Beitrittsdatum (optional):</label>
+                            <input type="date" id="laterStartDate">
+                            <div class="error" style="margin-top: 5px;">Max. 3 Monate in der Zukunft</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Anmerkungen (für den DRK Verband):</label>
+                            <textarea id="notes" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer-text">
+                Mit dem Absenden wird bestätigt, dass die DSGVO-konforme
+                <a href="#" id="datenschutzLink" target="_blank" style="color: #667eea;">Datenschutzerklärung</a>
+                des <span id="footerKundeName">DRK Kreisverband Musterstadt</span> zur Kenntnis genommen und akzeptiert wurde.
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Global variable to track selected member for ERH
+        let selectedMember = null;
+        let isERHMode = false;
+        let currentCustomerAreaId = null; // Wird beim Laden des Formulars gesetzt
+
+        // Debounce-Timer für Suche
+        let searchTimeout = null;
+
+        // Bestandsmitglieder aus Supabase suchen
+        async function searchMembers(query) {
+            const results = document.getElementById('searchResults');
+
+            if (query.length < 2) {
+                results.classList.add('hidden');
+                return;
+            }
+
+            // Debounce: Warte 300ms nach letzter Eingabe
+            if (searchTimeout) clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(async () => {
+                await executeSearch(query);
+            }, 300);
+        }
+
+        async function executeSearch(query) {
+            const results = document.getElementById('searchResults');
+
+            // customer_area_id aus formContext holen (wird beim Laden gesetzt)
+            if (!currentCustomerAreaId) {
+                console.warn('Keine customer_area_id verfügbar für Bestandsmitglieder-Suche');
+                results.classList.add('hidden');
+                return;
+            }
+
+            try {
+                // Suche in Bestandsmitgliedern für dieses Werbegebiet
+                const { data: members, error } = await supabaseClient
+                    .from('bestandsmitglieder')
+                    .select('*')
+                    .eq('customer_area_id', currentCustomerAreaId)
+                    .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,member_number.ilike.%${query}%`)
+                    .limit(10);
+
+                if (error) {
+                    console.error('Fehler bei Bestandsmitglieder-Suche:', error);
+                    results.classList.add('hidden');
+                    return;
+                }
+
+                if (!members || members.length === 0) {
+                    results.innerHTML = '<div class="search-result-item text-muted">Keine Ergebnisse</div>';
+                    results.classList.remove('hidden');
+                    return;
+                }
+
+                results.innerHTML = '';
+                members.forEach(member => {
+                    const item = document.createElement('div');
+                    item.className = 'search-result-item';
+                    const adresse = [member.street, member.house_number, member.zip_code, member.city].filter(Boolean).join(' ');
+                    const beitrag = (member.old_amount || 0).toLocaleString('de-DE', { minimumFractionDigits: 2 });
+                    item.innerHTML = `
+                        <strong>${member.first_name} ${member.last_name}</strong><br>
+                        <small>${adresse || 'Keine Adresse'}</small><br>
+                        <small>Mitgliedsnr: ${member.member_number || '-'} | Beitrag: ${beitrag} €</small>
+                    `;
+                    item.onclick = () => selectMember(member);
+                    results.appendChild(item);
+                });
+
+                results.classList.remove('hidden');
+            } catch (err) {
+                console.error('Fehler bei Suche:', err);
+                results.classList.add('hidden');
+            }
+        }
+
+        function selectMember(member) {
+            // Store selected member globally
+            selectedMember = member;
+
+            // Auto-fill form fields (Datenstruktur aus bestandsmitglieder-Tabelle)
+            document.getElementById('firstName').value = member.first_name || '';
+            document.getElementById('lastName').value = member.last_name || '';
+            document.getElementById('street').value = member.street || '';
+            document.getElementById('houseNumber').value = member.house_number || '';
+            document.getElementById('zipCode').value = member.zip_code || '';
+            document.getElementById('city').value = member.city || '';
+
+            // ERH-spezifische Felder
+            document.getElementById('memberNumber').value = member.member_number || '';
+            document.getElementById('memberSince').value = member.member_since || '';
+            // old_amount ist Jahresbeitrag, daher durch 12 für Monatsbeitrag
+            const monthlyAmount = member.old_amount ? (member.old_amount / 12).toFixed(2) : '';
+            document.getElementById('oldAmount').value = monthlyAmount;
+            document.getElementById('oldInterval').value = member.old_interval || 'Monatlich';
+
+            // Optionale Felder (nur wenn vorhanden)
+            if (member.salutation) {
+                const salutationSelect = document.getElementById('salutation');
+                if (salutationSelect) salutationSelect.value = member.salutation;
+            }
+            if (member.title) {
+                const titleInput = document.getElementById('title');
+                if (titleInput) titleInput.value = member.title;
+            }
+            if (member.birth_date) {
+                document.getElementById('birthDate').value = member.birth_date;
+            }
+            if (member.email) {
+                document.getElementById('email').value = member.email;
+            }
+            if (member.phone_fixed) {
+                document.getElementById('phoneFixed').value = member.phone_fixed;
+            }
+            if (member.phone_mobile) {
+                document.getElementById('phoneMobile').value = member.phone_mobile;
+            }
+
+            // Zahlungsinformationen (nur wenn vorhanden)
+            if (member.account_holder) {
+                document.getElementById('accountHolder').value = member.account_holder;
+            }
+            if (member.bank_name) {
+                document.getElementById('bankName').value = member.bank_name;
+            }
+            if (member.bic) {
+                document.getElementById('bic').value = member.bic;
+            }
+
+            // Configure IBAN field for ERH verification mode
+            const ibanField = document.getElementById('iban');
+            const ibanLabel = document.getElementById('ibanLabel');
+            if (ibanField) {
+                ibanField.value = '';
+                if (member.iban) {
+                    // IBAN vorhanden: Nur letzte 4 Ziffern zur Verifizierung
+                    ibanField.placeholder = 'Letzte 4 Ziffern zur Verifizierung';
+                    ibanField.maxLength = 4;
+                    if (ibanLabel) {
+                        ibanLabel.textContent = 'IBAN - Letzte 4 Ziffern zur Verifizierung:';
+                    }
+                } else {
+                    // Keine IBAN: Volle IBAN erforderlich
+                    ibanField.placeholder = 'DE00 0000 0000 0000 0000 00';
+                    ibanField.removeAttribute('maxLength');
+                    if (ibanLabel) {
+                        ibanLabel.textContent = 'IBAN:';
+                    }
+                }
+            }
+
+            // Hide search results
+            const searchResults = document.getElementById('searchResults');
+            const memberSearch = document.getElementById('memberSearch');
+
+            if (searchResults) {
+                searchResults.classList.add('hidden');
+            }
+            if (memberSearch) {
+                memberSearch.value = member.first_name + ' ' + member.last_name + ' (ausgewählt)';
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeForm();
+            setupEventListeners();
+            initializeSignaturePad();
+        });
+
+        function initializeForm() {
+            // Set max date for later start date (3 months from now)
+            const maxDate = new Date();
+            maxDate.setMonth(maxDate.getMonth() + 3);
+            document.getElementById('laterStartDate').max = maxDate.toISOString().split('T')[0];
+            
+            // Set min date for birth date
+            const minBirthDate = new Date();
+            minBirthDate.setFullYear(minBirthDate.getFullYear() - 120);
+            document.getElementById('birthDate').min = minBirthDate.toISOString().split('T')[0];
+            document.getElementById('birthDate').max = new Date().toISOString().split('T')[0];
+        }
+
+        function setupEventListeners() {
+            // Member type toggle mit Feldlöschung
+            document.querySelectorAll('input[name="type"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const erhFields = document.getElementById('erhFields');
+                    const searchBar = document.getElementById('memberSearchBar');
+                    const ibanField = document.getElementById('iban');
+                    const ibanLabel = document.getElementById('ibanLabel');
+                    
+                    if (this.value === 'ERH') {
+                        isERHMode = true;
+                        erhFields.classList.remove('hidden');
+                        searchBar.classList.remove('hidden');
+                    } else {
+                        isERHMode = false;
+                        selectedMember = null;
+                        erhFields.classList.add('hidden');
+                        searchBar.classList.add('hidden');
+                        
+                        // Reset IBAN field to NMG mode
+                        ibanField.value = '';
+                        ibanField.placeholder = 'DE00 0000 0000 0000 0000 00';
+                        ibanField.removeAttribute('maxLength');
+                        ibanLabel.textContent = 'IBAN:';
+                        
+                        // Clear all fields when switching to NMG
+                        document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"], input[type="date"], input[type="number"]').forEach(input => {
+                            if (input.id !== 'country') input.value = '';
+                        });
+                        document.querySelectorAll('select').forEach(select => {
+                            if (select.id !== 'country') select.selectedIndex = 0;
+                        });
+                    }
+                });
+            });
+
+            // Member search
+            document.getElementById('memberSearch').addEventListener('input', function() {
+                searchMembers(this.value);
+            });
+
+            // Auto-fill Kontoinhaber from name
+            document.getElementById('firstName').addEventListener('input', updateAccountHolder);
+            document.getElementById('lastName').addEventListener('input', updateAccountHolder);
+
+            function updateAccountHolder() {
+                const firstName = document.getElementById('firstName').value;
+                const lastName = document.getElementById('lastName').value;
+                document.getElementById('accountHolder').value = `${firstName} ${lastName}`.trim();
+            }
+
+            // Payment menu
+            document.getElementById('paymentMenu').addEventListener('click', function(e) {
+                e.stopPropagation();
+                document.getElementById('paymentDropdown').classList.toggle('hidden');
+            });
+
+            // IBAN selbst ausfüllen option
+            document.querySelector('[data-action="iban-later"]').addEventListener('click', function() {
+                const ibanField = document.getElementById('iban');
+                const checkMark = document.getElementById('ibanLaterCheck');
+                
+                if (checkMark.style.display === 'none') {
+                    checkMark.style.display = 'inline';
+                    ibanField.value = '';
+                    ibanField.placeholder = 'IBAN per Mail nachtragen';
+                    ibanField.disabled = true;
+                    ibanField.style.background = '#f9f9f9';
+                    ibanField.removeAttribute('required');
+                } else {
+                    checkMark.style.display = 'none';
+                    ibanField.placeholder = 'DE00 0000 0000 0000 0000 00';
+                    ibanField.disabled = false;
+                    ibanField.style.background = 'white';
+                    ibanField.setAttribute('required', 'required');
+                }
+                
+                document.getElementById('paymentDropdown').classList.add('hidden');
+            });
+
+            // Preset menu
+            document.getElementById('presetMenu').addEventListener('click', function(e) {
+                e.stopPropagation();
+                document.getElementById('presetDropdown').classList.toggle('hidden');
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function() {
+                document.getElementById('presetDropdown').classList.add('hidden');
+                document.getElementById('paymentDropdown').classList.add('hidden');
+            });
+
+            // Preset options - ANGEPASST für Vorlagen
+            document.querySelectorAll('#presetDropdown > .preset-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const preset = this.dataset.preset;
+
+                    if (preset === 'individual') {
+                        // Wechsel zu individuell: Standard-Buttons ausblenden und deaktivieren
+                        document.getElementById('standardAmounts').classList.add('hidden');
+                        document.getElementById('individualAmount').classList.remove('hidden');
+
+                        // Alle Standard-Buttons deaktivieren
+                        document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
+
+                        // Individuelles Feld leeren
+                        document.getElementById('customAmount').value = '';
+
+                        // Anzeige aktualisieren (zeigt 0 EUR/Jahr)
+                        updateAmountDisplay();
+                    } else if (preset === 'standard') {
+                        // Standard-Vorlage (5/10/15) anwenden
+                        applyStandardVorlage();
+                    }
+                    
+                    document.getElementById('presetDropdown').classList.add('hidden');
+                });
+            });
+
+            // Email validation
+            document.getElementById('email').addEventListener('blur', validateEmail);
+
+            // Birth date validation
+            document.getElementById('birthDate').addEventListener('blur', validateBirthDate);
+            document.getElementById('birthDate').addEventListener('change', validateBirthDate);
+
+            // Later start date validation
+            document.getElementById('laterStartDate').addEventListener('blur', validateLaterStartDate);
+            document.getElementById('laterStartDate').addEventListener('change', validateLaterStartDate);
+
+            // IBAN validation with auto bank/BIC
+            document.getElementById('iban').addEventListener('input', function() {
+                validateIBAN(this.value);
+            });
+
+            // Amount buttons
+            document.querySelectorAll('.amount-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    updateAmountDisplay();
+                });
+            });
+
+            // Custom amount
+            document.getElementById('customAmount').addEventListener('input', updateAmountDisplay);
+
+            // Interval buttons
+            document.querySelectorAll('.interval-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.interval-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    updateAmountDisplay();
+                });
+            });
+
+            // Initial amount display update
+            updateAmountDisplay();
+
+            // Collapsible sections
+            document.querySelectorAll('.collapsible-header').forEach(header => {
+                header.addEventListener('click', function() {
+                    const content = this.nextElementSibling;
+                    content.classList.toggle('show');
+                    const arrow = this.querySelector('span:last-child');
+                    arrow.textContent = content.classList.contains('show') ? '▲' : '▼';
+                });
+            });
+
+             // Street address autocomplete
+   document.getElementById('street').addEventListener('input', function() {
+       searchStreetAddress(this.value);
+   });
+
+            // Validate button
+            document.getElementById('validateBtn').addEventListener('click', validateForm);
+
+            // Formular-Kontext laden (Werbegebiet-Name, ERH, Zahlungsmodalitäten)
+            loadFormContext();
+        }
+
+        function validateEmail() {
+            const email = document.getElementById('email');
+            const error = document.getElementById('emailError');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (email.value && !emailRegex.test(email.value)) {
+                error.classList.remove('hidden');
+                email.style.borderColor = '#ff4444';
+                return false;
+            } else {
+                error.classList.add('hidden');
+                email.style.borderColor = '#e0e0e0';
+                return true;
+            }
+        }
+
+        function validateBirthDate() {
+            const birthDate = document.getElementById('birthDate');
+            const error = document.getElementById('birthDateError');
+            
+            if (!birthDate.value) {
+                error.classList.add('hidden');
+                birthDate.style.borderColor = '#ddd';
+                return false;
+            }
+            
+            const today = new Date();
+            const birth = new Date(birthDate.value);
+            
+            // Calculate age
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            
+            // Adjust age if birthday hasn't occurred this year yet
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            
+            if (age < 18) {
+                error.classList.remove('hidden');
+                birthDate.style.borderColor = '#ff4444';
+                return false;
+            } else {
+                error.classList.add('hidden');
+                birthDate.style.borderColor = '#e0e0e0';
+                return true;
+            }
+        }
+
+        function validateLaterStartDate() {
+            const laterStartDate = document.getElementById('laterStartDate');
+            
+            // If no date is entered, it's valid (optional field)
+            if (!laterStartDate.value) {
+                laterStartDate.style.borderColor = '#ddd';
+                return true;
+            }
+            
+            const selectedDate = new Date(laterStartDate.value);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time to start of day
+            
+            // Calculate max date (3 months from now)
+            const maxDate = new Date();
+            maxDate.setMonth(maxDate.getMonth() + 3);
+            maxDate.setHours(0, 0, 0, 0);
+            
+            // Check if date is in the past
+            if (selectedDate < today) {
+                laterStartDate.style.borderColor = '#ff4444';
+                return false;
+            }
+            
+            // Check if date is more than 3 months in the future
+            if (selectedDate > maxDate) {
+                laterStartDate.style.borderColor = '#ff4444';
+                return false;
+            }
+            
+            laterStartDate.style.borderColor = '#e0e0e0';
+            return true;
+        }
+
+        function validateIBAN(iban) {
+    const status = document.getElementById('ibanStatus');
+    const bankField = document.getElementById('bankName');
+    const bicField = document.getElementById('bic');
+    const ibanField = document.getElementById('iban');
+    
+    // ERH Mode: Verify last 4 digits
+    if (isERHMode && selectedMember) {
+        const cleanInput = iban.replace(/\s/g, '');
+        
+        if (cleanInput.length === 0) {
+            status.innerHTML = '';
+            ibanField.style.borderColor = '#ddd';
+            return;
+        }
+        
+        if (cleanInput.length !== 4 || !/^\d{4}$/.test(cleanInput)) {
+            status.innerHTML = '<span style="color: #ff4444;">✗ 4 Ziffern erforderlich</span>';
+            ibanField.style.borderColor = '#ff4444';
+            return;
+        }
+        
+        // Check if last 4 digits match
+        const storedIbanLast4 = selectedMember.iban.slice(-4);
+        if (cleanInput === storedIbanLast4) {
+            status.innerHTML = '<span style="color: #4caf50;">✓ korrekt</span>';
+            ibanField.style.borderColor = '#4caf50';
+        } else {
+            status.innerHTML = '<span style="color: #ff4444;">✗ falsch</span>';
+            ibanField.style.borderColor = '#ff4444';
+        }
+        return;
+    }
+    
+    // NMG Mode: Full IBAN validation
+    // Convert to uppercase and format with spaces
+    let upperIBAN = iban.toUpperCase();
+    const cleanIBAN = upperIBAN.replace(/\s/g, '');
+    
+    // Format with spaces every 4 characters
+    if (cleanIBAN.length > 0) {
+        const formatted = cleanIBAN.match(/.{1,4}/g)?.join(' ') || cleanIBAN;
+        if (iban !== formatted) {
+            ibanField.value = formatted;
+            setTimeout(() => {
+                ibanField.setSelectionRange(formatted.length, formatted.length);
+            }, 0);
+        }
+    }
+    
+    if (cleanIBAN.length === 0) {
+        status.innerHTML = '';
+        ibanField.style.borderColor = '#ddd';
+        bankField.value = '';
+        bicField.value = '';
+        return;
+    }
+
+    // Only validate when minimum length reached (at least 15 characters)
+    if (cleanIBAN.length < 15) {
+        status.innerHTML = '';
+        ibanField.style.borderColor = '#ddd';
+        return;
+    }
+
+    // ECHTE IBAN Validierung mit MOD-97
+    if (isValidIBAN(cleanIBAN)) {
+        status.innerHTML = '<span style="color: #4caf50;">✓ gültige IBAN</span>';
+        ibanField.style.borderColor = '#4caf50';
+        
+        // API Call für Bank-Lookup
+        lookupBankFromIBAN(cleanIBAN, bankField, bicField, status);
+    } else {
+        status.innerHTML = '<span style="color: #ff4444;">✗ ungültige IBAN</span>';
+        ibanField.style.borderColor = '#ff4444';
+        bankField.value = '';
+        bicField.value = '';
+    }
+}
+
+// IBAN Validierungs-Algorithmus (MOD-97)
+function isValidIBAN(iban) {
+    iban = iban.replace(/\s/g, '').toUpperCase();
+    
+    if (!/^[A-Z]{2}[0-9]{2}[A-Z0-9]+$/.test(iban)) {
+        return false;
+    }
+    
+    const lengths = {
+        'AD': 24, 'AE': 23, 'AL': 28, 'AT': 20, 'AZ': 28, 'BA': 20, 'BE': 16,
+        'BG': 22, 'BH': 22, 'BR': 29, 'BY': 28, 'CH': 21, 'CR': 22, 'CY': 28,
+        'CZ': 24, 'DE': 22, 'DK': 18, 'DO': 28, 'EE': 20, 'EG': 29, 'ES': 24,
+        'FI': 18, 'FO': 18, 'FR': 27, 'GB': 22, 'GE': 22, 'GI': 23, 'GL': 18,
+        'GR': 27, 'GT': 28, 'HR': 21, 'HU': 28, 'IE': 22, 'IL': 23, 'IS': 26,
+        'IT': 27, 'JO': 30, 'KW': 30, 'KZ': 20, 'LB': 28, 'LC': 32, 'LI': 21,
+        'LT': 20, 'LU': 20, 'LV': 21, 'MC': 27, 'MD': 24, 'ME': 22, 'MK': 19,
+        'MR': 27, 'MT': 31, 'MU': 30, 'NL': 18, 'NO': 15, 'PK': 24, 'PL': 28,
+        'PS': 29, 'PT': 25, 'QA': 29, 'RO': 24, 'RS': 22, 'SA': 24, 'SE': 24,
+        'SI': 19, 'SK': 24, 'SM': 27, 'TN': 24, 'TR': 26, 'UA': 29, 'VA': 22,
+        'VG': 24, 'XK': 20
+    };
+    
+    const countryCode = iban.substring(0, 2);
+    const expectedLength = lengths[countryCode];
+    
+    if (!expectedLength || iban.length !== expectedLength) {
+        return false;
+    }
+    
+    const rearranged = iban.substring(4) + iban.substring(0, 4);
+    
+    let numericString = '';
+    for (let char of rearranged) {
+        if (/[A-Z]/.test(char)) {
+            numericString += (char.charCodeAt(0) - 55).toString();
+        } else {
+            numericString += char;
+        }
+    }
+    
+    let remainder = numericString;
+    while (remainder.length > 2) {
+        const block = remainder.substring(0, 9);
+        remainder = (parseInt(block, 10) % 97).toString() + remainder.substring(block.length);
+    }
+    
+    return parseInt(remainder, 10) % 97 === 1;
+}
+
+// Bank Lookup via Supabase Edge Function
+async function lookupBankFromIBAN(iban, bankField, bicField, statusField) {
+    try {
+        const response = await fetch(`https://lgztglycqtiwcmiydxnm.supabase.co/functions/v1/iban-validate?iban=${encodeURIComponent(iban)}`, {
+            headers: {
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MDc2MTUsImV4cCI6MjA3OTM4MzYxNX0.a_ZeubRokmhdevV3JinTiD1Ji92C4bDHSiiDcYGZnt0',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MDc2MTUsImV4cCI6MjA3OTM4MzYxNX0.a_ZeubRokmhdevV3JinTiD1Ji92C4bDHSiiDcYGZnt0'
+            }
+        });
+        const data = await response.json();
+        
+        if (data.valid && data.bankData) {
+            bankField.value = data.bankData.name || '';
+            bicField.value = data.bankData.bic || '';
+            
+            // Erfolgs-Styling
+            bankField.style.borderColor = '#4caf50';
+            bicField.style.borderColor = '#4caf50';
+        } else {
+            // API hat keine Bank-Daten gefunden
+            showManualFillMessage(statusField);
+            bankField.style.borderColor = '#ddd';
+            bicField.style.borderColor = '#ddd';
+        }
+    } catch (error) {
+        // Kein Internet oder API-Fehler
+        console.log('Bank-Lookup Fehler:', error);
+        showManualFillMessage(statusField);
+        bankField.style.borderColor = '#ddd';
+        bicField.style.borderColor = '#ddd';
+    }
+}
+
+// Zeige "Bitte manuell ausfüllen" Nachricht unter Bank und BIC Feldern
+function showManualFillMessage(statusField) {
+    // Entferne alte Meldungen falls vorhanden
+    const oldMessages = document.querySelectorAll('.manual-fill-message');
+    oldMessages.forEach(msg => msg.remove());
+    
+    // Bank-Feld: Placeholder entfernen + Nachricht
+    const bankField = document.getElementById('bankName');
+    bankField.placeholder = '';
+    const bankMessage = document.createElement('div');
+    bankMessage.className = 'manual-fill-message text-klein';
+    bankMessage.style.cssText = 'color: #ff9800; text-align: right; margin-top: 3px;';
+    bankMessage.textContent = 'Bitte manuell ausfüllen';
+    bankField.parentElement.appendChild(bankMessage);
+    
+    // BIC-Feld: Placeholder entfernen + Nachricht
+    const bicField = document.getElementById('bic');
+    bicField.placeholder = '';
+    const bicMessage = document.createElement('div');
+    bicMessage.className = 'manual-fill-message text-klein';
+    bicMessage.style.cssText = 'color: #ff9800; text-align: right; margin-top: 3px;';
+    bicMessage.textContent = 'Bitte manuell ausfüllen';
+    bicField.parentElement.appendChild(bicMessage);
+}
+
+        function updateAmountDisplay() {
+            const activeAmount = document.querySelector('.amount-btn.active');
+            const customAmount = document.getElementById('customAmount');
+            const individualAmount = document.getElementById('individualAmount');
+            const yearlyDisplay = document.getElementById('yearlyDisplay');
+            
+            const activeInterval = document.querySelector('.interval-btn.active');
+            const interval = activeInterval ? activeInterval.dataset.interval : 'monthly';
+            
+            // Intervall-Multiplikatoren für Jahresberechnung
+            const intervalToYearMultipliers = {
+                'monthly': 12,      // 12 Zahlungen pro Jahr
+                'quarterly': 4,     // 4 Zahlungen pro Jahr
+                'halfyearly': 2,    // 2 Zahlungen pro Jahr
+                'yearly': 1         // 1 Zahlung pro Jahr
+            };
+            
+            let yearlyAmount = 0;
+            
+            if (!individualAmount.classList.contains('hidden')) {
+                // Individuell-Modus: Der eingegebene Betrag ist der Betrag PRO INTERVALL
+                const amountPerInterval = parseFloat(customAmount.value) || 0;
+                yearlyAmount = amountPerInterval * intervalToYearMultipliers[interval];
+            } else if (activeAmount) {
+                // Standard-Modus: Buttons zeigen Monatsbetrag, berechne Jahresbetrag
+                const monthlyAmount = parseFloat(activeAmount.dataset.amount);
+                yearlyAmount = monthlyAmount * 12;
+            }
+            
+            yearlyDisplay.textContent = `${yearlyAmount.toFixed(0)} EUR / Jahr`;
+            
+            // Update button text with calculated amounts for the selected interval
+            const intervalMultipliers = {
+                'monthly': 1,
+                'quarterly': 3,
+                'halfyearly': 6,
+                'yearly': 12
+            };
+            
+            const multiplier = intervalMultipliers[interval];
+            
+            document.querySelectorAll('.amount-btn').forEach(btn => {
+                const baseMonthlyAmount = parseFloat(btn.dataset.amount);
+                const displayAmount = baseMonthlyAmount * multiplier;
+                const amountValue = btn.querySelector('.amount-value');
+                if (amountValue) {
+                    amountValue.textContent = `${displayAmount} €`;
+                }
+            });
+        }
+
+    // Debounce timer und AbortController für API calls
+let autocompleteTimer = null;
+let autocompleteController = null;
+
+async function searchStreetAddress(query) {
+    const suggestions = document.getElementById('streetSuggestions');
+    
+    if (query.length < 3) {
+        suggestions.classList.add('hidden');
+        return;
+    }
+
+    // Clear previous timer
+    if (autocompleteTimer) {
+        clearTimeout(autocompleteTimer);
+    }
+
+    // Cancel previous API request
+    if (autocompleteController) {
+        autocompleteController.abort();
+    }
+
+    // Debounce API call (warte 300ms nach letzter Eingabe)
+    autocompleteTimer = setTimeout(async () => {
+        try {
+            // Create new AbortController for this request
+            autocompleteController = new AbortController();
+            
+            const url = `https://lgztglycqtiwcmiydxnm.supabase.co/functions/v1/address-search?query=${encodeURIComponent(query)}`;
+            
+            const response = await fetch(url, {
+                signal: autocompleteController.signal,
+                headers: {
+                    'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MDc2MTUsImV4cCI6MjA3OTM4MzYxNX0.a_ZeubRokmhdevV3JinTiD1Ji92C4bDHSiiDcYGZnt0',
+                    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MDc2MTUsImV4cCI6MjA3OTM4MzYxNX0.a_ZeubRokmhdevV3JinTiD1Ji92C4bDHSiiDcYGZnt0'
+                }
+            });
+            const data = await response.json();
+            
+            if (!data.results || data.results.length === 0) {
+                suggestions.classList.add('hidden');
+                return;
+            }
+
+           // Filter: Nur Ergebnisse MIT Straße
+const streetResults = data.results.filter(result => {
+    return result.street && result.street.trim() !== '';
+});
+            
+            if (streetResults.length === 0) {
+                suggestions.classList.add('hidden');
+                return;
+            }
+
+            suggestions.innerHTML = '';
+            
+            streetResults.slice(0, 5).forEach(result => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                
+                // Format: Straße Hausnummer, PLZ Ort
+                const street = result.street || '';
+                const houseNumber = result.housenumber || '';
+                const postcode = result.postcode || '';
+                const city = result.city || '';
+                
+                item.innerHTML = `
+                    <strong class="text-klein--fett">${street} ${houseNumber}</strong>
+                    <span class="text-klein" style="margin-left: 8px;">${postcode} ${city}</span>
+                `;
+                
+                item.onclick = () => {
+                    // Auto-fill form fields
+                    document.getElementById('street').value = street;
+                    document.getElementById('houseNumber').value = houseNumber;
+                    document.getElementById('zipCode').value = postcode;
+                    document.getElementById('city').value = city;
+                    suggestions.classList.add('hidden');
+                };
+                
+                suggestions.appendChild(item);
+            });
+
+            suggestions.classList.remove('hidden');
+            
+        } catch (error) {
+            // Ignore AbortError (das ist normal wenn wir die Anfrage abbrechen)
+            if (error.name === 'AbortError') {
+                return;
+            }
+            console.error('Adresssuche Fehler:', error);
+            suggestions.classList.add('hidden');
+        }
+    }, 300); // 300ms debounce
+}
+
+
+        
+        function initializeSignaturePad() {
+            const canvas = document.getElementById('signatureCanvas');
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+
+            // Set canvas size
+            function resizeCanvas() {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // Drawing functions
+            function startDrawing(e) {
+                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX || e.touches[0].clientX) - rect.left;
+                const y = (e.clientY || e.touches[0].clientY) - rect.top;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            }
+
+            function draw(e) {
+                if (!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX || e.touches[0].clientX) - rect.left;
+                const y = (e.clientY || e.touches[0].clientY) - rect.top;
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+
+            function stopDrawing() {
+                isDrawing = false;
+            }
+
+            // Mouse events
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+
+            // Touch events
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                startDrawing(e);
+            });
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                draw(e);
+            });
+            canvas.addEventListener('touchend', stopDrawing);
+
+            // Clear button
+            document.getElementById('clearSignature').addEventListener('click', () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            });
+        }
+
+        function validateForm() {
+            const required = ['salutation', 'firstName', 'lastName', 'birthDate', 
+                             'street', 'houseNumber', 'zipCode', 'city'];
+            
+            let isValid = true;
+            let firstError = null;
+
+            // Check required fields
+            required.forEach(id => {
+                const field = document.getElementById(id);
+                if (!field) {
+                    console.warn(`Feld '${id}' nicht gefunden`);
+                    isValid = false;
+                    return;
+                }
+                if (!field.value) {
+                    field.style.borderColor = '#ff4444';
+                    isValid = false;
+                    if (!firstError) firstError = field;
+                } else {
+                    field.style.borderColor = '#e0e0e0';
+                }
+            });
+
+            // Validate birth date (18+ check)
+            if (!validateBirthDate()) {
+                isValid = false;
+                if (!firstError) firstError = document.getElementById('birthDate');
+            }
+
+            // Validate later start date (max 3 months in future)
+            if (!validateLaterStartDate()) {
+                isValid = false;
+                if (!firstError) firstError = document.getElementById('laterStartDate');
+            }
+
+            // Check if "IBAN selbst ausfüllen" is active
+            const ibanLaterCheckEl = document.getElementById('ibanLaterCheck');
+            const ibanLaterActive = ibanLaterCheckEl ? ibanLaterCheckEl.style.display !== 'none' : false;
+            
+            // Payment field validation depends on mode (NMG vs ERH)
+            if (!ibanLaterActive) {
+                // Always check Kontoinhaber (both NMG and ERH)
+                const accountHolder = document.getElementById('accountHolder');
+                if (accountHolder && !accountHolder.value) {
+                    accountHolder.style.borderColor = '#ff4444';
+                    isValid = false;
+                    if (!firstError) firstError = accountHolder;
+                } else if (accountHolder) {
+                    accountHolder.style.borderColor = '#e0e0e0';
+                }
+
+                if (isERHMode && selectedMember) {
+                    // ERH Mode: Only validate last 4 digits of IBAN
+                    const ibanEl = document.getElementById('iban');
+                    const ibanInput = ibanEl ? ibanEl.value.replace(/\s/g, '') : '';
+                    const storedIbanLast4 = selectedMember.iban.slice(-4);
+                    
+                    if (!ibanInput || ibanInput.length !== 4) {
+                        if (ibanEl) ibanEl.style.borderColor = '#ff4444';
+                        isValid = false;
+                        if (!firstError) firstError = ibanEl;
+                    } else if (ibanInput !== storedIbanLast4) {
+                        if (ibanEl) ibanEl.style.borderColor = '#ff4444';
+                        alert('❌ Die eingegebenen IBAN-Ziffern stimmen nicht überein.');
+                        isValid = false;
+                        if (!firstError) firstError = ibanEl;
+                    } else {
+                        if (ibanEl) ibanEl.style.borderColor = '#e0e0e0';
+                    }
+
+                    // Bank and BIC are pre-filled in ERH, not validated as required
+                } else {
+                    // NMG Mode: Validate full payment fields
+                    const paymentFields = ['iban', 'bankName', 'bic'];
+                    paymentFields.forEach(id => {
+                        const field = document.getElementById(id);
+                        if (!field) return;
+                        if (!field.value) {
+                            field.style.borderColor = '#ff4444';
+                            isValid = false;
+                            if (!firstError) firstError = field;
+                        } else {
+                            field.style.borderColor = '#e0e0e0';
+                        }
+                    });
+
+                    // Extra IBAN validation for NMG
+                    const ibanFieldNMG = document.getElementById('iban');
+                    const ibanValueNMG = ibanFieldNMG ? ibanFieldNMG.value.replace(/\s/g, '') : '';
+                    if (ibanValueNMG && !isValidIBAN(ibanValueNMG)) {
+                        if (ibanFieldNMG) ibanFieldNMG.style.borderColor = '#ff4444';
+                        isValid = false;
+                    }
+                }
+            }
+
+            // Check amount/interval selection
+            const individualAmountEl = document.getElementById('individualAmount');
+            const activeAmount = document.querySelector('.amount-btn.active');
+            const customAmountEl = document.getElementById('customAmount');
+            const customAmountVal = customAmountEl ? customAmountEl.value : '';
+
+            if (!individualAmountEl || individualAmountEl.classList.contains('hidden')) {
+                // Standard mode: check if any button is selected
+                if (!activeAmount) {
+                    alert('❌ Bitte wählen Sie einen Unterstützungsbeitrag aus.');
+                    isValid = false;
+                }
+            } else {
+                // Individual mode: check if amount is entered
+                if (!customAmountVal || parseFloat(customAmountVal) <= 0) {
+                    if (customAmountEl) customAmountEl.style.borderColor = '#ff4444';
+                    alert('❌ Bitte geben Sie einen Unterstützungsbeitrag ein.');
+                    isValid = false;
+                    if (!firstError) firstError = customAmountEl;
+                } else {
+                    if (customAmountEl) customAmountEl.style.borderColor = '#e0e0e0';
+                }
+            }
+
+            // Check consents
+            const consents = ['consent1', 'consent2', 'consent3'];
+            consents.forEach(id => {
+                const consentEl = document.getElementById(id);
+                if (consentEl && !consentEl.checked) {
+                    isValid = false;
+                }
+            });
+
+            // Check signature
+            const canvas = document.getElementById('signatureCanvas');
+            if (!canvas) {
+                console.warn('signatureCanvas nicht gefunden');
+                isValid = false;
+            } else {
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const hasSignature = imageData.data.some(channel => channel !== 0 && channel !== 255);
+
+                if (!hasSignature) {
+                    const sigPad = document.querySelector('.signature-pad');
+                    if (sigPad) sigPad.style.borderColor = '#ff4444';
+                    isValid = false;
+                }
+            }
+
+            if (isValid) {
+                // Show success and submit
+                alert('✅ Alle Daten korrekt! Formular wird übermittelt...');
+                submitForm();
+            } else {
+                alert('❌ Bitte füllen Sie alle Pflichtfelder aus und überprüfen Sie Ihre Eingaben.');
+                if (firstError) firstError.focus();
+            }
+        }
+
+        // Supabase Konfiguration
+        const SUPABASE_URL = 'https://lgztglycqtiwcmiydxnm.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzgwNzYxNSwiZXhwIjoyMDc5MzgzNjE1fQ.54kSk9ZSUdQt6LKYWkblqgR6Sjev80W80qkNHYEbPgk';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // URL-Parameter für Formular-Kontext
+        const urlParams = new URLSearchParams(window.location.search);
+        const formContext = {
+            campaign_id: urlParams.get('kampagne') || urlParams.get('campaign'),
+            campaign_area_id: urlParams.get('werbegebiet') || urlParams.get('wg') || urlParams.get('area'),
+            botschafter_id: urlParams.get('botschafter') || urlParams.get('werber'),
+            teamchef_id: null,
+            quality_id: null,
+            customer_id: null
+        };
+
+        // Botschafter-Daten laden (Name + Foto)
+        async function loadBotschafterData() {
+            console.log('Loading Botschafter, ID:', formContext.botschafter_id);
+            if (!formContext.botschafter_id) {
+                console.warn('Keine Botschafter-ID in URL');
+                return;
+            }
+
+            try {
+                const { data: profile } = await supabaseClient
+                    .from('user_profiles')
+                    .select('first_name, last_name, photo_extern_url')
+                    .eq('user_id', formContext.botschafter_id)
+                    .single();
+
+                console.log('Botschafter profile loaded:', profile);
+
+                if (profile) {
+                    // Name anzeigen
+                    const werberName = document.getElementById('werberName');
+                    if (werberName) {
+                        werberName.textContent = profile.first_name || '-';
+                    }
+
+                    // Externes Foto anzeigen
+                    console.log('Photo URL:', profile.photo_extern_url);
+                    if (profile.photo_extern_url) {
+                        const werberFoto = document.getElementById('werberFoto');
+                        const werberPlaceholder = document.getElementById('werberPlaceholder');
+                        if (werberFoto && werberPlaceholder) {
+                            werberFoto.src = profile.photo_extern_url;
+                            werberFoto.style.display = 'block';
+                            werberPlaceholder.style.display = 'none';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Fehler beim Laden des Botschafters:', error);
+            }
+        }
+
+        // Formular-Kontext aus Datenbank laden
+        async function loadFormContext() {
+            // Botschafter immer laden (auch ohne Kampagne)
+            await loadBotschafterData();
+
+            if (!formContext.campaign_area_id) {
+                console.warn('Kein Werbegebiet in URL');
+                return;
+            }
+
+            try {
+                // Campaign Area laden
+                const { data: area, error: areaError } = await supabaseClient
+                    .from('campaign_areas')
+                    .select('*, customer_area_id')
+                    .eq('id', formContext.campaign_area_id)
+                    .single();
+
+                console.log('Campaign Area loaded:', area, areaError);
+
+                if (area) {
+                    const verbandName = document.getElementById('verbandName');
+                    const verbandAdresse = document.getElementById('verbandAdresse');
+                    const footerKundeName = document.getElementById('footerKundeName');
+                    const datenschutzLink = document.getElementById('datenschutzLink');
+
+                    let privacyPolicyUrl = null;
+
+                    // Customer Area laden (Stammdaten: Name, Adresse, Datenschutz)
+                    if (area.customer_area_id) {
+                        // Setze customer_area_id für Bestandsmitglieder-Suche
+                        currentCustomerAreaId = area.customer_area_id;
+                        console.log('Customer Area ID für ERH-Suche:', currentCustomerAreaId);
+
+                        const { data: customerArea } = await supabaseClient
+                            .from('customer_areas')
+                            .select('name, street, house_number, postal_code, city, privacy_policy, customer_id')
+                            .eq('id', area.customer_area_id)
+                            .single();
+
+                        console.log('Customer Area loaded:', customerArea);
+
+                        if (customerArea) {
+                            // Name anzeigen und für E-Mail speichern
+                            if (customerArea.name) {
+                                if (verbandName) verbandName.textContent = customerArea.name;
+                                if (footerKundeName) footerKundeName.textContent = customerArea.name;
+                                formContext.werbegebiet_name = customerArea.name;
+                                document.title = customerArea.name;
+                                // URL kosmetisch anpassen
+                                const urlName = customerArea.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9äöüÄÖÜß\-]/g, '');
+                                history.replaceState(null, '', '/' + urlName + '-Nachbarschaftssteckbrief');
+                            }
+
+                            // Adresse anzeigen (WG oder Fallback Kunde)
+                            if (verbandAdresse) {
+                                let adresseGeladen = false;
+
+                                // Erst WG-Adresse versuchen
+                                if (customerArea.street) {
+                                    const adresseParts = [customerArea.street];
+                                    if (customerArea.house_number) adresseParts.push(customerArea.house_number);
+                                    let adresse = adresseParts.join(' ');
+                                    if (customerArea.postal_code || customerArea.city) {
+                                        adresse += ', ';
+                                        if (customerArea.postal_code) adresse += customerArea.postal_code + ' ';
+                                        if (customerArea.city) adresse += customerArea.city;
+                                    }
+                                    verbandAdresse.textContent = adresse.trim();
+                                    adresseGeladen = true;
+                                }
+
+                                // Fallback: Kunden-Adresse
+                                if (!adresseGeladen && customerArea.customer_id) {
+                                    const { data: customerAddr } = await supabaseClient
+                                        .from('customers')
+                                        .select('street, house_number, postal_code, city')
+                                        .eq('id', customerArea.customer_id)
+                                        .single();
+
+                                    if (customerAddr && customerAddr.street) {
+                                        const adresseParts = [customerAddr.street];
+                                        if (customerAddr.house_number) adresseParts.push(customerAddr.house_number);
+                                        let adresse = adresseParts.join(' ');
+                                        if (customerAddr.postal_code || customerAddr.city) {
+                                            adresse += ', ';
+                                            if (customerAddr.postal_code) adresse += customerAddr.postal_code + ' ';
+                                            if (customerAddr.city) adresse += customerAddr.city;
+                                        }
+                                        verbandAdresse.textContent = adresse.trim();
+                                        adresseGeladen = true;
+                                    }
+                                }
+
+                                // Wenn keine Adresse gefunden, Dummy entfernen
+                                if (!adresseGeladen) {
+                                    verbandAdresse.textContent = '';
+                                }
+                            }
+
+                            // Datenschutzlink: Erst vom Werbegebiet
+                            if (customerArea.privacy_policy) {
+                                privacyPolicyUrl = customerArea.privacy_policy;
+                            }
+                            // Fallback: Vom Kunden laden
+                            else if (customerArea.customer_id) {
+                                const { data: customer } = await supabaseClient
+                                    .from('customers')
+                                    .select('privacy_policy')
+                                    .eq('id', customerArea.customer_id)
+                                    .single();
+
+                                if (customer && customer.privacy_policy) {
+                                    privacyPolicyUrl = customer.privacy_policy;
+                                }
+                            }
+
+                            // Customer ID für Record speichern
+                            formContext.customer_id = customerArea.customer_id;
+                        }
+                    } else {
+                        // Fallback: Name aus campaign_areas verwenden
+                        if (area.name) {
+                            if (verbandName) verbandName.textContent = area.name;
+                            if (footerKundeName) footerKundeName.textContent = area.name;
+                            formContext.werbegebiet_name = area.name;
+                            document.title = area.name;
+                            // URL kosmetisch anpassen
+                            const urlName = area.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9äöüÄÖÜß\-]/g, '');
+                            history.replaceState(null, '', '/' + urlName + '-Nachbarschaftssteckbrief');
+                        }
+                    }
+
+                    // Datenschutzlink setzen oder deaktivieren
+                    if (datenschutzLink) {
+                        if (privacyPolicyUrl) {
+                            datenschutzLink.href = privacyPolicyUrl;
+                        } else {
+                            datenschutzLink.removeAttribute('href');
+                            datenschutzLink.style.pointerEvents = 'none';
+                            datenschutzLink.style.color = 'inherit';
+                            datenschutzLink.style.textDecoration = 'none';
+                        }
+                    }
+
+                    // Gruppenbild anzeigen (falls vorhanden)
+                    const gruppenbildContainer = document.getElementById('gruppenbildContainer');
+                    if (gruppenbildContainer && area.gruppenbild_url) {
+                        gruppenbildContainer.style.backgroundImage = `url('${area.gruppenbild_url}')`;
+                        gruppenbildContainer.style.display = 'block';
+                    }
+
+                    // Formular-Einstellungen anwenden (ERH + Zahlungsmodalitäten)
+                    applyFormSettings(area);
+                }
+
+                // Teamchef aus campaign_assignments laden (basierend auf Kampagne + aktuelle KW)
+                if (formContext.campaign_id) {
+                    await loadTeamchefFromAssignment();
+                }
+
+                // Beitrags-Vorlagen des Botschafters laden
+                if (formContext.botschafter_id) {
+                    await loadBeitragsVorlagen();
+                }
+
+                console.log('Form context loaded:', formContext);
+
+            } catch (error) {
+                console.error('Fehler beim Laden des Kontexts:', error);
+            }
+        }
+
+        // Teamchef aus Kampagnen-Zuweisung laden
+        async function loadTeamchefFromAssignment() {
+            if (!formContext.campaign_id) return;
+
+            // Aktuelle Kalenderwoche berechnen
+            const now = new Date();
+            const startOfYear = new Date(now.getFullYear(), 0, 1);
+            const days = Math.floor((now - startOfYear) / (24 * 60 * 60 * 1000));
+            const currentKW = Math.ceil((days + startOfYear.getDay() + 1) / 7);
+
+            // KW im formContext speichern (für Record-Zuordnung)
+            formContext.kw = currentKW;
+
+            try {
+                const { data: assignment, error } = await supabaseClient
+                    .from('campaign_assignments')
+                    .select('teamchef_id')
+                    .eq('campaign_id', formContext.campaign_id)
+                    .eq('kw', currentKW)
+                    .single();
+
+                if (error) {
+                    console.warn('Keine Kampagnen-Zuweisung für KW', currentKW, ':', error.message);
+                    return;
+                }
+
+                if (assignment && assignment.teamchef_id) {
+                    formContext.teamchef_id = assignment.teamchef_id;
+                    console.log('Teamchef aus KW', currentKW, 'geladen:', assignment.teamchef_id);
+                }
+            } catch (error) {
+                console.error('Fehler beim Laden des Teamchefs:', error);
+            }
+        }
+
+        // Beitrags-Vorlagen des Botschafters laden
+        let userBeitragsVorlagen = [];
+
+        async function loadBeitragsVorlagen() {
+            if (!formContext.botschafter_id) return;
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('beitrags_vorlagen')
+                    .select('*')
+                    .eq('user_id', formContext.botschafter_id)
+                    .order('created_at', { ascending: true });
+
+                if (error) throw error;
+                userBeitragsVorlagen = data || [];
+
+                // Dropdown mit Vorlagen füllen
+                renderVorlagenDropdown();
+            } catch (err) {
+                console.error('Fehler beim Laden der Beitrags-Vorlagen:', err);
+                userBeitragsVorlagen = [];
+            }
+        }
+
+        function renderVorlagenDropdown() {
+            const container = document.getElementById('userVorlagenOptions');
+            if (!container) return;
+
+            if (userBeitragsVorlagen.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '<div style="border-top: 1px solid #eee; margin: 5px 0;"></div>';
+            userBeitragsVorlagen.forEach((vorlage, index) => {
+                html += `<div class="preset-option text-klein" style="padding: 8px 15px; cursor: pointer;" data-preset="vorlage-${index}">${escapeHtml(vorlage.name)}</div>`;
+            });
+            html += '<div style="border-top: 1px solid #eee; margin: 5px 0;"></div>';
+
+            container.innerHTML = html;
+
+            // Event Listeners für die neuen Vorlagen-Optionen
+            container.querySelectorAll('.preset-option').forEach(option => {
+                option.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const preset = this.dataset.preset;
+                    const vorlageIndex = parseInt(preset.replace('vorlage-', ''));
+                    if (!isNaN(vorlageIndex) && userBeitragsVorlagen[vorlageIndex]) {
+                        applyBeitragsVorlage(userBeitragsVorlagen[vorlageIndex]);
+                    }
+                    document.getElementById('presetDropdown').classList.add('hidden');
+                });
+            });
+        }
+
+        function applyBeitragsVorlage(vorlage) {
+            // Standard-Buttons anzeigen, individuell ausblenden
+            document.getElementById('standardAmounts').classList.remove('hidden');
+            document.getElementById('individualAmount').classList.add('hidden');
+            document.getElementById('customAmount').value = '';
+
+            // Buttons aktualisieren
+            const buttons = document.querySelectorAll('.amount-btn');
+            const values = [
+                { wert: vorlage.beitrag1_wert, oben: vorlage.beitrag1_text_oben, unten: vorlage.beitrag1_text_unten },
+                { wert: vorlage.beitrag2_wert, oben: vorlage.beitrag2_text_oben, unten: vorlage.beitrag2_text_unten },
+                { wert: vorlage.beitrag3_wert, oben: vorlage.beitrag3_text_oben, unten: vorlage.beitrag3_text_unten }
+            ];
+
+            buttons.forEach((btn, i) => {
+                if (values[i]) {
+                    btn.dataset.amount = values[i].wert;
+                    btn.querySelector('.amount-value').textContent = `${values[i].wert} €`;
+
+                    const textOben = btn.querySelector('.amount-text-oben');
+                    const textUnten = btn.querySelector('.amount-text-unten');
+
+                    if (textOben) {
+                        textOben.textContent = values[i].oben || '';
+                        textOben.style.visibility = values[i].oben ? 'visible' : 'hidden';
+                    }
+                    if (textUnten) {
+                        textUnten.textContent = values[i].unten || '';
+                        textUnten.style.visibility = values[i].unten ? 'visible' : 'hidden';
+                    }
+                }
+                btn.classList.remove('active');
+            });
+
+            updateAmountDisplay();
+        }
+
+        function applyStandardVorlage() {
+            // Standard 5/10/15 anwenden
+            document.getElementById('standardAmounts').classList.remove('hidden');
+            document.getElementById('individualAmount').classList.add('hidden');
+            document.getElementById('customAmount').value = '';
+
+            const buttons = document.querySelectorAll('.amount-btn');
+            const values = [
+                { wert: 5, unten: 'Studenten' },
+                { wert: 10, unten: 'Durchschnitt' },
+                { wert: 15, unten: 'Familien' }
+            ];
+
+            buttons.forEach((btn, i) => {
+                btn.dataset.amount = values[i].wert;
+                btn.querySelector('.amount-value').textContent = `${values[i].wert} €`;
+
+                const textOben = btn.querySelector('.amount-text-oben');
+                const textUnten = btn.querySelector('.amount-text-unten');
+
+                if (textOben) {
+                    textOben.textContent = '';
+                    textOben.style.visibility = 'hidden';
+                }
+                if (textUnten) {
+                    textUnten.textContent = values[i].unten;
+                    textUnten.style.visibility = 'visible';
+                }
+                btn.classList.remove('active');
+            });
+
+            updateAmountDisplay();
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Formular-Einstellungen anwenden
+        function applyFormSettings(area) {
+            // ERH deaktivieren wenn nicht erlaubt
+            const erhRadio = document.querySelector('input[name="type"][value="ERH"]');
+            const erhLabel = erhRadio?.closest('label');
+
+            if (area.erhohungen_enabled === false) {
+                if (erhRadio) {
+                    erhRadio.disabled = true;
+                }
+                if (erhLabel) {
+                    erhLabel.style.opacity = '0.4';
+                    erhLabel.style.pointerEvents = 'none';
+                    erhLabel.style.cursor = 'not-allowed';
+                    erhLabel.title = 'Erhöhungen sind für dieses Einsatzgebiet deaktiviert';
+                }
+            }
+
+            // Zahlungsmodalitäten filtern
+            const allowedModalities = area.payment_modalities || ['monthly', 'quarterly', 'biannual', 'annual'];
+            const modalityMapping = {
+                'monthly': 'monthly',
+                'quarterly': 'quarterly',
+                'biannual': 'halfyearly',
+                'annual': 'yearly'
+            };
+
+            // Alle interval-buttons durchgehen
+            document.querySelectorAll('.interval-btn').forEach(btn => {
+                const interval = btn.dataset.interval;
+                const isAllowed = allowedModalities.some(mod => modalityMapping[mod] === interval);
+
+                if (!isAllowed) {
+                    btn.style.display = 'none';
+                }
+            });
+
+            // Falls aktive Modalität nicht mehr erlaubt ist, erste erlaubte auswählen
+            const activeBtn = document.querySelector('.interval-btn.active');
+            if (activeBtn && activeBtn.style.display === 'none') {
+                const firstVisibleBtn = document.querySelector('.interval-btn:not([style*="display: none"])');
+                if (firstVisibleBtn) {
+                    activeBtn.classList.remove('active');
+                    firstVisibleBtn.classList.add('active');
+                }
+            }
+        }
+
+        async function submitForm() {
+            const btn = document.getElementById('validateBtn');
+            if (!btn) {
+                console.error('validateBtn nicht gefunden');
+                return;
+            }
+            btn.disabled = true;
+            btn.innerHTML = 'Wird übermittelt... <span class="loading"></span>';
+
+            // Aktives Intervall ermitteln
+            const activeInterval = document.querySelector('.interval-btn.active');
+            const interval = activeInterval ? activeInterval.dataset.interval : 'monthly';
+
+            // Betrag ermitteln (aus Button oder Custom)
+            const activeAmount = document.querySelector('.amount-btn.active');
+            const customAmountField = document.getElementById('customAmount');
+            const individualAmount = document.getElementById('individualAmount');
+
+            let amount = 10; // Default
+            if (individualAmount && !individualAmount.classList.contains('hidden') && customAmountField?.value) {
+                amount = parseFloat(customAmountField.value);
+            } else if (activeAmount) {
+                // Button-Wert ist der Monatsbetrag
+                const baseMonthly = parseFloat(activeAmount.dataset.amount);
+                const intervalMultipliers = { 'monthly': 1, 'quarterly': 3, 'halfyearly': 6, 'yearly': 12 };
+                amount = baseMonthly * intervalMultipliers[interval];
+            }
+
+            // Helper function for safe element access
+            const getValue = (id) => document.getElementById(id)?.value || '';
+            const getChecked = (id) => document.getElementById(id)?.checked || false;
+
+            // Collect form data
+            const typeRadio = document.querySelector('input[name="type"]:checked');
+            const formData = {
+                type: typeRadio ? typeRadio.value : 'NMG',
+                company: getValue('company'),
+                salutation: getValue('salutation'),
+                title: getValue('title'),
+                firstName: getValue('firstName'),
+                lastName: getValue('lastName'),
+                birthDate: getValue('birthDate'),
+                email: getValue('email'),
+                phoneFixed: getValue('phoneFixed'),
+                phoneMobile: getValue('phoneMobile'),
+                street: getValue('street'),
+                houseNumber: getValue('houseNumber'),
+                zipCode: getValue('zipCode'),
+                city: getValue('city'),
+                country: getValue('country'),
+                accountHolder: getValue('accountHolder'),
+                bankName: getValue('bankName'),
+                iban: getValue('iban'),
+                bic: getValue('bic'),
+                amount: amount,
+                interval: interval,
+                spendenquittung: getChecked('spendenquittung'),
+                consent1: getChecked('consent1'),
+                consent2: getChecked('consent2'),
+                consent3: getChecked('consent3'),
+                contactEmail: getChecked('contactEmail'),
+                contactPhone: getChecked('contactPhone'),
+                laterStartDate: getValue('laterStartDate'),
+                notes: getValue('notes'),
+                signature: document.getElementById('signatureCanvas')?.toDataURL() || ''
+            };
+
+            // Add ERH specific fields
+            if (formData.type === 'ERH') {
+                formData.memberNumber = getValue('memberNumber');
+                formData.memberSince = getValue('memberSince');
+                formData.oldAmount = parseFloat(getValue('oldAmount')) || 0;
+                formData.oldInterval = getValue('oldInterval');
+            }
+
+            // Calculate yearly amount (JE)
+            const yearMultipliers = { 'monthly': 12, 'quarterly': 4, 'halfyearly': 2, 'yearly': 1 };
+            formData.yearlyAmount = amount * yearMultipliers[interval];
+
+            console.log('Form data to submit:', formData);
+
+            try {
+                // DUPLIKAT-PRÜFUNG: Suche nach existierendem Record mit gleichen Daten
+                const cleanIban = formData.iban.replace(/\s/g, '');
+                const { data: existingRecords, error: searchError } = await supabaseClient
+                    .from('records')
+                    .select('id, first_name, last_name, birth_date, iban, created_at')
+                    .eq('first_name', formData.firstName)
+                    .eq('last_name', formData.lastName)
+                    .limit(100);
+
+                if (searchError) {
+                    console.error('Fehler bei Duplikat-Prüfung:', searchError);
+                }
+
+                // Prüfe auf echtes Duplikat (Name + Geburtsdatum + IBAN)
+                const duplicateFound = existingRecords?.find(record => {
+                    const existingIban = (record.iban || '').replace(/\s/g, '');
+                    return record.first_name === formData.firstName &&
+                           record.last_name === formData.lastName &&
+                           record.birth_date === formData.birthDate &&
+                           existingIban === cleanIban;
+                });
+
+                if (duplicateFound) {
+                    const dupDate = new Date(duplicateFound.created_at).toLocaleDateString('de-DE');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Jetzt überprüfen';
+                    alert(`❌ Duplikat gefunden!\n\nEin Datensatz mit diesen Daten existiert bereits (erstellt am ${dupDate}).\n\nBitte prüfen Sie die Eingaben.`);
+                    return;
+                }
+
+                // Kontext aus formContext verwenden (wurde beim Laden bereits ermittelt)
+                const werberId = formContext.botschafter_id;
+                const areaId = formContext.campaign_area_id;
+                const campaignId = formContext.campaign_id;
+                const customerId = formContext.customer_id;
+
+                // Validierung: Diese Felder sind in der DB NOT NULL
+                if (!werberId || !areaId || !campaignId) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Jetzt überprüfen';
+                    alert('❌ Fehler: Kontext fehlt!\n\nDas Formular muss über das Portal aufgerufen werden (Botschafter, Werbegebiet und Kampagne müssen ausgewählt sein).');
+                    console.error('Fehlende URL-Parameter:', { werberId, areaId, campaignId });
+                    return;
+                }
+
+                // Teamchef und KW aus formContext holen
+                const teamchefId = formContext.teamchef_id;
+                const currentKW = formContext.kw;
+
+                // In Supabase speichern - alle Felder direkt in DB-Spalten
+                const { data: insertedRecord, error: insertError } = await supabaseClient
+                    .from('records')
+                    .insert({
+                        // Kontext-Verknüpfungen
+                        werber_id: werberId,
+                        campaign_area_id: areaId,
+                        campaign_id: campaignId,
+                        customer_id: customerId,
+                        teamchef_id: teamchefId || null,
+                        kw: currentKW || null,
+                        status: 'success',
+                        synced: true,
+
+                        // Datensatz-Typ (neumitglied / erhoehung)
+                        record_type: formData.type === 'ERH' ? 'erhoehung' : 'neumitglied',
+                        record_status: 'aktiv',
+
+                        // Persönliche Daten
+                        salutation: formData.salutation,
+                        title: formData.title,
+                        first_name: formData.firstName,
+                        last_name: formData.lastName,
+                        company: formData.company,
+                        birth_date: formData.birthDate || null,
+                        email: formData.email,
+                        phone_fixed: formData.phoneFixed,
+                        phone_mobile: formData.phoneMobile,
+
+                        // Adresse
+                        street: formData.street,
+                        house_number: formData.houseNumber,
+                        zip_code: formData.zipCode,
+                        city: formData.city,
+                        country: formData.country,
+
+                        // Zahlungsdaten
+                        iban: formData.iban,
+                        bic: formData.bic,
+                        bank_name: formData.bankName,
+                        account_holder: formData.accountHolder,
+
+                        // Beiträge
+                        amount: formData.amount,
+                        yearly_amount: formData.yearlyAmount,
+                        interval: formData.interval,
+                        donation_receipt: formData.spendenquittung,
+
+                        // Erhöhungs-spezifisch
+                        member_number: formData.memberNumber || null,
+                        member_since: formData.memberSince || null,
+                        old_amount: formData.oldAmount || null,
+                        old_interval: formData.oldInterval || null,
+
+                        // Aufnahmedatum: Späteres Datum wenn angegeben, sonst aktueller Zeitpunkt
+                        start_date: formData.laterStartDate ? formData.laterStartDate + 'T12:00:00' : new Date().toISOString(),
+
+                        // Einwilligungen
+                        contact_email: formData.contactEmail,
+                        contact_phone: formData.contactPhone,
+
+                        // Sonstiges
+                        notes: formData.notes,
+                        signature: formData.signature,
+
+                        // Zusätzliche Daten als JSON (nur noch Consents)
+                        data: {
+                            consent1: formData.consent1,
+                            consent2: formData.consent2,
+                            consent3: formData.consent3
+                        }
+                    })
+                    .select()
+                    .single();
+
+                if (insertError) {
+                    throw insertError;
+                }
+
+                console.log('Record gespeichert:', insertedRecord);
+
+                // Bestätigungsmail senden (nur für NMG und wenn E-Mail vorhanden)
+                if (formData.type === 'NMG' && formData.email) {
+                    await sendConfirmationEmail(formData, formContext.werbegebiet_name || 'DRK Mitgliederwerbung');
+                }
+
+                // Show success page
+                document.querySelector('.container').innerHTML = `
+                    <div class="header">
+                        <div class="drk-logo" style="margin: 0 auto; width: 100px; height: 100px;">DRK</div>
+                    </div>
+                    <div style="padding: 40px; text-align: center;">
+                        <h1 style="color: #667eea; margin-bottom: 20px;">Vielen Dank!</h1>
+                        <p class="text-normal" style="margin-bottom: 30px;">
+                            Ihre Fördermitgliedschaft wurde erfolgreich registriert.
+                        </p>
+                        <p class="text-klein">
+                            Sie erhalten in Kürze eine Bestätigungs-E-Mail mit allen Details.
+                        </p>
+                        <button onclick="location.reload()" class="submit-btn" style="margin-top: 30px;">
+                            Neues Formular
+                        </button>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Fehler beim Speichern:', error);
+                btn.disabled = false;
+                btn.innerHTML = 'Jetzt überprüfen';
+                alert(`❌ Fehler beim Speichern:\n\n${error.message || 'Unbekannter Fehler'}\n\nBitte versuchen Sie es erneut.`);
+            }
+        }
+
+        // ============================================
+        // BESTÄTIGUNGSMAIL VERSAND
+        // ============================================
+        async function sendConfirmationEmail(formData, senderName) {
+            try {
+                // E-Mail-Vorlage aus Supabase laden
+                const { data: vorlage, error: vorlageError } = await supabaseClient
+                    .from('email_vorlagen')
+                    .select('betreff, inhalt')
+                    .eq('vorlage_typ', 'willkommen')
+                    .eq('aktiv', true)
+                    .single();
+
+                if (vorlageError || !vorlage) {
+                    console.warn('Keine E-Mail-Vorlage gefunden, überspringe Versand');
+                    return;
+                }
+
+                // Intervall-Bezeichnung
+                const intervallMap = {
+                    'monthly': 'Monat',
+                    'quarterly': 'Quartal',
+                    'halfyearly': 'Halbjahr',
+                    'yearly': 'Jahr'
+                };
+                const intervallText = intervallMap[formData.interval] || formData.interval;
+
+                // Hilfsfunktionen
+                const formatDate = (dateStr) => {
+                    if (!dateStr) return '';
+                    const date = new Date(dateStr);
+                    return date.toLocaleDateString('de-DE');
+                };
+
+                const maskIban = (iban) => {
+                    if (!iban) return '';
+                    const clean = iban.replace(/\s/g, '');
+                    if (clean.length < 6) return iban;
+                    return clean.substring(0, 4) + ' **** **** **** ' + clean.substring(clean.length - 2);
+                };
+
+                // Adresse zusammenbauen
+                const adresse = [
+                    formData.street && formData.houseNumber ? `${formData.street} ${formData.houseNumber}` : formData.street,
+                    formData.zipCode && formData.city ? `${formData.zipCode} ${formData.city}` : formData.city
+                ].filter(Boolean).join(', ');
+
+                // Telefon (mobil bevorzugt)
+                const telefon = formData.phoneMobile || formData.phoneFixed || '';
+
+                // WG/Kunden-Daten laden (Website, Datenschutz, Ansprechpartner)
+                let websiteLink = '';
+                let datenschutzLink = '';
+                let ansprechpartnerName = '';
+                let ansprechpartnerTelefon = '';
+                let ansprechpartnerEmail = '';
+                let anschriftOv = '';
+
+                if (formContext.campaign_area_id) {
+                    // Erst campaign_areas laden um customer_area_id zu bekommen
+                    const { data: campaignArea } = await supabaseClient
+                        .from('campaign_areas')
+                        .select('customer_area_id')
+                        .eq('id', formContext.campaign_area_id)
+                        .single();
+
+                    const customerAreaId = campaignArea?.customer_area_id;
+
+                    if (customerAreaId) {
+                        // customer_areas laden (WG-Daten)
+                        const { data: areaData } = await supabaseClient
+                            .from('customer_areas')
+                            .select('website, privacy_policy, customer_id, street, house_number, postal_code, city')
+                            .eq('id', customerAreaId)
+                            .single();
+
+                        if (areaData) {
+                            websiteLink = areaData.website || '';
+                            datenschutzLink = areaData.privacy_policy || '';
+
+                            // WG-Anschrift zusammenbauen
+                            if (areaData.street || areaData.city) {
+                                const strasseHnr = [areaData.street, areaData.house_number].filter(Boolean).join(' ');
+                                const plzOrt = [areaData.postal_code, areaData.city].filter(Boolean).join(' ');
+                                anschriftOv = [strasseHnr, plzOrt].filter(Boolean).join(', ');
+                            }
+
+                            // WG-Ansprechpartner laden
+                            const { data: areaContacts } = await supabaseClient
+                                .from('customer_area_contacts')
+                                .select('first_name, last_name, phone, email')
+                                .eq('area_id', customerAreaId)
+                                .limit(1);
+
+                            if (areaContacts && areaContacts.length > 0) {
+                                const contact = areaContacts[0];
+                                ansprechpartnerName = [contact.first_name, contact.last_name].filter(Boolean).join(' ');
+                                ansprechpartnerTelefon = contact.phone || '';
+                                ansprechpartnerEmail = contact.email || '';
+                            }
+
+                            // Fallback: Kunden-Daten wenn WG-Daten fehlen
+                            const customerId = areaData.customer_id || formContext.customer_id;
+                            if (customerId && (!websiteLink || !datenschutzLink || !ansprechpartnerName || !anschriftOv)) {
+                                const { data: customerData } = await supabaseClient
+                                    .from('customers')
+                                    .select('website, privacy_policy, street, house_number, postal_code, city')
+                                    .eq('id', customerId)
+                                    .single();
+
+                                if (customerData) {
+                                    if (!websiteLink) websiteLink = customerData.website || '';
+                                    if (!datenschutzLink) datenschutzLink = customerData.privacy_policy || '';
+                                    // Kunden-Anschrift als Fallback
+                                    if (!anschriftOv && (customerData.street || customerData.city)) {
+                                        const strasseHnr = [customerData.street, customerData.house_number].filter(Boolean).join(' ');
+                                        const plzOrt = [customerData.postal_code, customerData.city].filter(Boolean).join(' ');
+                                        anschriftOv = [strasseHnr, plzOrt].filter(Boolean).join(', ');
+                                    }
+                                }
+
+                                // Kunden-Ansprechpartner als Fallback
+                                if (!ansprechpartnerName) {
+                                    const { data: customerContacts } = await supabaseClient
+                                        .from('customer_contacts')
+                                        .select('first_name, last_name, phone, email')
+                                        .eq('customer_id', customerId)
+                                        .limit(1);
+
+                                    if (customerContacts && customerContacts.length > 0) {
+                                        const contact = customerContacts[0];
+                                        ansprechpartnerName = [contact.first_name, contact.last_name].filter(Boolean).join(' ');
+                                        ansprechpartnerTelefon = contact.phone || '';
+                                        ansprechpartnerEmail = contact.email || '';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Platzhalter ersetzen
+                let emailBody = vorlage.inhalt
+                    // Persönliche Daten
+                    .replace(/\{\{anrede\}\}/g, formData.salutation || '')
+                    .replace(/\{\{vorname\}\}/g, formData.firstName || '')
+                    .replace(/\{\{nachname\}\}/g, formData.lastName || '')
+                    .replace(/\{\{email\}\}/g, formData.email || '')
+                    .replace(/\{\{telefon\}\}/g, telefon)
+                    .replace(/\{\{geburtsdatum\}\}/g, formatDate(formData.birthDate))
+                    .replace(/\{\{adresse\}\}/g, adresse)
+                    // Bankdaten
+                    .replace(/\{\{kontoinhaber\}\}/g, formData.accountHolder || '')
+                    .replace(/\{\{iban_maskiert\}\}/g, maskIban(formData.iban))
+                    // Beitrag
+                    .replace(/\{\{betrag\}\}/g, formData.amount || '')
+                    .replace(/\{\{intervall\}\}/g, intervallText)
+                    // WG/Kunden-Daten
+                    .replace(/\{\{werbegebiet_name\}\}/g, senderName || '')
+                    .replace(/\{\{ansprechpartner_name\}\}/g, ansprechpartnerName)
+                    .replace(/\{\{ansprechpartner_telefon\}\}/g, ansprechpartnerTelefon)
+                    .replace(/\{\{ansprechpartner_email\}\}/g, ansprechpartnerEmail)
+                    .replace(/\{\{website_link\}\}/g, websiteLink)
+                    .replace(/\{\{datenschutz_link\}\}/g, datenschutzLink)
+                    .replace(/\{\{anschrift_ov\}\}/g, anschriftOv);
+
+                let emailSubject = vorlage.betreff
+                    .replace(/\{\{anrede\}\}/g, formData.salutation || '')
+                    .replace(/\{\{vorname\}\}/g, formData.firstName || '')
+                    .replace(/\{\{nachname\}\}/g, formData.lastName || '');
+
+                // E-Mail über Edge Function senden
+                const response = await fetch('https://lgztglycqtiwcmiydxnm.supabase.co/functions/v1/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MDc2MTUsImV4cCI6MjA3OTM4MzYxNX0.a_ZeubRokmhdevV3JinTiD1Ji92C4bDHSiiDcYGZnt0'
+                    },
+                    body: JSON.stringify({
+                        to: formData.email,
+                        subject: emailSubject,
+                        body: emailBody,
+                        senderName: senderName
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    console.log('Bestätigungsmail erfolgreich gesendet an:', formData.email);
+                } else {
+                    console.error('E-Mail-Versand fehlgeschlagen:', result.error);
+                }
+            } catch (err) {
+                // E-Mail-Fehler nicht an User zeigen - Datensatz wurde trotzdem gespeichert
+                console.error('Fehler beim E-Mail-Versand:', err);
+            }
+        }
+    </script>
+</body>
+</html>

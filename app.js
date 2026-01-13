@@ -93,7 +93,7 @@ async function openFormular() {
     }
 
     const area = areas[0];
-    const url = new URL('https://office.rb-inside.de/formular/');
+    const url = new URL('/formular/', window.location.origin);
     url.searchParams.set('botschafter', currentUser.id);
     url.searchParams.set('werbegebiet', area.id);
     if (area.campaign_id) {
@@ -976,7 +976,7 @@ const views = {
             <h3 style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Meine Werbegebiete</h3>
             <div class="area-list">
                 ${areas.length > 0 ? areas.map(area => `
-                    <a href="https://office.rb-inside.de/formular/?botschafter=${currentUser.id}&werbegebiet=${area.id}${area.campaign_id ? '&kampagne=' + area.campaign_id : ''}" class="area-card">
+                    <a href="/formular/?botschafter=${currentUser.id}&werbegebiet=${area.id}${area.campaign_id ? '&kampagne=' + area.campaign_id : ''}" class="area-card">
                         <h3>${area.name}</h3>
                         <p>Heute: ${area.today} Mitglieder • Diese Woche: ${area.week} Mitglieder</p>
                         <span class="area-badge" style="background: ${area.active ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)' : '#eeeeee'}; color: ${area.active ? 'white' : '#757575'};">
@@ -1883,7 +1883,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         // Use first assigned area
         const area = areas[0];
-        const url = new URL('https://office.rb-inside.de/formular/');
+        const url = new URL('/formular/', window.location.origin);
         url.searchParams.set('botschafter', currentUser.id);
         url.searchParams.set('werbegebiet', area.id);
         if (area.campaign_id) {
