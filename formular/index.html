@@ -483,7 +483,7 @@ input[type="radio"][name="type"]:checked::after {
             top: 100%;
             left: 50%;
             transform: translateX(-50%);
-            min-width: 800px;
+            min-width: 600px;
             background: white;
             border: 1px solid #ddd;
             border-radius: 8px;
@@ -1076,7 +1076,7 @@ input[type="radio"][name="type"]:checked::after {
                     const beitrag = (member.old_amount || 0).toLocaleString('de-DE', { minimumFractionDigits: 2 });
                     item.innerHTML = `
                         <span class="text-klein--fett">${member.first_name} ${member.last_name}</span>
-                        <span class="text-klein" style="margin-left: 12px; color: #666;">${strasseNr} • ${plzOrt} • ${mitgliedsNr} • ${beitrag} €</span>
+                        <span class="text-klein" style="margin-left: 8px; color: #666;">• ${strasseNr} • ${plzOrt} • ${mitgliedsNr} • ${beitrag} €</span>
                     `;
                     item.onclick = () => selectMember(member);
                     results.appendChild(item);
