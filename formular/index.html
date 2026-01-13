@@ -1048,11 +1048,13 @@ input[type="radio"][name="type"]:checked::after {
                 members.forEach(member => {
                     const item = document.createElement('div');
                     item.className = 'search-result-item';
-                    const adresse = [member.street, member.house_number, member.zip_code, member.city].filter(Boolean).join(' ');
+                    const strasseNr = [member.street, member.house_number].filter(Boolean).join(' ') || '-';
+                    const plzOrt = [member.zip_code, member.city].filter(Boolean).join(' ') || '-';
+                    const mitgliedsNr = member.member_number || '-';
                     const beitrag = (member.old_amount || 0).toLocaleString('de-DE', { minimumFractionDigits: 2 });
                     item.innerHTML = `
                         <span class="text-klein--fett">${member.first_name} ${member.last_name}</span>
-                        <span class="text-klein" style="margin-left: 12px; color: #666;">${adresse || '-'} • Nr: ${member.member_number || '-'} • ${beitrag} €</span>
+                        <span class="text-klein" style="margin-left: 12px; color: #666;">${strasseNr} • ${plzOrt} • ${mitgliedsNr} • ${beitrag} €</span>
                     `;
                     item.onclick = () => selectMember(member);
                     results.appendChild(item);
