@@ -94,11 +94,7 @@ function getInitials(name) {
 }
 
 function getCurrentKW() {
-    const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 1);
-    const diff = now - start;
-    const oneWeek = 604800000;
-    return Math.ceil((diff / oneWeek) + 1);
+    return getWeekNumber(new Date());
 }
 
 function getCurrentYear() {
@@ -393,21 +389,22 @@ async function fetchDashboardStats() {
             .eq('kategorie', 'werben')
             .eq('year', year);
 
-        // Records zählen
+        // Records zählen (nach start_date = Unterschriftsdatum)
         const { data: recordsData } = await supabaseClient
             .from('records')
-            .select('id, created_at, record_status')
+            .select('id, start_date, record_status')
             .eq('werber_id', userId)
-            .gte('created_at', `${year}-01-01`);
+            .gte('start_date', `${year}-01-01`);
 
         // Heute
         const today = new Date().toISOString().split('T')[0];
-        const todayRecords = recordsData?.filter(r => r.created_at?.startsWith(today)).length || 0;
+        const todayRecords = recordsData?.filter(r => r.start_date === today).length || 0;
         const todayEH = ehData?.filter(r => r.created_at?.startsWith(today)).reduce((sum, r) => sum + (r.einheiten || 0), 0) || 0;
 
         // Diese Woche
         const weekRecords = recordsData?.filter(r => {
-            const recordDate = new Date(r.created_at);
+            if (!r.start_date) return false;
+            const recordDate = new Date(r.start_date + 'T00:00:00');
             const recordKW = getWeekNumber(recordDate);
             return recordKW === kw;
         }).length || 0;
@@ -415,7 +412,8 @@ async function fetchDashboardStats() {
         // Dieser Monat
         const month = new Date().getMonth();
         const monthRecords = recordsData?.filter(r => {
-            const recordDate = new Date(r.created_at);
+            if (!r.start_date) return false;
+            const recordDate = new Date(r.start_date + 'T00:00:00');
             return recordDate.getMonth() === month;
         }).length || 0;
 
@@ -454,10 +452,12 @@ async function fetchDashboardStats() {
 }
 
 function getWeekNumber(date) {
-    const start = new Date(date.getFullYear(), 0, 1);
-    const diff = date - start;
-    const oneWeek = 604800000;
-    return Math.ceil((diff / oneWeek) + 1);
+    // ISO 8601 Kalenderwoche
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7; // Sonntag = 7
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum); // Zum Donnerstag der Woche
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
 
 async function fetchUserRank(userId, year) {
