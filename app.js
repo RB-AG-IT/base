@@ -1804,6 +1804,24 @@ async function saveProfile() {
     }
 }
 
+// Echter Connection-Check (wie im Formular)
+async function checkConnection(timeout = 5000) {
+    if (!navigator.onLine) return false;
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+        const response = await fetch(SUPABASE_URL + '/rest/v1/', {
+            method: 'HEAD',
+            signal: controller.signal,
+            headers: { 'apikey': SUPABASE_KEY }
+        });
+        clearTimeout(timeoutId);
+        return response.ok || response.status === 400;
+    } catch (e) {
+        return false;
+    }
+}
+
 // Auto-Sync beim App-Start
 async function autoSyncOfflineRecords() {
     const offlineData = localStorage.getItem('offlineRecords');
@@ -1813,9 +1831,10 @@ async function autoSyncOfflineRecords() {
         const records = JSON.parse(offlineData);
         if (records.length === 0) return;
 
-        // Prüfen ob online
-        if (!navigator.onLine) {
-            console.log('Auto-Sync: Offline, überspringe');
+        // Echter Connection-Check (nicht nur navigator.onLine)
+        const isOnline = await checkConnection(5000);
+        if (!isOnline) {
+            console.log('Auto-Sync: Keine Verbindung zu Supabase, überspringe');
             return;
         }
 
@@ -1827,9 +1846,27 @@ async function autoSyncOfflineRecords() {
 
         const failedRecords = [];
         let successCount = 0;
+        let skippedCount = 0;
 
         for (const record of records) {
             const { offlineId, createdAt, name, area, werber, ...dbRecord } = record;
+
+            // Duplikat-Prüfung: Gleiche Signatur + gleiches Datum = bereits vorhanden
+            if (dbRecord.signature && dbRecord.start_date) {
+                const { data: existing } = await supabaseClient
+                    .from('records')
+                    .select('id')
+                    .eq('signature', dbRecord.signature)
+                    .eq('start_date', dbRecord.start_date)
+                    .limit(1);
+
+                if (existing && existing.length > 0) {
+                    console.log('Auto-Sync: Duplikat übersprungen', dbRecord.signature);
+                    skippedCount++;
+                    continue; // Nicht erneut einfügen
+                }
+            }
+
             dbRecord.status = 'success';
             dbRecord.synced = true;
 
@@ -1852,10 +1889,14 @@ async function autoSyncOfflineRecords() {
         // Ergebnis speichern
         if (failedRecords.length > 0) {
             localStorage.setItem('offlineRecords', JSON.stringify(failedRecords));
-            showToast(`${successCount} synchronisiert, ${failedRecords.length} fehlgeschlagen`, 'warning');
+            let msg = `${successCount} synchronisiert, ${failedRecords.length} fehlgeschlagen`;
+            if (skippedCount > 0) msg += `, ${skippedCount} Duplikate übersprungen`;
+            showToast(msg, 'warning');
         } else {
             localStorage.removeItem('offlineRecords');
-            showToast(`${successCount} Datensätze erfolgreich synchronisiert!`, 'success');
+            let msg = `${successCount} Datensätze erfolgreich synchronisiert!`;
+            if (skippedCount > 0) msg += ` (${skippedCount} Duplikate übersprungen)`;
+            showToast(msg, 'success');
         }
 
         // View aktualisieren falls auf Offline-Seite
@@ -1875,14 +1916,39 @@ async function syncOfflineRecords() {
 
     showLoading(true);
 
+    // Connection-Check vor Sync
+    const isOnline = await checkConnection(5000);
+    if (!isOnline) {
+        showLoading(false);
+        alert('Keine Verbindung zum Server. Bitte später erneut versuchen.');
+        return;
+    }
+
     try {
         const records = JSON.parse(offlineData);
         const failedRecords = [];
         let successCount = 0;
+        let skippedCount = 0;
 
         for (const record of records) {
             // Offline-spezifische Felder entfernen, nur DB-Felder behalten
             const { offlineId, createdAt, name, area, werber, ...dbRecord } = record;
+
+            // Duplikat-Prüfung: Gleiche Signatur + gleiches Datum = bereits vorhanden
+            if (dbRecord.signature && dbRecord.start_date) {
+                const { data: existing } = await supabaseClient
+                    .from('records')
+                    .select('id')
+                    .eq('signature', dbRecord.signature)
+                    .eq('start_date', dbRecord.start_date)
+                    .limit(1);
+
+                if (existing && existing.length > 0) {
+                    console.log('Sync: Duplikat übersprungen', dbRecord.signature);
+                    skippedCount++;
+                    continue;
+                }
+            }
 
             // Status für Online-Speicherung aktualisieren
             dbRecord.status = 'success';
@@ -1908,10 +1974,14 @@ async function syncOfflineRecords() {
         // Nur fehlgeschlagene Records behalten
         if (failedRecords.length > 0) {
             localStorage.setItem('offlineRecords', JSON.stringify(failedRecords));
-            alert(`${successCount} von ${records.length} Datensätzen synchronisiert.\n\n${failedRecords.length} Datensätze konnten nicht hochgeladen werden und bleiben offline gespeichert.`);
+            let msg = `${successCount} von ${records.length} Datensätzen synchronisiert.\n\n${failedRecords.length} Datensätze konnten nicht hochgeladen werden.`;
+            if (skippedCount > 0) msg += `\n${skippedCount} Duplikate wurden übersprungen.`;
+            alert(msg);
         } else {
             localStorage.removeItem('offlineRecords');
-            alert(`Alle ${successCount} Datensätze erfolgreich synchronisiert!`);
+            let msg = `Alle ${successCount} Datensätze erfolgreich synchronisiert!`;
+            if (skippedCount > 0) msg += `\n(${skippedCount} Duplikate übersprungen)`;
+            alert(msg);
         }
 
         loadView('offline', true);
