@@ -364,9 +364,20 @@ function updateAuthUI() {
 }
 
 // Listen for auth state changes
+let initialAuthDone = false;
 supabaseClient.auth.onAuthStateChange((event, session) => {
+    // Ignoriere INITIAL_SESSION und TOKEN_REFRESHED - diese verursachen doppelte Loads
+    if (event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+        if (!initialAuthDone && session) {
+            currentUser = session.user;
+            initialAuthDone = true;
+        }
+        return;
+    }
+
     if (event === 'SIGNED_IN' && session) {
         currentUser = session.user;
+        initialAuthDone = true;
         loadUserData().then(() => {
             const currentHash = window.location.hash.substring(1) || 'dashboard';
             loadView(currentHash);
@@ -375,6 +386,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
         currentUser = null;
         currentUserData = null;
         currentRole = 'werber';
+        initialAuthDone = false;
         updateAuthUI();
     }
 });
