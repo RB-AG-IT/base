@@ -1030,7 +1030,7 @@ input[type="radio"][name="type"]:checked::after {
                     .select('*')
                     .eq('customer_area_id', currentCustomerAreaId)
                     .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,member_number.ilike.%${query}%,street.ilike.%${query}%`)
-                    .limit(10);
+                    .limit(20);
 
                 if (error) {
                     console.error('Fehler bei Bestandsmitglieder-Suche:', error);
@@ -1044,8 +1044,29 @@ input[type="radio"][name="type"]:checked::after {
                     return;
                 }
 
+                // Intelligente Sortierung: Prüfen ob Suche auf Straße matcht
+                const queryLower = query.toLowerCase();
+                const matchesStreet = members.some(m => m.street?.toLowerCase().includes(queryLower));
+
+                let sortedMembers;
+                if (matchesStreet) {
+                    // Nach Hausnummer sortieren (numerisch)
+                    sortedMembers = members.sort((a, b) => {
+                        const numA = parseInt(a.house_number) || 0;
+                        const numB = parseInt(b.house_number) || 0;
+                        return numA - numB;
+                    });
+                } else {
+                    // Nach Nachname, dann Vorname sortieren
+                    sortedMembers = members.sort((a, b) => {
+                        const lastNameCmp = (a.last_name || '').localeCompare(b.last_name || '', 'de');
+                        if (lastNameCmp !== 0) return lastNameCmp;
+                        return (a.first_name || '').localeCompare(b.first_name || '', 'de');
+                    });
+                }
+
                 results.innerHTML = '';
-                members.forEach(member => {
+                sortedMembers.slice(0, 10).forEach(member => {
                     const item = document.createElement('div');
                     item.className = 'search-result-item';
                     const strasseNr = [member.street, member.house_number].filter(Boolean).join(' ') || '-';
