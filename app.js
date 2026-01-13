@@ -1442,7 +1442,7 @@ async function renderTCSection() {
                     <div class="record-card">
                         <div class="record-card-header">
                             <span class="record-name">${record.first_name || ''} ${record.last_name || ''}</span>
-                            <span class="record-eh">${record.yearly_amount || 0} EH</span>
+                            <span class="record-eh">${((record.yearly_amount || 0) / 12).toFixed(1)} EH</span>
                         </div>
                         <div class="record-card-body">
                             <div class="record-meta">
