@@ -1805,14 +1805,13 @@ const streetResults = data.results.filter(result => {
             const ctx = canvas.getContext('2d');
             let isDrawing = false;
 
-            // Set canvas size
+            // Set canvas size (nur einmal beim Start, nicht bei resize - sonst wird Unterschrift gelöscht)
             function resizeCanvas() {
                 const rect = canvas.getBoundingClientRect();
                 canvas.width = rect.width;
                 canvas.height = rect.height;
             }
             resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
 
             // Drawing functions
             function startDrawing(e) {
