@@ -861,7 +861,8 @@ input[type="radio"][name="type"]:checked::after {
                             </svg>
                         </button>
 <div id="presetDropdown" class="hidden" style="position: absolute; right: 0; bottom: 30px; background: white; border: 1px solid #ddd; border-radius: 4px; padding: 5px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 100; min-width: 180px;">
-                            <div class="preset-option text-klein" style="padding: 8px 15px; cursor: pointer;" data-preset="standard">Standard (5/10/15)</div>
+                            <div class="preset-option text-klein" style="padding: 8px 15px; cursor: pointer;" data-preset="standard">Standard</div>
+                            <div class="preset-option text-klein" style="padding: 8px 15px; cursor: pointer;" data-preset="standard-hoch">Standard hoch</div>
                             <div id="userVorlagenOptions"></div>
                             <div class="preset-option text-klein" style="padding: 8px 15px; cursor: pointer;" data-preset="individual">Individuell</div>
                         </div>
@@ -1305,8 +1306,9 @@ input[type="radio"][name="type"]:checked::after {
                         // Anzeige aktualisieren (zeigt 0 EUR/Jahr)
                         updateAmountDisplay();
                     } else if (preset === 'standard') {
-                        // Standard-Vorlage (5/10/15) anwenden
                         applyStandardVorlage();
+                    } else if (preset === 'standard-hoch') {
+                        applyStandardHochVorlage();
                     }
                     
                     document.getElementById('presetDropdown').classList.add('hidden');
@@ -2516,7 +2518,6 @@ const streetResults = data.results.filter(result => {
         }
 
         function applyStandardVorlage() {
-            // Standard 5/10/15 anwenden
             document.getElementById('standardAmounts').classList.remove('hidden');
             document.getElementById('individualAmount').classList.add('hidden');
             document.getElementById('customAmount').value = '';
@@ -2526,6 +2527,39 @@ const streetResults = data.results.filter(result => {
                 { wert: 5, unten: 'Studenten' },
                 { wert: 10, unten: 'Durchschnitt' },
                 { wert: 15, unten: 'Familien' }
+            ];
+
+            buttons.forEach((btn, i) => {
+                btn.dataset.amount = values[i].wert;
+                btn.querySelector('.amount-value').textContent = `${values[i].wert} €`;
+
+                const textOben = btn.querySelector('.amount-text-oben');
+                const textUnten = btn.querySelector('.amount-text-unten');
+
+                if (textOben) {
+                    textOben.textContent = '';
+                    textOben.style.visibility = 'hidden';
+                }
+                if (textUnten) {
+                    textUnten.textContent = values[i].unten;
+                    textUnten.style.visibility = 'visible';
+                }
+                btn.classList.remove('active');
+            });
+
+            updateAmountDisplay();
+        }
+
+        function applyStandardHochVorlage() {
+            document.getElementById('standardAmounts').classList.remove('hidden');
+            document.getElementById('individualAmount').classList.add('hidden');
+            document.getElementById('customAmount').value = '';
+
+            const buttons = document.querySelectorAll('.amount-btn');
+            const values = [
+                { wert: 10, unten: 'Studenten' },
+                { wert: 20, unten: 'Durchschnitt' },
+                { wert: 30, unten: 'Familien' }
             ];
 
             buttons.forEach((btn, i) => {
