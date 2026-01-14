@@ -2168,6 +2168,9 @@ const streetResults = data.results.filter(result => {
             }
         }
 
+        // Original-URL speichern (für "Neues Formular" Button, bevor URL geändert wird)
+        const originalFormularUrl = window.location.href;
+
         // URL-Parameter für Formular-Kontext
         const urlParams = new URLSearchParams(window.location.search);
         const formContext = {
@@ -2856,7 +2859,7 @@ const streetResults = data.results.filter(result => {
                     <p class="text-klein" style="color: #666;">
                         ${formData.email ? 'Die Bestätigungs-E-Mail wird im Hintergrund versendet.' : ''}
                     </p>
-                    <button onclick="location.reload()" class="submit-btn" style="margin-top: 30px;">
+                    <button onclick="window.location.href='${originalFormularUrl}'" class="submit-btn" style="margin-top: 30px;">
                         Neues Formular
                     </button>
                 </div>
