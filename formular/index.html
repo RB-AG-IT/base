@@ -2789,6 +2789,7 @@ const streetResults = data.results.filter(result => {
                 member_since: formData.memberSince || null,
                 old_amount: selectedMemberYearlyAmount || null, // Jahresbeitrag für Trigger-Berechnung
                 old_interval: formData.oldInterval || null,
+                increase_amount: selectedMemberYearlyAmount ? (formData.yearlyAmount - selectedMemberYearlyAmount) : null, // Für Ledger-Trigger
 
                 // Aufnahmedatum
                 start_date: formData.laterStartDate ? formData.laterStartDate + 'T12:00:00' : new Date().toISOString(),
