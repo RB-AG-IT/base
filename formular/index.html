@@ -993,6 +993,7 @@ input[type="radio"][name="type"]:checked::after {
         let selectedMember = null;
         let isERHMode = false;
         let currentCustomerAreaId = null; // Wird beim Laden des Formulars gesetzt
+        let selectedMemberYearlyAmount = null; // Jahresbeitrag für ERH-Berechnung
 
         // Debounce-Timer für Suche
         let searchTimeout = null;
@@ -1103,7 +1104,9 @@ input[type="radio"][name="type"]:checked::after {
             // ERH-spezifische Felder
             document.getElementById('memberNumber').value = member.member_number || '';
             document.getElementById('memberSince').value = member.member_since || '';
-            // old_amount ist Jahresbeitrag, daher durch 12 für Monatsbeitrag
+            // old_amount ist Jahresbeitrag, speichern für Trigger-Berechnung
+            selectedMemberYearlyAmount = member.old_amount || null;
+            // Für Anzeige: durch 12 für Monatsbeitrag
             const monthlyAmount = member.old_amount ? (member.old_amount / 12).toFixed(2) : '';
             document.getElementById('oldAmount').value = monthlyAmount;
             document.getElementById('oldInterval').value = member.old_interval || 'Monatlich';
@@ -1211,6 +1214,7 @@ input[type="radio"][name="type"]:checked::after {
                     } else {
                         isERHMode = false;
                         selectedMember = null;
+                        selectedMemberYearlyAmount = null; // Reset ERH-Jahresbeitrag
                         erhFields.classList.add('hidden');
                         searchBar.classList.add('hidden');
                         
@@ -2783,7 +2787,7 @@ const streetResults = data.results.filter(result => {
                 // Erhöhungs-spezifisch
                 member_number: formData.memberNumber || null,
                 member_since: formData.memberSince || null,
-                old_amount: formData.oldAmount || null,
+                old_amount: selectedMemberYearlyAmount || null, // Jahresbeitrag für Trigger-Berechnung
                 old_interval: formData.oldInterval || null,
 
                 // Aufnahmedatum
