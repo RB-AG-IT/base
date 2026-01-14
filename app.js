@@ -1878,17 +1878,18 @@ async function autoSyncOfflineRecords() {
         for (const record of records) {
             const { offlineId, createdAt, name, area, werber, ...dbRecord } = record;
 
-            // Duplikat-Prüfung: Gleiche Signatur + gleiches Datum = bereits vorhanden
-            if (dbRecord.signature && dbRecord.start_date) {
+            // Duplikat-Prüfung: Gleicher Name + gleiches Datum = bereits vorhanden
+            if (dbRecord.first_name && dbRecord.last_name && dbRecord.start_date) {
                 const { data: existing } = await supabaseClient
                     .from('records')
                     .select('id')
-                    .eq('signature', dbRecord.signature)
+                    .eq('first_name', dbRecord.first_name)
+                    .eq('last_name', dbRecord.last_name)
                     .eq('start_date', dbRecord.start_date)
                     .limit(1);
 
                 if (existing && existing.length > 0) {
-                    console.log('Auto-Sync: Duplikat übersprungen', dbRecord.signature);
+                    console.log('Auto-Sync: Duplikat übersprungen', dbRecord.first_name, dbRecord.last_name);
                     skippedCount++;
                     continue; // Nicht erneut einfügen
                 }
@@ -1961,17 +1962,18 @@ async function syncOfflineRecords() {
             // Offline-spezifische Felder entfernen, nur DB-Felder behalten
             const { offlineId, createdAt, name, area, werber, ...dbRecord } = record;
 
-            // Duplikat-Prüfung: Gleiche Signatur + gleiches Datum = bereits vorhanden
-            if (dbRecord.signature && dbRecord.start_date) {
+            // Duplikat-Prüfung: Gleicher Name + gleiches Datum = bereits vorhanden
+            if (dbRecord.first_name && dbRecord.last_name && dbRecord.start_date) {
                 const { data: existing } = await supabaseClient
                     .from('records')
                     .select('id')
-                    .eq('signature', dbRecord.signature)
+                    .eq('first_name', dbRecord.first_name)
+                    .eq('last_name', dbRecord.last_name)
                     .eq('start_date', dbRecord.start_date)
                     .limit(1);
 
                 if (existing && existing.length > 0) {
-                    console.log('Sync: Duplikat übersprungen', dbRecord.signature);
+                    console.log('Sync: Duplikat übersprungen', dbRecord.first_name, dbRecord.last_name);
                     skippedCount++;
                     continue;
                 }
