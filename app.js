@@ -420,7 +420,8 @@ async function fetchDashboardStats() {
             .gte('start_date', `${year}-01-01`);
 
         // Heute
-        const today = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const todayRecords = recordsData?.filter(r => r.start_date === today).length || 0;
         const todayEH = ehData?.filter(r => r.referenz_datum === today).reduce((sum, r) => sum + (r.einheiten || 0), 0) || 0;
 
@@ -528,9 +529,10 @@ async function fetchRankingData(period = 'day') {
 
         // Filter nach Zeitraum
         const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const filtered = data.filter(r => {
             if (period === 'day') {
-                return r.created_at?.startsWith(now.toISOString().split('T')[0]);
+                return r.created_at?.startsWith(todayStr);
             } else if (period === 'week') {
                 return r.kw === kw;
             } else if (period === 'month') {
@@ -633,12 +635,14 @@ async function fetchTeamAreas() {
             if (!areaId) return null;
 
             // Records für dieses Gebiet zählen
+            const todayNow = new Date();
+            const todayStr = `${todayNow.getFullYear()}-${String(todayNow.getMonth() + 1).padStart(2, '0')}-${String(todayNow.getDate()).padStart(2, '0')}`;
             const { count: todayCount } = await supabaseClient
                 .from('records')
                 .select('*', { count: 'exact', head: true })
                 .eq('werber_id', currentUser.id)
                 .eq('campaign_area_id', areaId)
-                .gte('created_at', new Date().toISOString().split('T')[0]);
+                .gte('created_at', todayStr);
 
             const { count: weekCount } = await supabaseClient
                 .from('records')
