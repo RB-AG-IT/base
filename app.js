@@ -415,7 +415,7 @@ async function fetchDashboardStats() {
         // Records zählen (nach start_date = Unterschriftsdatum)
         const { data: recordsData } = await supabaseClient
             .from('records')
-            .select('id, start_date, record_status')
+            .select('id, start_date, record_status, yearly_amount')
             .eq('werber_id', userId)
             .gte('start_date', `${year}-01-01`);
 
@@ -426,26 +426,28 @@ async function fetchDashboardStats() {
         const todayEH = ehData?.filter(r => r.referenz_datum === today).reduce((sum, r) => sum + (r.einheiten || 0), 0) || 0;
 
         // Diese Woche
-        const weekRecords = recordsData?.filter(r => {
+        const weekRecordsFiltered = recordsData?.filter(r => {
             if (!r.start_date) return false;
             const recordDate = new Date(r.start_date + 'T00:00:00');
             const recordKW = getWeekNumber(recordDate);
             return recordKW === kw;
-        }).length || 0;
+        }) || [];
+        const weekRecords = weekRecordsFiltered.length;
+        const weekEH = weekRecordsFiltered.reduce((sum, r) => sum + ((r.yearly_amount || 0) / 12), 0);
 
         // Dieser Monat
         const month = new Date().getMonth();
-        const monthRecords = recordsData?.filter(r => {
+        const monthRecordsFiltered = recordsData?.filter(r => {
             if (!r.start_date) return false;
             const recordDate = new Date(r.start_date + 'T00:00:00');
             return recordDate.getMonth() === month;
-        }).length || 0;
+        }) || [];
+        const monthRecords = monthRecordsFiltered.length;
+        const monthEH = monthRecordsFiltered.reduce((sum, r) => sum + ((r.yearly_amount || 0) / 12), 0);
 
         // Gesamt
         const totalRecords = recordsData?.length || 0;
-
-        // EH Summe
-        const totalEH = ehData?.reduce((sum, r) => sum + (r.einheiten || 0), 0) || 0;
+        const totalEH = recordsData?.reduce((sum, r) => sum + ((r.yearly_amount || 0) / 12), 0) || 0;
 
         // Stornoquoten
         const stornoRecords = recordsData?.filter(r => r.record_status === 'storno').length || 0;
@@ -462,7 +464,9 @@ async function fetchDashboardStats() {
             today: todayRecords,
             todayEH: todayEH,
             week: weekRecords,
+            weekEH: weekEH,
             month: monthRecords,
+            monthEH: monthEH,
             total: totalRecords,
             totalEH: totalEH,
             rank: rank,
@@ -888,7 +892,7 @@ const views = {
                             <line x1="3" y1="10" x2="21" y2="10"></line>
                         </svg>
                     </div>
-                    <div class="mini-stat-value">${stats.week}</div>
+                    <div class="mini-stat-value">MG: ${stats.week} EH: ${stats.weekEH.toFixed(2)}</div>
                     <div class="mini-stat-label">Diese Woche</div>
                 </div>
                 <div class="mini-stat animated-stat" style="--delay: 0.2s">
@@ -898,7 +902,7 @@ const views = {
                             <polyline points="12 6 12 12 16 14"></polyline>
                         </svg>
                     </div>
-                    <div class="mini-stat-value">${stats.month}</div>
+                    <div class="mini-stat-value">MG: ${stats.month} EH: ${stats.monthEH.toFixed(2)}</div>
                     <div class="mini-stat-label">Dieser Monat</div>
                 </div>
                 <div class="mini-stat animated-stat" style="--delay: 0.3s">
@@ -916,7 +920,7 @@ const views = {
                             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                         </svg>
                     </div>
-                    <div class="mini-stat-value">${stats.total}</div>
+                    <div class="mini-stat-value">MG: ${stats.total} EH: ${stats.totalEH.toFixed(2)}</div>
                     <div class="mini-stat-label">Gesamt</div>
                 </div>
             </div>
