@@ -2035,6 +2035,9 @@ async function loadView(viewName, forceRefresh = false) {
         viewName = 'dashboard';
     }
 
+    // Navigation sofort aktualisieren für sofortiges visuelles Feedback
+    updateNavigation(viewName);
+
     const cacheKey = `view_${viewName}_${currentUser?.id || 'anon'}`;
 
     // Prüfe Cache
