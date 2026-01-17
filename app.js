@@ -1880,16 +1880,18 @@ async function autoSyncOfflineRecords() {
         let skippedCount = 0;
 
         for (const record of records) {
-            const { offlineId, createdAt, name, area, werber, ...dbRecord } = record;
+            // Offline-spezifische Felder entfernen, nur DB-Felder behalten
+            const { offlineId, createdAt, name, area, werber, status, synced, ...dbRecord } = record;
 
-            // Duplikat-Prüfung: Gleicher Name + gleiches Datum = bereits vorhanden
-            if (dbRecord.first_name && dbRecord.last_name && dbRecord.start_date) {
+            // Duplikat-Prüfung: Gleiche Person + IBAN = bereits vorhanden (wie DB-Constraint)
+            if (dbRecord.first_name && dbRecord.last_name) {
                 const { data: existing } = await supabaseClient
                     .from('records')
                     .select('id')
                     .eq('first_name', dbRecord.first_name)
                     .eq('last_name', dbRecord.last_name)
-                    .eq('start_date', dbRecord.start_date)
+                    .eq('birth_date', dbRecord.birth_date)
+                    .eq('iban', dbRecord.iban)
                     .limit(1);
 
                 if (existing && existing.length > 0) {
@@ -1898,9 +1900,6 @@ async function autoSyncOfflineRecords() {
                     continue; // Nicht erneut einfügen
                 }
             }
-
-            dbRecord.status = 'success';
-            dbRecord.synced = true;
 
             try {
                 const { error } = await supabaseClient
@@ -1966,14 +1965,15 @@ async function syncOfflineRecords() {
             // Offline-spezifische Felder entfernen, nur DB-Felder behalten
             const { offlineId, createdAt, name, area, werber, status, synced, ...dbRecord } = record;
 
-            // Duplikat-Prüfung: Gleicher Name + gleiches Datum = bereits vorhanden
-            if (dbRecord.first_name && dbRecord.last_name && dbRecord.start_date) {
+            // Duplikat-Prüfung: Gleiche Person + IBAN = bereits vorhanden (wie DB-Constraint)
+            if (dbRecord.first_name && dbRecord.last_name) {
                 const { data: existing } = await supabaseClient
                     .from('records')
                     .select('id')
                     .eq('first_name', dbRecord.first_name)
                     .eq('last_name', dbRecord.last_name)
-                    .eq('start_date', dbRecord.start_date)
+                    .eq('birth_date', dbRecord.birth_date)
+                    .eq('iban', dbRecord.iban)
                     .limit(1);
 
                 if (existing && existing.length > 0) {
