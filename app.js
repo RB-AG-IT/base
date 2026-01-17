@@ -1964,7 +1964,7 @@ async function syncOfflineRecords() {
 
         for (const record of records) {
             // Offline-spezifische Felder entfernen, nur DB-Felder behalten
-            const { offlineId, createdAt, name, area, werber, ...dbRecord } = record;
+            const { offlineId, createdAt, name, area, werber, status, synced, ...dbRecord } = record;
 
             // Duplikat-Prüfung: Gleicher Name + gleiches Datum = bereits vorhanden
             if (dbRecord.first_name && dbRecord.last_name && dbRecord.start_date) {
@@ -1982,10 +1982,6 @@ async function syncOfflineRecords() {
                     continue;
                 }
             }
-
-            // Status für Online-Speicherung aktualisieren
-            dbRecord.status = 'success';
-            dbRecord.synced = true;
 
             try {
                 const { error } = await supabaseClient
