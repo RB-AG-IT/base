@@ -1881,7 +1881,7 @@ async function autoSyncOfflineRecords() {
 
         for (const record of records) {
             // Offline-spezifische Felder entfernen, nur DB-Felder behalten
-            const { offlineId, createdAt, name, area, werber, status, synced, data, ...dbRecord } = record;
+            const { offlineId, createdAt, name, area, werber, status, synced, data, empfehlung_id, recruiting_id, ...dbRecord } = record;
 
             // Duplikat-Prüfung: Gleiche Person + IBAN = bereits vorhanden (wie DB-Constraint)
             if (dbRecord.first_name && dbRecord.last_name) {
@@ -1964,7 +1964,7 @@ async function syncOfflineRecords() {
 
         for (const record of records) {
             // Offline-spezifische Felder entfernen, nur DB-Felder behalten
-            const { offlineId, createdAt, name, area, werber, status, synced, data, ...dbRecord } = record;
+            const { offlineId, createdAt, name, area, werber, status, synced, data, empfehlung_id, recruiting_id, ...dbRecord } = record;
 
             // Duplikat-Prüfung: Gleiche Person + IBAN = bereits vorhanden (wie DB-Constraint)
             if (dbRecord.first_name && dbRecord.last_name) {
