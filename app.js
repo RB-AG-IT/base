@@ -1958,6 +1958,7 @@ async function syncOfflineRecords() {
     try {
         const records = JSON.parse(offlineData);
         const failedRecords = [];
+        const errorMessages = [];
         let successCount = 0;
         let skippedCount = 0;
 
@@ -1991,20 +1992,22 @@ async function syncOfflineRecords() {
                 if (error) {
                     console.error('Sync error for record:', error);
                     failedRecords.push(record);
+                    errorMessages.push(`${record.name}: ${error.message || error.code || JSON.stringify(error)}`);
                 } else {
                     successCount++;
                 }
             } catch (e) {
                 console.error('Sync exception:', e);
                 failedRecords.push(record);
+                errorMessages.push(`${record.name}: ${e.message || JSON.stringify(e)}`);
             }
         }
 
         // Nur fehlgeschlagene Records behalten
         if (failedRecords.length > 0) {
             localStorage.setItem('offlineRecords', JSON.stringify(failedRecords));
-            let msg = `${successCount} von ${records.length} Datensätzen synchronisiert.\n\n${failedRecords.length} Datensätze konnten nicht hochgeladen werden.`;
-            if (skippedCount > 0) msg += `\n${skippedCount} Duplikate wurden übersprungen.`;
+            let msg = `${successCount} von ${records.length} Datensätzen synchronisiert.\n\n${failedRecords.length} Datensätze konnten nicht hochgeladen werden.\n\nFehler:\n${errorMessages.join('\n')}`;
+            if (skippedCount > 0) msg += `\n\n${skippedCount} Duplikate wurden übersprungen.`;
             alert(msg);
         } else {
             localStorage.removeItem('offlineRecords');
