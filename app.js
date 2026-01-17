@@ -576,7 +576,7 @@ async function fetchRankingData(period = 'day') {
             .filter(([userId]) => userMap[userId]) // Nur User die sichtbar sind
             .map(([userId, eh]) => ({
                 userId,
-                name: userMap[userId]?.game_tag || `${userMap[userId]?.first_name || ''} ${userMap[userId]?.last_name || ''}`.trim() || 'Unbekannt',
+                name: userMap[userId]?.game_tag || 'Unbekannt',
                 photo: userMap[userId]?.photo_intern_url || null,
                 team: '',
                 score: eh,
