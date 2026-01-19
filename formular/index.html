@@ -1012,11 +1012,11 @@ input[type="radio"][name="type"]:checked::after {
                 return;
             }
 
-            // Debounce: Warte 300ms nach letzter Eingabe
+            // Debounce: Warte 200ms nach letzter Eingabe
             if (searchTimeout) clearTimeout(searchTimeout);
             searchTimeout = setTimeout(async () => {
                 await executeSearch(query);
-            }, 300);
+            }, 200);
         }
 
         async function executeSearch(query) {
@@ -1830,7 +1830,7 @@ const streetResults = data.results.filter(result => {
             console.error('Adresssuche Fehler:', error);
             suggestions.classList.add('hidden');
         }
-    }, 300); // 300ms debounce
+    }, 200); // 200ms debounce
 }
 
 
