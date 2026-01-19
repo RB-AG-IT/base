@@ -998,6 +998,11 @@ input[type="radio"][name="type"]:checked::after {
         // Debounce-Timer für Suche
         let searchTimeout = null;
 
+        // Infinite Scroll für Suchergebnisse
+        let allSearchResults = [];
+        let displayedCount = 0;
+        const BATCH_SIZE = 30;
+
         // Bestandsmitglieder aus Supabase suchen
         async function searchMembers(query) {
             const results = document.getElementById('searchResults');
@@ -1025,13 +1030,12 @@ input[type="radio"][name="type"]:checked::after {
             }
 
             try {
-                // Suche in Bestandsmitgliedern für dieses Werbegebiet
+                // Suche in Bestandsmitgliedern für dieses Werbegebiet (alle Ergebnisse)
                 const { data: members, error } = await supabaseClient
                     .from('bestandsmitglieder')
                     .select('*')
                     .eq('customer_area_id', currentCustomerAreaId)
-                    .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,member_number.ilike.%${query}%,street.ilike.%${query}%`)
-                    .limit(20);
+                    .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,member_number.ilike.%${query}%,street.ilike.%${query}%`);
 
                 if (error) {
                     console.error('Fehler bei Bestandsmitglieder-Suche:', error);
@@ -1042,6 +1046,8 @@ input[type="radio"][name="type"]:checked::after {
                 if (!members || members.length === 0) {
                     results.innerHTML = '<div class="search-result-item text-muted">Keine Ergebnisse</div>';
                     results.classList.remove('hidden');
+                    allSearchResults = [];
+                    displayedCount = 0;
                     return;
                 }
 
@@ -1049,38 +1055,26 @@ input[type="radio"][name="type"]:checked::after {
                 const queryLower = query.toLowerCase();
                 const matchesStreet = members.some(m => m.street?.toLowerCase().includes(queryLower));
 
-                let sortedMembers;
                 if (matchesStreet) {
                     // Nach Hausnummer sortieren (numerisch)
-                    sortedMembers = members.sort((a, b) => {
+                    allSearchResults = members.sort((a, b) => {
                         const numA = parseInt(a.house_number) || 0;
                         const numB = parseInt(b.house_number) || 0;
                         return numA - numB;
                     });
                 } else {
                     // Nach Nachname, dann Vorname sortieren
-                    sortedMembers = members.sort((a, b) => {
+                    allSearchResults = members.sort((a, b) => {
                         const lastNameCmp = (a.last_name || '').localeCompare(b.last_name || '', 'de');
                         if (lastNameCmp !== 0) return lastNameCmp;
                         return (a.first_name || '').localeCompare(b.first_name || '', 'de');
                     });
                 }
 
+                // Reset und initial anzeigen
                 results.innerHTML = '';
-                sortedMembers.slice(0, 10).forEach(member => {
-                    const item = document.createElement('div');
-                    item.className = 'search-result-item';
-                    const strasseNr = [member.street, member.house_number].filter(Boolean).join(' ') || '-';
-                    const plzOrt = [member.zip_code, member.city].filter(Boolean).join(' ') || '-';
-                    const mitgliedsNr = member.member_number || '-';
-                    const beitrag = (member.old_amount || 0).toLocaleString('de-DE', { minimumFractionDigits: 2 });
-                    item.innerHTML = `
-                        <span class="text-klein--fett">${member.first_name} ${member.last_name}</span>
-                        <span class="text-klein" style="margin-left: 8px; color: #666;">• ${strasseNr} • ${plzOrt} • ${mitgliedsNr} • ${beitrag} €</span>
-                    `;
-                    item.onclick = () => selectMember(member);
-                    results.appendChild(item);
-                });
+                displayedCount = 0;
+                loadMoreResults();
 
                 results.classList.remove('hidden');
             } catch (err) {
@@ -1088,6 +1082,47 @@ input[type="radio"][name="type"]:checked::after {
                 results.classList.add('hidden');
             }
         }
+
+        // Weitere Ergebnisse laden
+        function loadMoreResults() {
+            const results = document.getElementById('searchResults');
+            const nextBatch = allSearchResults.slice(displayedCount, displayedCount + BATCH_SIZE);
+
+            nextBatch.forEach(member => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                const strasseNr = [member.street, member.house_number].filter(Boolean).join(' ') || '-';
+                const plzOrt = [member.zip_code, member.city].filter(Boolean).join(' ') || '-';
+                const mitgliedsNr = member.member_number || '-';
+                const beitrag = (member.old_amount || 0).toLocaleString('de-DE', { minimumFractionDigits: 2 });
+                item.innerHTML = `
+                    <span class="text-klein--fett">${member.first_name} ${member.last_name}</span>
+                    <span class="text-klein" style="margin-left: 8px; color: #666;">• ${strasseNr} • ${plzOrt} • ${mitgliedsNr} • ${beitrag} €</span>
+                `;
+                item.onclick = () => selectMember(member);
+                results.appendChild(item);
+            });
+
+            displayedCount += nextBatch.length;
+        }
+
+        // Infinite Scroll Event Listener
+        function setupInfiniteScroll() {
+            const results = document.getElementById('searchResults');
+            if (!results) return;
+
+            results.addEventListener('scroll', () => {
+                // Prüfen ob am Ende gescrollt (mit 20px Toleranz)
+                const isAtBottom = results.scrollHeight - results.scrollTop - results.clientHeight < 20;
+
+                if (isAtBottom && displayedCount < allSearchResults.length) {
+                    loadMoreResults();
+                }
+            });
+        }
+
+        // Infinite Scroll beim Laden initialisieren
+        document.addEventListener('DOMContentLoaded', setupInfiniteScroll);
 
         function selectMember(member) {
             // Store selected member globally
