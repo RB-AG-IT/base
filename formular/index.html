@@ -2127,11 +2127,7 @@ const streetResults = data.results.filter(result => {
                 // Upload zu Supabase
                 const { data: insertedRecord, error: insertError } = await supabaseClient
                     .from('records')
-                    .insert({
-                        ...recordData,
-                        status: 'success',
-                        synced: true
-                    })
+                    .insert(recordData)
                     .select()
                     .single();
 
