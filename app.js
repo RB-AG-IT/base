@@ -2186,9 +2186,14 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Close login modal
     document.getElementById('closeLoginModal').addEventListener('click', closeLoginModal);
 
-    // Close modal on backdrop click
+    // Close modal on backdrop click (nicht bei Text-Selektion)
+    let loginModalMouseDownTarget = null;
+    document.getElementById('loginModal').addEventListener('mousedown', (e) => {
+        loginModalMouseDownTarget = e.target;
+    });
     document.getElementById('loginModal').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('loginModal')) {
+        const modal = document.getElementById('loginModal');
+        if (e.target === modal && loginModalMouseDownTarget === modal) {
             closeLoginModal();
         }
     });
