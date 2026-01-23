@@ -1643,10 +1643,7 @@ async function switchRankingPeriod(period) {
                     <div class="rank-name">${item.name} ${item.isCurrentUser ? '<span class="you-badge">Du</span>' : ''}</div>
                     <div class="rank-team">${item.team || ''}</div>
                 </div>
-                <div class="rank-score">
-                    <div class="score-value">${item.score.toFixed(2)}</div>
-                    <div class="score-label">EH</div>
-                </div>
+                <div class="rank-score">${item.score.toFixed(2)} EH</div>
             </div>
         `).join('') : `
             <div class="empty-state">
