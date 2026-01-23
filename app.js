@@ -1530,8 +1530,8 @@ async function renderTCSection() {
                         <div class="record-card-body">
                             <div class="record-meta">
                                 <span class="record-time">${formatTime(record.created_at)}</span>
-                                ${record.campaign_areas?.customer_areas ? `<span class="record-area">${record.campaign_areas.customer_areas.vereinstyp} ${record.campaign_areas.customer_areas.vereinsname}</span>` : ''}
                             </div>
+                            ${record.campaign_areas?.customer_areas ? `<div class="record-area">${record.campaign_areas.customer_areas.vereinstyp} ${record.campaign_areas.customer_areas.vereinsname}</div>` : ''}
                             <div class="record-werber">${record.users?.name || 'Unbekannt'}</div>
                         </div>
                     </div>
