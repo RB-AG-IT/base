@@ -2345,6 +2345,7 @@ button {
 /* Rank Score */
 .rank-score {
     text-align: right;
+    font-weight: 900;
 }
 
 .rank-score .score-value {
