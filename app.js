@@ -1089,13 +1089,7 @@ const views = {
         <!-- Champion Banner - Fixed Top Left (below avatar) -->
         ${champion ? `
         <div class="champion-banner-fixed">
-            <div class="winner-crown">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L15 9L22 9.5L17 15L18.5 22L12 18L5.5 22L7 15L2 9.5L9 9L12 2Z"/>
-                </svg>
-            </div>
             <div class="winner-content">
-                <div class="winner-label">Champion</div>
                 <div class="winner-name">${champion.name}</div>
                 <div class="winner-score">${champion.score.toFixed(2)} EH</div>
             </div>
