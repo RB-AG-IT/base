@@ -415,7 +415,7 @@ async function fetchDashboardStats() {
         // Records zählen (nach start_date = Unterschriftsdatum)
         const { data: recordsData } = await supabaseClient
             .from('records')
-            .select('id, start_date, record_status, yearly_amount')
+            .select('id, start_date, record_status, record_type, yearly_amount, increase_amount')
             .eq('werber_id', userId)
             .gte('start_date', `${year}-01-01`);
 
@@ -433,7 +433,7 @@ async function fetchDashboardStats() {
             return recordKW === kw;
         }) || [];
         const weekRecords = weekRecordsFiltered.length;
-        const weekEH = weekRecordsFiltered.reduce((sum, r) => sum + ((r.yearly_amount || 0) / 12), 0);
+        const weekEH = weekRecordsFiltered.reduce((sum, r) => sum + ((r.record_type === 'erhoehung' ? r.increase_amount : r.yearly_amount) || 0) / 12, 0);
 
         // Dieser Monat
         const month = new Date().getMonth();
@@ -443,11 +443,11 @@ async function fetchDashboardStats() {
             return recordDate.getMonth() === month;
         }) || [];
         const monthRecords = monthRecordsFiltered.length;
-        const monthEH = monthRecordsFiltered.reduce((sum, r) => sum + ((r.yearly_amount || 0) / 12), 0);
+        const monthEH = monthRecordsFiltered.reduce((sum, r) => sum + ((r.record_type === 'erhoehung' ? r.increase_amount : r.yearly_amount) || 0) / 12, 0);
 
         // Gesamt
         const totalRecords = recordsData?.length || 0;
-        const totalEH = recordsData?.reduce((sum, r) => sum + ((r.yearly_amount || 0) / 12), 0) || 0;
+        const totalEH = recordsData?.reduce((sum, r) => sum + ((r.record_type === 'erhoehung' ? r.increase_amount : r.yearly_amount) || 0) / 12, 0) || 0;
 
         // Stornoquoten
         const stornoRecords = recordsData?.filter(r => r.record_status === 'storno').length || 0;
@@ -733,7 +733,7 @@ async function fetchLatestRecords() {
         let query = supabaseClient
             .from('records')
             .select(`
-                id, first_name, last_name, created_at, werber_id, yearly_amount,
+                id, first_name, last_name, created_at, werber_id, record_type, yearly_amount, increase_amount,
                 users!records_werber_id_fkey (name),
                 campaign_areas (id, name, customer_areas (vereinstyp, vereinsname))
             `)
@@ -1516,7 +1516,7 @@ async function renderTCSection() {
                     <div class="record-card">
                         <div class="record-card-header">
                             <span class="record-name">${record.first_name || ''} ${record.last_name || ''}</span>
-                            <span class="record-eh">${((record.yearly_amount || 0) / 12).toFixed(2)} EH</span>
+                            <span class="record-eh">${(((record.record_type === 'erhoehung' ? record.increase_amount : record.yearly_amount) || 0) / 12).toFixed(2)} EH</span>
                         </div>
                         <div class="record-card-body">
                             <div class="record-meta">
