@@ -1398,6 +1398,15 @@ input[type="radio"][name="type"]:checked::after {
             // Custom amount
             document.getElementById('customAmount').addEventListener('input', updateAmountDisplay);
 
+            // Mobilnummer DIN 5008 Format (0176 20566318)
+            document.getElementById('phoneMobile').addEventListener('input', function() {
+                let value = this.value.replace(/\D/g, ''); // Nur Ziffern
+                if (value.length > 4) {
+                    value = value.substring(0, 4) + ' ' + value.substring(4);
+                }
+                this.value = value;
+            });
+
             // Interval buttons
             document.querySelectorAll('.interval-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
