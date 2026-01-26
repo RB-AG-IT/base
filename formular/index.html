@@ -2119,6 +2119,31 @@ const streetResults = data.results.filter(result => {
             }, duration);
         }
 
+        // Email-Toast anzeigen (Server hat Email versendet)
+        function showEmailToast(firstName, lastName, email) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="background: white; border-radius: 50%; padding: 8px; display: flex; align-items: center; justify-content: center;">
+                        <svg style="width: 20px; height: 20px; color: #10B981;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600;">Willkommensemail versendet</div>
+                        <div style="font-size: 12px; opacity: 0.9;">${firstName} ${lastName} (${email})</div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'toastSlideOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 6000);
+        }
+
         // Hintergrund-Upload durchführen (Offline-First)
         async function backgroundUpload(offlineId, recordData, formData, formContext) {
             console.log('Starte Hintergrund-Upload für:', offlineId);
@@ -2147,26 +2172,38 @@ const streetResults = data.results.filter(result => {
                 // Offline-Record entfernen
                 removeOfflineRecord(offlineId);
 
-                // Willkommensemail senden (nur für NMG mit Email)
-                let emailSent = false;
+                // Realtime-Subscription für Email-Status (nur für NMG mit Email)
                 if (formData.type === 'NMG' && formData.email) {
-                    try {
-                        await sendConfirmationEmail(formData, formContext.werbegebiet_name || 'DRK Mitgliederwerbung');
-                        emailSent = true;
-                        console.log('Willkommensemail versendet');
-                    } catch (emailError) {
-                        console.warn('Email-Versand fehlgeschlagen:', emailError);
-                    }
+                    const emailChannel = supabaseClient
+                        .channel(`email-${insertedRecord.id}`)
+                        .on('postgres_changes', {
+                            event: 'UPDATE',
+                            schema: 'public',
+                            table: 'records',
+                            filter: `id=eq.${insertedRecord.id}`
+                        }, (payload) => {
+                            if (payload.new.email_status === 'sent') {
+                                showEmailToast(
+                                    payload.new.first_name,
+                                    payload.new.last_name,
+                                    payload.new.email
+                                );
+                                supabaseClient.removeChannel(emailChannel);
+                            } else if (payload.new.email_status === 'failed') {
+                                showToast('Email-Versand fehlgeschlagen', 5000, 'info');
+                                supabaseClient.removeChannel(emailChannel);
+                            }
+                        })
+                        .subscribe();
+
+                    // Timeout nach 30 Sekunden
+                    setTimeout(() => {
+                        supabaseClient.removeChannel(emailChannel);
+                    }, 30000);
                 }
 
                 // Toast anzeigen
-                if (emailSent) {
-                    showToast('Erfolgreich hochgeladen & Willkommensemail verschickt');
-                } else if (formData.type === 'NMG' && formData.email) {
-                    showToast('Erfolgreich hochgeladen (Email-Versand fehlgeschlagen)');
-                } else {
-                    showToast('Erfolgreich hochgeladen');
-                }
+                showToast('Erfolgreich hochgeladen');
 
             } catch (error) {
                 console.warn('Hintergrund-Upload fehlgeschlagen:', error.message);
@@ -2924,7 +2961,7 @@ const streetResults = data.results.filter(result => {
                         Die Fördermitgliedschaft wurde erfolgreich registriert.
                     </p>
                     <p class="text-klein" style="color: #666;">
-                        ${formData.email ? 'Die Bestätigungs-E-Mail wird im Hintergrund versendet.' : ''}
+                        ${formData.email ? 'Die Willkommensemail wird automatisch versendet.' : ''}
                     </p>
                     <button onclick="window.location.href='${originalFormularUrl}'" class="submit-btn" style="margin-top: 30px;">
                         Neues Formular
@@ -2938,204 +2975,6 @@ const streetResults = data.results.filter(result => {
             backgroundUpload(offlineId, recordData, formData, formContext);
         }
 
-        // ============================================
-        // BESTÄTIGUNGSMAIL VERSAND
-        // ============================================
-        async function sendConfirmationEmail(formData, senderName) {
-            try {
-                // E-Mail-Vorlage aus Supabase laden
-                const { data: vorlage, error: vorlageError } = await supabaseClient
-                    .from('email_vorlagen')
-                    .select('betreff, inhalt')
-                    .eq('vorlage_typ', 'willkommen')
-                    .eq('aktiv', true)
-                    .single();
-
-                if (vorlageError || !vorlage) {
-                    console.warn('Keine E-Mail-Vorlage gefunden, überspringe Versand');
-                    return;
-                }
-
-                // Intervall-Bezeichnung
-                const intervallMap = {
-                    'monthly': 'Monat',
-                    'quarterly': 'Quartal',
-                    'halfyearly': 'Halbjahr',
-                    'yearly': 'Jahr'
-                };
-                const intervallText = intervallMap[formData.interval] || formData.interval;
-
-                // Hilfsfunktionen
-                const formatDate = (dateStr) => {
-                    if (!dateStr) return '';
-                    const date = new Date(dateStr);
-                    return date.toLocaleDateString('de-DE');
-                };
-
-                const maskIban = (iban) => {
-                    if (!iban) return '';
-                    const clean = iban.replace(/\s/g, '');
-                    if (clean.length < 6) return iban;
-                    return clean.substring(0, 4) + ' **** **** **** ' + clean.substring(clean.length - 2);
-                };
-
-                // Adresse zusammenbauen
-                const adresse = [
-                    formData.street && formData.houseNumber ? `${formData.street} ${formData.houseNumber}` : formData.street,
-                    formData.zipCode && formData.city ? `${formData.zipCode} ${formData.city}` : formData.city
-                ].filter(Boolean).join(', ');
-
-                // Telefon (mobil bevorzugt)
-                const telefon = formData.phoneMobile || formData.phoneFixed || '';
-
-                // WG/Kunden-Daten laden (Website, Datenschutz, Ansprechpartner)
-                let websiteLink = '';
-                let datenschutzLink = '';
-                let ansprechpartnerName = '';
-                let ansprechpartnerTelefon = '';
-                let ansprechpartnerEmail = '';
-                let anschriftOv = '';
-
-                if (formContext.campaign_area_id) {
-                    // Erst campaign_areas laden um customer_area_id zu bekommen
-                    const { data: campaignArea } = await supabaseClient
-                        .from('campaign_areas')
-                        .select('customer_area_id')
-                        .eq('id', formContext.campaign_area_id)
-                        .single();
-
-                    const customerAreaId = campaignArea?.customer_area_id;
-
-                    if (customerAreaId) {
-                        // customer_areas laden (WG-Daten)
-                        const { data: areaData } = await supabaseClient
-                            .from('customer_areas')
-                            .select('website, privacy_policy, customer_id, street, house_number, postal_code, city')
-                            .eq('id', customerAreaId)
-                            .single();
-
-                        if (areaData) {
-                            websiteLink = areaData.website || '';
-                            datenschutzLink = areaData.privacy_policy || '';
-
-                            // WG-Anschrift zusammenbauen
-                            if (areaData.street || areaData.city) {
-                                const strasseHnr = [areaData.street, areaData.house_number].filter(Boolean).join(' ');
-                                const plzOrt = [areaData.postal_code, areaData.city].filter(Boolean).join(' ');
-                                anschriftOv = [strasseHnr, plzOrt].filter(Boolean).join(', ');
-                            }
-
-                            // WG-Ansprechpartner laden
-                            const { data: areaContacts } = await supabaseClient
-                                .from('customer_area_contacts')
-                                .select('first_name, last_name, phone, email')
-                                .eq('area_id', customerAreaId)
-                                .limit(1);
-
-                            if (areaContacts && areaContacts.length > 0) {
-                                const contact = areaContacts[0];
-                                ansprechpartnerName = [contact.first_name, contact.last_name].filter(Boolean).join(' ');
-                                ansprechpartnerTelefon = contact.phone || '';
-                                ansprechpartnerEmail = contact.email || '';
-                            }
-
-                            // Fallback: Kunden-Daten wenn WG-Daten fehlen
-                            const customerId = areaData.customer_id || formContext.customer_id;
-                            if (customerId && (!websiteLink || !datenschutzLink || !ansprechpartnerName || !anschriftOv)) {
-                                const { data: customerData } = await supabaseClient
-                                    .from('customers')
-                                    .select('website, privacy_policy, street, house_number, postal_code, city')
-                                    .eq('id', customerId)
-                                    .single();
-
-                                if (customerData) {
-                                    if (!websiteLink) websiteLink = customerData.website || '';
-                                    if (!datenschutzLink) datenschutzLink = customerData.privacy_policy || '';
-                                    // Kunden-Anschrift als Fallback
-                                    if (!anschriftOv && (customerData.street || customerData.city)) {
-                                        const strasseHnr = [customerData.street, customerData.house_number].filter(Boolean).join(' ');
-                                        const plzOrt = [customerData.postal_code, customerData.city].filter(Boolean).join(' ');
-                                        anschriftOv = [strasseHnr, plzOrt].filter(Boolean).join(', ');
-                                    }
-                                }
-
-                                // Kunden-Ansprechpartner als Fallback
-                                if (!ansprechpartnerName) {
-                                    const { data: customerContacts } = await supabaseClient
-                                        .from('customer_contacts')
-                                        .select('first_name, last_name, phone, email')
-                                        .eq('customer_id', customerId)
-                                        .limit(1);
-
-                                    if (customerContacts && customerContacts.length > 0) {
-                                        const contact = customerContacts[0];
-                                        ansprechpartnerName = [contact.first_name, contact.last_name].filter(Boolean).join(' ');
-                                        ansprechpartnerTelefon = contact.phone || '';
-                                        ansprechpartnerEmail = contact.email || '';
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Platzhalter ersetzen
-                let emailBody = vorlage.inhalt
-                    // Persönliche Daten
-                    .replace(/\{\{anrede\}\}/g, formData.salutation || '')
-                    .replace(/\{\{vorname\}\}/g, formData.firstName || '')
-                    .replace(/\{\{nachname\}\}/g, formData.lastName || '')
-                    .replace(/\{\{email\}\}/g, formData.email || '')
-                    .replace(/\{\{telefon\}\}/g, telefon)
-                    .replace(/\{\{geburtsdatum\}\}/g, formatDate(formData.birthDate))
-                    .replace(/\{\{adresse\}\}/g, adresse)
-                    // Bankdaten
-                    .replace(/\{\{kontoinhaber\}\}/g, formData.accountHolder || '')
-                    .replace(/\{\{iban_maskiert\}\}/g, maskIban(formData.iban))
-                    // Beitrag
-                    .replace(/\{\{betrag\}\}/g, formData.amount || '')
-                    .replace(/\{\{intervall\}\}/g, intervallText)
-                    // WG/Kunden-Daten
-                    .replace(/\{\{werbegebiet_name\}\}/g, senderName || '')
-                    .replace(/\{\{ansprechpartner_name\}\}/g, ansprechpartnerName)
-                    .replace(/\{\{ansprechpartner_telefon\}\}/g, ansprechpartnerTelefon)
-                    .replace(/\{\{ansprechpartner_email\}\}/g, ansprechpartnerEmail)
-                    .replace(/\{\{website_link\}\}/g, websiteLink)
-                    .replace(/\{\{datenschutz_link\}\}/g, datenschutzLink)
-                    .replace(/\{\{anschrift_ov\}\}/g, anschriftOv);
-
-                let emailSubject = vorlage.betreff
-                    .replace(/\{\{anrede\}\}/g, formData.salutation || '')
-                    .replace(/\{\{vorname\}\}/g, formData.firstName || '')
-                    .replace(/\{\{nachname\}\}/g, formData.lastName || '');
-
-                // E-Mail über Edge Function senden
-                const response = await fetch('https://lgztglycqtiwcmiydxnm.supabase.co/functions/v1/send-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM4MDc2MTUsImV4cCI6MjA3OTM4MzYxNX0.a_ZeubRokmhdevV3JinTiD1Ji92C4bDHSiiDcYGZnt0'
-                    },
-                    body: JSON.stringify({
-                        to: formData.email,
-                        subject: emailSubject,
-                        body: emailBody,
-                        senderName: senderName
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    console.log('Bestätigungsmail erfolgreich gesendet an:', formData.email);
-                } else {
-                    console.error('E-Mail-Versand fehlgeschlagen:', result.error);
-                }
-            } catch (err) {
-                // E-Mail-Fehler nicht an User zeigen - Datensatz wurde trotzdem gespeichert
-                console.error('Fehler beim E-Mail-Versand:', err);
-            }
-        }
     </script>
 </body>
 </html>
