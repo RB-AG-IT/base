@@ -3085,18 +3085,6 @@ const streetResults = data.results.filter(result => {
 
             // Event-Listener für Email-Bearbeitung (nur wenn Email vorhanden)
             if (formData.email) {
-                const showSuccessToast = (message, isError = false) => {
-                    const toast = document.createElement('div');
-                    toast.className = 'toast';
-                    if (isError) toast.style.background = '#e63946';
-                    toast.textContent = message;
-                    document.body.appendChild(toast);
-                    setTimeout(() => {
-                        toast.style.animation = 'toastSlideOut 0.3s ease forwards';
-                        setTimeout(() => toast.remove(), 300);
-                    }, 3000);
-                };
-
                 document.getElementById('btnEditEmail').addEventListener('click', function() {
                     document.getElementById('successEmailField').disabled = false;
                     document.getElementById('successEmailField').focus();
@@ -3109,14 +3097,14 @@ const streetResults = data.results.filter(result => {
                     const newEmail = emailField.value.trim();
 
                     if (!newEmail || !newEmail.includes('@')) {
-                        showSuccessToast('Bitte gültige Email eingeben', true);
+                        showToast('Bitte gültige Email eingeben', 5000, 'error');
                         return;
                     }
 
                     // Echte Record-ID verwenden (nach Upload verfügbar)
                     const recordId = window.uploadedRecordId;
                     if (!recordId) {
-                        showSuccessToast('Bitte warten - Datensatz wird noch hochgeladen...', true);
+                        showToast('Bitte warten - Datensatz wird noch hochgeladen...', 5000, 'error');
                         return;
                     }
 
@@ -3151,7 +3139,7 @@ const streetResults = data.results.filter(result => {
                         const result = await response.json();
 
                         if (result.success) {
-                            showSuccessToast('Email erfolgreich gesendet an ' + newEmail);
+                            showToast('Email erfolgreich gesendet an ' + newEmail);
                             emailField.disabled = true;
                             document.getElementById('btnEditEmail').style.display = 'inline-block';
                             this.style.display = 'none';
@@ -3159,7 +3147,7 @@ const streetResults = data.results.filter(result => {
                             throw new Error(result.error || 'Versand fehlgeschlagen');
                         }
                     } catch (error) {
-                        showSuccessToast('Fehler: ' + error.message, true);
+                        showToast('Fehler: ' + error.message, 5000, 'error');
                     }
 
                     this.disabled = false;
