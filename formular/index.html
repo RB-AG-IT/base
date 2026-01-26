@@ -2963,9 +2963,9 @@ const streetResults = data.results.filter(result => {
                 <style>
                     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
                 </style>
-                <div class="header" style="background: white; display: flex; align-items: center; padding: 15px 20px;">
-                    <img src="/formular/assets/drk-logo.png" alt="DRK Logo" style="width: 120px; height: 120px;">
-                    <div style="flex: 1; text-align: center;">
+                <div class="header" style="background: white; position: relative; padding: 15px 20px; min-height: 120px;">
+                    <img src="/formular/assets/drk-logo.png" alt="DRK Logo" style="width: 120px; height: 120px; position: absolute; left: 20px; top: 50%; transform: translateY(-50%);">
+                    <div style="text-align: center; padding-top: 30px;">
                         <h2 style="font-family: 'Oswald', sans-serif; color: black; font-weight: 700; font-size: 2.2rem; margin: 0;">${formContext.werbegebiet_name || 'Das DRK'} sagt Danke!</h2>
                         <p style="color: black; font-size: 0.9rem; margin: 5px 0 0 0;">${formContext.werbegebiet_adresse || ''}</p>
                     </div>
