@@ -2956,22 +2956,6 @@ const streetResults = data.results.filter(result => {
             document.querySelector('.container').innerHTML = `
                 <style>
                     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
-                    .success-toast {
-                        position: fixed;
-                        bottom: 100px;
-                        left: 50%;
-                        transform: translateX(-50%);
-                        background: #4caf50;
-                        color: white;
-                        padding: 12px 24px;
-                        border-radius: 8px;
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-                        z-index: 1000;
-                        opacity: 0;
-                        transition: opacity 0.3s;
-                    }
-                    .success-toast.show { opacity: 1; }
-                    .success-toast.error { background: #e63946; }
                 </style>
                 <div class="header">
                     <h2 style="font-family: 'Oswald', sans-serif; color: black; font-weight: 700; font-size: 2.2rem; margin: 0; text-align: center; width: 100%;">${formContext.werbegebiet_name || 'Das DRK'} sagt Danke!</h2>
@@ -3025,7 +3009,6 @@ const streetResults = data.results.filter(result => {
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
                 </button>
-                <div id="successToast" class="success-toast"></div>
             `;
 
             // Event-Listener für Neues Formular
@@ -3035,12 +3018,16 @@ const streetResults = data.results.filter(result => {
 
             // Event-Listener für Email-Bearbeitung (nur wenn Email vorhanden)
             if (formData.email) {
-                const showToast = (message, isError = false) => {
-                    const toast = document.getElementById('successToast');
+                const showSuccessToast = (message, isError = false) => {
+                    const toast = document.createElement('div');
+                    toast.className = 'toast';
+                    if (isError) toast.style.background = '#e63946';
                     toast.textContent = message;
-                    toast.className = 'success-toast' + (isError ? ' error' : '');
-                    toast.classList.add('show');
-                    setTimeout(() => toast.classList.remove('show'), 3000);
+                    document.body.appendChild(toast);
+                    setTimeout(() => {
+                        toast.style.animation = 'toastSlideOut 0.3s ease forwards';
+                        setTimeout(() => toast.remove(), 300);
+                    }, 3000);
                 };
 
                 document.getElementById('btnEditEmail').addEventListener('click', function() {
@@ -3055,7 +3042,7 @@ const streetResults = data.results.filter(result => {
                     const newEmail = emailField.value.trim();
 
                     if (!newEmail || !newEmail.includes('@')) {
-                        showToast('Bitte gültige Email eingeben', true);
+                        showSuccessToast('Bitte gültige Email eingeben', true);
                         return;
                     }
 
@@ -3090,7 +3077,7 @@ const streetResults = data.results.filter(result => {
                         const result = await response.json();
 
                         if (result.success) {
-                            showToast('Email erfolgreich gesendet an ' + newEmail);
+                            showSuccessToast('Email erfolgreich gesendet an ' + newEmail);
                             emailField.disabled = true;
                             document.getElementById('btnEditEmail').style.display = 'inline-block';
                             this.style.display = 'none';
@@ -3098,7 +3085,7 @@ const streetResults = data.results.filter(result => {
                             throw new Error(result.error || 'Versand fehlgeschlagen');
                         }
                     } catch (error) {
-                        showToast('Fehler: ' + error.message, true);
+                        showSuccessToast('Fehler: ' + error.message, true);
                     }
 
                     this.disabled = false;
