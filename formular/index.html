@@ -2991,19 +2991,21 @@ const streetResults = data.results.filter(result => {
                         <span style="font-size: 0.9rem; color: #666;">${formContext.ansprechpartner_telefon || ''}</span>
                     </div>
                 </div>
-                <div style="padding: 0 20px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 200px);">
-                    <img src="/formular/assets/drk-danke.jpg" alt="Deutsches Rotes Danke" style="max-width: 100%; width: 700px; display: block; border-radius: 12px; box-shadow: 0 16px 48px rgba(0,0,0,0.25);">
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 80px 0 15px 0;">
+                <div style="position: fixed; top: calc(50% + 75px); left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 1;">
+                    <img src="/formular/assets/drk-danke.jpg" alt="Deutsches Rotes Danke" style="max-width: 90vw; width: 700px; display: block; border-radius: 12px; box-shadow: 0 16px 48px rgba(0,0,0,0.25);">
+                </div>
+                <div style="position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 2;">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
                         <svg style="width: 28px; height: 28px; color: #4caf50;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                             <polyline points="20 6 9 17 4 12"></polyline>
                         </svg>
                         <span style="color: #4caf50; font-size: 1.2rem; font-weight: bold;">Erfolgreich gespeichert!</span>
                     </div>
-                    <p style="color: #333; font-size: 1.1rem; font-weight: 500; margin: 20px 0 10px 0;">
+                    <p style="color: #333; font-size: 1.1rem; font-weight: 500; margin: 0 0 10px 0;">
                         ${formData.email ? 'Die Willkommensemail wird automatisch versendet.' : ''}
                     </p>
                     ${formData.email ? `
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
                         <span style="color: #666;">Versendet an:</span>
                         <input type="email" id="successEmailField" value="${formData.email}" disabled style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; width: 250px;">
                         <button id="btnEditEmail" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">Bearbeiten</button>
