@@ -1398,23 +1398,13 @@ input[type="radio"][name="type"]:checked::after {
             // Custom amount
             document.getElementById('customAmount').addEventListener('input', updateAmountDisplay);
 
-            // Mobilnummer DIN 5008 Format (0176 20566318) mit Validierung
+            // Mobilnummer DIN 5008 Format (0176 20566318)
             document.getElementById('phoneMobile').addEventListener('input', function() {
                 let value = this.value.replace(/\D/g, ''); // Nur Ziffern
                 if (value.length > 4) {
                     value = value.substring(0, 4) + ' ' + value.substring(4);
                 }
                 this.value = value;
-
-                // Validierung: 11-12 Ziffern für deutsche Mobilnummern
-                const digits = value.replace(/\s/g, '').length;
-                if (digits === 0) {
-                    this.style.borderColor = '#e0e0e0'; // Leer = neutral
-                } else if (digits >= 11 && digits <= 12) {
-                    this.style.borderColor = '#4caf50'; // Grün = gültig
-                } else {
-                    this.style.borderColor = '#ff4444'; // Rot = ungültig
-                }
             });
 
             // Interval buttons
@@ -2041,17 +2031,6 @@ const streetResults = data.results.filter(result => {
                     isValid = false;
                 }
             });
-
-            // Mobilnummer-Validierung (nur wenn ausgefüllt)
-            const phoneMobileField = document.getElementById('phoneMobile');
-            if (phoneMobileField && phoneMobileField.value) {
-                const mobileDigits = phoneMobileField.value.replace(/\D/g, '').length;
-                if (mobileDigits < 11 || mobileDigits > 12) {
-                    phoneMobileField.style.borderColor = '#ff4444';
-                    isValid = false;
-                    if (!firstError) firstError = phoneMobileField;
-                }
-            }
 
             // Check signature
             const canvas = document.getElementById('signatureCanvas');
