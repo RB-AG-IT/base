@@ -2951,9 +2951,9 @@ const streetResults = data.results.filter(result => {
             document.querySelector('.container').innerHTML = `
                 <div class="header">
                     <img src="/formular/assets/drk-logo.png" alt="DRK" style="width: 80px; height: 80px;">
+                    <h2 style="color: black; font-weight: bold; font-size: 1.4rem; margin: 0; text-align: center; flex: 1;">${formContext.werbegebiet_name || 'Das DRK'} sagt Danke!</h2>
                 </div>
                 <div style="padding: 40px; text-align: center;">
-                    <h2 style="color: #e63946; margin-bottom: 30px;">${formContext.werbegebiet_name || 'Das DRK'} sagt Danke!</h2>
                     <div style="width: 80px; height: 80px; background: #4caf50; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
                         <svg style="width: 40px; height: 40px; color: white;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="20 6 9 17 4 12"></polyline>
