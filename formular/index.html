@@ -2443,6 +2443,20 @@ const streetResults = data.results.filter(result => {
 
                             // Customer ID für Record speichern
                             formContext.customer_id = customerArea.customer_id;
+
+                            // Ansprechpartner laden
+                            const { data: contacts } = await supabaseClient
+                                .from('customer_area_contacts')
+                                .select('first_name, last_name, phone, email')
+                                .eq('area_id', area.customer_area_id)
+                                .limit(1);
+
+                            if (contacts && contacts.length > 0) {
+                                const c = contacts[0];
+                                formContext.ansprechpartner_name = [c.first_name, c.last_name].filter(Boolean).join(' ');
+                                formContext.ansprechpartner_email = c.email || '';
+                                formContext.ansprechpartner_telefon = c.phone || '';
+                            }
                         }
                     } else {
                         // Fallback: Name aus campaign_areas verwenden
