@@ -2957,11 +2957,13 @@ const streetResults = data.results.filter(result => {
                 <style>
                     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
                 </style>
-                <div class="header">
-                    <h2 style="font-family: 'Oswald', sans-serif; color: black; font-weight: 700; font-size: 2.2rem; margin: 0; text-align: center; width: 100%;">${formContext.werbegebiet_name || 'Das DRK'} sagt Danke!</h2>
-                    <p style="color: black; font-size: 0.9rem; margin: 5px 0 0 0; text-align: center; width: 100%;">${formContext.werbegebiet_adresse || ''}</p>
+                <div class="header" style="background: white; display: flex; align-items: center; padding: 15px 20px;">
+                    <img src="/formular/assets/drk-logo.png" alt="DRK Logo" style="width: 120px; height: 120px;">
+                    <div style="flex: 1; text-align: center;">
+                        <h2 style="font-family: 'Oswald', sans-serif; color: black; font-weight: 700; font-size: 2.2rem; margin: 0;">${formContext.werbegebiet_name || 'Das DRK'} sagt Danke!</h2>
+                        <p style="color: black; font-size: 0.9rem; margin: 5px 0 0 0;">${formContext.werbegebiet_adresse || ''}</p>
+                    </div>
                 </div>
-                <img src="/formular/assets/drk-logo.png" alt="DRK Logo" style="width: 120px; height: 120px; margin: 10px 0 -10px 15px;">
                 <div style="position: fixed; top: 50%; right: 20px; transform: translateY(-50%); background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); max-width: 250px;">
                     <p style="margin: 0 0 12px 0; font-weight: bold; font-size: 1.1rem; color: #333;">Fragen?</p>
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
