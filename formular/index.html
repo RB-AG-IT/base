@@ -585,19 +585,26 @@ input[type="radio"][name="type"]:checked::after {
             100% { transform: rotate(360deg); }
         }
 
-        /* Toast-Benachrichtigungen */
-        .toast {
+        /* Toast-Container */
+        .toast-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 10px;
+        }
+
+        /* Toast-Benachrichtigungen */
+        .toast {
             background: #10B981;
             color: white;
             padding: 16px 24px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 10000;
             animation: toastSlideIn 0.3s ease;
-            max-width: 90%;
+            max-width: 350px;
             font-size: 14px;
         }
 
@@ -2111,12 +2118,24 @@ const streetResults = data.results.filter(result => {
             }
         }
 
+        // Toast-Container erstellen/holen
+        function getToastContainer() {
+            let container = document.querySelector('.toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            return container;
+        }
+
         // Toast-Benachrichtigung anzeigen
         function showToast(message, duration = 5000, type = 'success') {
+            const container = getToastContainer();
             const toast = document.createElement('div');
             toast.className = 'toast' + (type === 'info' ? ' toast-info' : '') + (type === 'error' ? ' toast-error' : '');
             toast.textContent = message;
-            document.body.appendChild(toast);
+            container.appendChild(toast);
 
             setTimeout(() => {
                 toast.style.animation = 'toastSlideOut 0.3s ease forwards';
@@ -2126,6 +2145,7 @@ const streetResults = data.results.filter(result => {
 
         // Email-Toast anzeigen (Server hat Email versendet)
         function showEmailToast(firstName, lastName, email) {
+            const container = getToastContainer();
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.innerHTML = `
@@ -2141,7 +2161,7 @@ const streetResults = data.results.filter(result => {
                     </div>
                 </div>
             `;
-            document.body.appendChild(toast);
+            container.appendChild(toast);
 
             setTimeout(() => {
                 toast.style.animation = 'toastSlideOut 0.3s ease forwards';
