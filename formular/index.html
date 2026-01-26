@@ -2174,6 +2174,9 @@ const streetResults = data.results.filter(result => {
 
                 console.log('Hintergrund-Upload erfolgreich:', insertedRecord.id);
 
+                // Echte Record-ID global speichern für Email-Bearbeitung
+                window.uploadedRecordId = insertedRecord.id;
+
                 // Offline-Record entfernen
                 removeOfflineRecord(offlineId);
 
@@ -3051,6 +3054,13 @@ const streetResults = data.results.filter(result => {
                         return;
                     }
 
+                    // Echte Record-ID verwenden (nach Upload verfügbar)
+                    const recordId = window.uploadedRecordId;
+                    if (!recordId) {
+                        showSuccessToast('Bitte warten - Datensatz wird noch hochgeladen...', true);
+                        return;
+                    }
+
                     this.disabled = true;
                     this.textContent = 'Wird gesendet...';
 
@@ -3065,7 +3075,7 @@ const streetResults = data.results.filter(result => {
                                 email_opened_at: null,
                                 email_error: null
                             })
-                            .eq('id', currentRecordId);
+                            .eq('id', recordId);
 
                         if (updateError) throw new Error('DB Update fehlgeschlagen: ' + updateError.message);
 
@@ -3076,7 +3086,7 @@ const streetResults = data.results.filter(result => {
                                 'Authorization': 'Bearer ' + SUPABASE_KEY,
                                 'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify({ record_id: currentRecordId })
+                            body: JSON.stringify({ record_id: recordId })
                         });
 
                         const result = await response.json();
