@@ -1240,7 +1240,7 @@ input[type="radio"][name="type"]:checked::after {
             
             // Set min date for birth date
             const minBirthDate = new Date();
-            minBirthDate.setFullYear(minBirthDate.getFullYear() - 120);
+            minBirthDate.setFullYear(minBirthDate.getFullYear() - 100);
             document.getElementById('birthDate').min = minBirthDate.toISOString().split('T')[0];
             document.getElementById('birthDate').max = new Date().toISOString().split('T')[0];
         }
@@ -1488,6 +1488,12 @@ input[type="radio"][name="type"]:checked::after {
             }
             
             if (age < 18) {
+                error.textContent = 'Mindestalter: 18 Jahre';
+                error.classList.remove('hidden');
+                birthDate.style.borderColor = '#ff4444';
+                return false;
+            } else if (age > 100) {
+                error.textContent = 'Maximales Alter: 100 Jahre';
                 error.classList.remove('hidden');
                 birthDate.style.borderColor = '#ff4444';
                 return false;
