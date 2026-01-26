@@ -605,6 +605,10 @@ input[type="radio"][name="type"]:checked::after {
             background: #3B82F6;
         }
 
+        .toast.toast-error {
+            background: #EF4444;
+        }
+
         @keyframes toastSlideIn {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
@@ -1988,14 +1992,14 @@ const streetResults = data.results.filter(result => {
             if (!individualAmountEl || individualAmountEl.classList.contains('hidden')) {
                 // Standard mode: check if any button is selected
                 if (!activeAmount) {
-                    alert('❌ Bitte wählen Sie einen Unterstützungsbeitrag aus.');
+                    showToast('Bitte wählen Sie einen Unterstützungsbeitrag aus.', 5000, 'error');
                     isValid = false;
                 }
             } else {
                 // Individual mode: check if amount is entered
                 if (!customAmountVal || parseFloat(customAmountVal) <= 0) {
                     if (customAmountEl) customAmountEl.style.borderColor = '#ff4444';
-                    alert('❌ Bitte geben Sie einen Unterstützungsbeitrag ein.');
+                    showToast('Bitte geben Sie einen Unterstützungsbeitrag ein.', 5000, 'error');
                     isValid = false;
                     if (!firstError) firstError = customAmountEl;
                 } else {
@@ -2033,7 +2037,7 @@ const streetResults = data.results.filter(result => {
                 // Submit directly
                 submitForm();
             } else {
-                alert('❌ Bitte füllen Sie alle Pflichtfelder aus und überprüfen Sie Ihre Eingaben.');
+                showToast('Bitte füllen Sie alle Pflichtfelder aus und überprüfen Sie Ihre Eingaben.', 5000, 'error');
                 if (firstError) firstError.focus();
             }
         }
@@ -2110,7 +2114,7 @@ const streetResults = data.results.filter(result => {
         // Toast-Benachrichtigung anzeigen
         function showToast(message, duration = 5000, type = 'success') {
             const toast = document.createElement('div');
-            toast.className = 'toast' + (type === 'info' ? ' toast-info' : '');
+            toast.className = 'toast' + (type === 'info' ? ' toast-info' : '') + (type === 'error' ? ' toast-error' : '');
             toast.textContent = message;
             document.body.appendChild(toast);
 
@@ -2844,7 +2848,7 @@ const streetResults = data.results.filter(result => {
             if (!werberId || !areaId || !campaignId) {
                 btn.disabled = false;
                 btn.innerHTML = 'Jetzt überprüfen';
-                alert('❌ Fehler: Kontext fehlt!\n\nDas Formular muss über das Portal aufgerufen werden (Botschafter, Werbegebiet und Kampagne müssen ausgewählt sein).');
+                showToast('Fehler: Kontext fehlt! Formular muss über das Portal aufgerufen werden.', 7000, 'error');
                 console.error('Fehlende URL-Parameter:', { werberId, areaId, campaignId });
                 return;
             }
@@ -2940,7 +2944,7 @@ const streetResults = data.results.filter(result => {
             if (!saved) {
                 btn.disabled = false;
                 btn.innerHTML = 'Jetzt überprüfen';
-                alert('❌ Kritischer Fehler!\n\nDer Datensatz konnte nicht gespeichert werden.\n\nBitte notieren Sie die Daten manuell und versuchen Sie es später erneut.');
+                showToast('Kritischer Fehler! Datensatz konnte nicht gespeichert werden. Bitte Daten manuell notieren.', 10000, 'error');
                 return;
             }
 
