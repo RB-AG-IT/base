@@ -2365,6 +2365,7 @@ const streetResults = data.results.filter(result => {
                                         if (customerArea.city) adresse += customerArea.city;
                                     }
                                     verbandAdresse.textContent = adresse.trim();
+                                    formContext.werbegebiet_adresse = adresse.trim();
                                     adresseGeladen = true;
                                 }
 
@@ -2386,6 +2387,7 @@ const streetResults = data.results.filter(result => {
                                             if (customerAddr.city) adresse += customerAddr.city;
                                         }
                                         verbandAdresse.textContent = adresse.trim();
+                                        formContext.werbegebiet_adresse = adresse.trim();
                                         adresseGeladen = true;
                                     }
                                 }
@@ -2951,6 +2953,7 @@ const streetResults = data.results.filter(result => {
             document.querySelector('.container').innerHTML = `
                 <div class="header">
                     <h2 style="color: black; font-weight: bold; font-size: 1.4rem; margin: 0; text-align: center; width: 100%;">${formContext.werbegebiet_name || 'Das DRK'} sagt Danke!</h2>
+                    <p style="color: black; font-size: 0.9rem; margin: 5px 0 0 0; text-align: center; width: 100%;">${formContext.werbegebiet_adresse || ''}</p>
                 </div>
                 <img src="/formular/assets/drk-logo.png" alt="DRK" style="width: 80px; height: 80px; margin: 20px;">
                 <div style="padding: 40px; text-align: center;">
