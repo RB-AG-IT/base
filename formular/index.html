@@ -1323,8 +1323,10 @@ input[type="radio"][name="type"]:checked::after {
 
             // Close dropdowns when clicking outside
             document.addEventListener('click', function() {
-                document.getElementById('presetDropdown').classList.add('hidden');
-                document.getElementById('paymentDropdown').classList.add('hidden');
+                const presetDropdown = document.getElementById('presetDropdown');
+                const paymentDropdown = document.getElementById('paymentDropdown');
+                if (presetDropdown) presetDropdown.classList.add('hidden');
+                if (paymentDropdown) paymentDropdown.classList.add('hidden');
             });
 
             // Preset options - ANGEPASST für Vorlagen
