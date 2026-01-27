@@ -417,7 +417,8 @@ async function fetchDashboardStats() {
             .from('records')
             .select('id, start_date, record_status, record_type, yearly_amount, increase_amount')
             .eq('werber_id', userId)
-            .gte('start_date', `${year}-01-01`);
+            .gte('start_date', `${year}-01-01`)
+            .is('deleted_at', null);
 
         // Heute
         const now = new Date();
@@ -646,14 +647,16 @@ async function fetchTeamAreas() {
                 .select('*', { count: 'exact', head: true })
                 .eq('werber_id', currentUser.id)
                 .eq('campaign_area_id', areaId)
-                .gte('created_at', todayStr);
+                .gte('created_at', todayStr)
+                .is('deleted_at', null);
 
             const { count: weekCount } = await supabaseClient
                 .from('records')
                 .select('*', { count: 'exact', head: true })
                 .eq('werber_id', currentUser.id)
                 .eq('campaign_area_id', areaId)
-                .eq('kw', kw);
+                .eq('kw', kw)
+                .is('deleted_at', null);
 
             return {
                 id: areaId,
@@ -712,6 +715,7 @@ async function fetchLatestRecords() {
                     campaign_areas (id, name, customer_areas (vereinstyp, vereinsname))
                 `)
                 .eq('werber_id', currentUser.id)
+                .is('deleted_at', null)
                 .order('created_at', { ascending: false })
                 .limit(10);
             return data || [];
@@ -737,7 +741,8 @@ async function fetchLatestRecords() {
                 users!records_werber_id_fkey (name),
                 campaign_areas (id, name, customer_areas (vereinstyp, vereinsname))
             `)
-            .in('werber_id', werberIds);
+            .in('werber_id', werberIds)
+            .is('deleted_at', null);
 
         // Nach Kampagne filtern falls vorhanden
         if (campaignIds.length > 0) {
