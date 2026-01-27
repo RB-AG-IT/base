@@ -1871,16 +1871,23 @@ async function autoSyncOfflineRecords() {
             // Offline-spezifische Felder entfernen, nur DB-Felder behalten
             const { offlineId, createdAt, name, area, werber, status, synced, data, empfehlung_id, recruiting_id, ...dbRecord } = record;
 
-            // Duplikat-Prüfung: Gleiche Person + IBAN = bereits vorhanden (wie DB-Constraint)
+            // Duplikat-Prüfung
             if (dbRecord.first_name && dbRecord.last_name) {
-                const { data: existing } = await supabaseClient
+                let query = supabaseClient
                     .from('records')
                     .select('id')
                     .eq('first_name', dbRecord.first_name)
-                    .eq('last_name', dbRecord.last_name)
-                    .eq('birth_date', dbRecord.birth_date)
-                    .eq('iban', dbRecord.iban)
-                    .limit(1);
+                    .eq('last_name', dbRecord.last_name);
+
+                // Bei ERH mit increase_amount: Prüfung auf Erhöhungsbeitrag
+                if (dbRecord.record_type === 'erhoehung' && dbRecord.increase_amount != null) {
+                    query = query.eq('increase_amount', dbRecord.increase_amount);
+                } else {
+                    // Bei NMG: Prüfung mit birth_date + iban
+                    query = query.eq('birth_date', dbRecord.birth_date).eq('iban', dbRecord.iban);
+                }
+
+                const { data: existing } = await query.limit(1);
 
                 if (existing && existing.length > 0) {
                     console.log('Auto-Sync: Duplikat übersprungen', dbRecord.first_name, dbRecord.last_name);
@@ -1954,16 +1961,23 @@ async function syncOfflineRecords() {
             // Offline-spezifische Felder entfernen, nur DB-Felder behalten
             const { offlineId, createdAt, name, area, werber, status, synced, data, empfehlung_id, recruiting_id, ...dbRecord } = record;
 
-            // Duplikat-Prüfung: Gleiche Person + IBAN = bereits vorhanden (wie DB-Constraint)
+            // Duplikat-Prüfung
             if (dbRecord.first_name && dbRecord.last_name) {
-                const { data: existing } = await supabaseClient
+                let query = supabaseClient
                     .from('records')
                     .select('id')
                     .eq('first_name', dbRecord.first_name)
-                    .eq('last_name', dbRecord.last_name)
-                    .eq('birth_date', dbRecord.birth_date)
-                    .eq('iban', dbRecord.iban)
-                    .limit(1);
+                    .eq('last_name', dbRecord.last_name);
+
+                // Bei ERH mit increase_amount: Prüfung auf Erhöhungsbeitrag
+                if (dbRecord.record_type === 'erhoehung' && dbRecord.increase_amount != null) {
+                    query = query.eq('increase_amount', dbRecord.increase_amount);
+                } else {
+                    // Bei NMG: Prüfung mit birth_date + iban
+                    query = query.eq('birth_date', dbRecord.birth_date).eq('iban', dbRecord.iban);
+                }
+
+                const { data: existing } = await query.limit(1);
 
                 if (existing && existing.length > 0) {
                     console.log('Sync: Duplikat übersprungen', dbRecord.first_name, dbRecord.last_name);
