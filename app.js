@@ -524,7 +524,7 @@ async function fetchRankingData(period = 'day') {
     try {
         let query = supabaseClient
             .from('provisions_ledger')
-            .select('user_id, einheiten, kw, created_at')
+            .select('user_id, einheiten, kw, created_at, typ')
             .eq('kategorie', 'werben')
             .eq('year', year);
 
@@ -537,8 +537,11 @@ async function fetchRankingData(period = 'day') {
         const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const filtered = data.filter(r => {
             if (period === 'day') {
+                // Tag/Woche: Nur Provisionen (brutto, ohne Stornos)
+                if (r.typ !== 'provision') return false;
                 return r.created_at?.startsWith(todayStr);
             } else if (period === 'week') {
+                if (r.typ !== 'provision') return false;
                 return r.kw === kw;
             } else if (period === 'month') {
                 const recordDate = new Date(r.created_at);
