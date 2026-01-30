@@ -2223,6 +2223,22 @@ const streetResults = data.results.filter(result => {
                 // Offline-Record entfernen
                 removeOfflineRecord(offlineId);
 
+                // Willkommensmail auslösen (nur für NMG mit Email)
+                if (formData.type === 'NMG' && formData.email) {
+                    try {
+                        await fetch(SUPABASE_URL + '/functions/v1/send-welcome-email', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': 'Bearer ' + SUPABASE_KEY,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ record_id: insertedRecord.id })
+                        });
+                    } catch (emailErr) {
+                        console.warn('Email-Aufruf fehlgeschlagen, Cron-Job übernimmt:', emailErr.message);
+                    }
+                }
+
                 // Realtime-Subscription für Email-Status (nur für NMG mit Email)
                 if (formData.type === 'NMG' && formData.email) {
                     const emailChannel = supabaseClient
@@ -3118,6 +3134,7 @@ const streetResults = data.results.filter(result => {
                             .update({
                                 email: newEmail,
                                 email_status: 'queued',
+                                email_retry_count: 0,
                                 email_sent_at: null,
                                 email_opened_at: null,
                                 email_error: null
