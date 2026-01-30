@@ -2226,13 +2226,13 @@ const streetResults = data.results.filter(result => {
                 // Willkommensmail auslösen (nur für NMG mit Email)
                 if (formData.type === 'NMG' && formData.email) {
                     try {
-                        await fetch(SUPABASE_URL + '/functions/v1/send-welcome-email', {
+                        await fetch(SUPABASE_URL + '/functions/v1/send-email', {
                             method: 'POST',
                             headers: {
                                 'Authorization': 'Bearer ' + SUPABASE_KEY,
                                 'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify({ record_id: insertedRecord.id })
+                            body: JSON.stringify({ record_id: insertedRecord.id, vorlage_typ: 'willkommen' })
                         });
                     } catch (emailErr) {
                         console.warn('Email-Aufruf fehlgeschlagen, Cron-Job übernimmt:', emailErr.message);
@@ -3144,13 +3144,13 @@ const streetResults = data.results.filter(result => {
                         if (updateError) throw new Error('DB Update fehlgeschlagen: ' + updateError.message);
 
                         // Email erneut senden
-                        const response = await fetch(SUPABASE_URL + '/functions/v1/send-welcome-email', {
+                        const response = await fetch(SUPABASE_URL + '/functions/v1/send-email', {
                             method: 'POST',
                             headers: {
                                 'Authorization': 'Bearer ' + SUPABASE_KEY,
                                 'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify({ record_id: recordId })
+                            body: JSON.stringify({ record_id: recordId, vorlage_typ: 'willkommen' })
                         });
 
                         const result = await response.json();
