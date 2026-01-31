@@ -2969,7 +2969,8 @@ const streetResults = data.results.filter(result => {
                 increase_amount: selectedMemberYearlyAmount ? (formData.yearlyAmount - selectedMemberYearlyAmount) : null, // Für Ledger-Trigger
 
                 // Aufnahmedatum
-                start_date: formData.laterStartDate ? formData.laterStartDate + 'T12:00:00' : new Date().toISOString(),
+                start_date: new Date().toISOString(),
+                later_join_date: formData.laterStartDate || null,
 
                 // Einwilligungen
                 contact_email: formData.contactEmail,
