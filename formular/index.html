@@ -2931,6 +2931,9 @@ const streetResults = data.results.filter(result => {
                 record_type: formData.type === 'ERH' ? 'erhoehung' : 'neumitglied',
                 record_status: 'aktiv',
 
+                // Email-Trigger: Bei NMG wird 'willkommen' mitgeschickt, damit der DB-Trigger einen queued-Eintrag in email_sends erstellt
+                vorlage_typ: formData.type === 'NMG' ? 'willkommen' : null,
+
                 // Persönliche Daten
                 salutation: formData.salutation,
                 title: formData.title,
