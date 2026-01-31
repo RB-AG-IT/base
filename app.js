@@ -626,8 +626,8 @@ async function fetchTeamAreas() {
                 campaign_area_id,
                 campaign_areas (
                     id,
-                    name,
-                    campaign_id
+                    campaign_id,
+                    customer_areas (name_long)
                 )
             `)
             .eq('werber_id', currentUser.id)
@@ -663,7 +663,7 @@ async function fetchTeamAreas() {
 
             return {
                 id: areaId,
-                name: a.campaign_areas?.name || 'Unbekannt',
+                name_long: a.campaign_areas?.customer_areas?.name_long,
                 campaign_id: a.campaign_areas?.campaign_id || null,
                 today: todayCount || 0,
                 week: weekCount || 0,
@@ -715,7 +715,7 @@ async function fetchLatestRecords() {
                 .select(`
                     id, first_name, last_name, email, iban, created_at, werber_id,
                     users!records_werber_id_fkey (name),
-                    campaign_areas (id, name, customer_areas (vereinstyp, vereinsname))
+                    campaign_areas (id, customer_areas (vereinstyp, name_short))
                 `)
                 .eq('werber_id', currentUser.id)
                 .is('deleted_at', null)
@@ -742,7 +742,7 @@ async function fetchLatestRecords() {
             .select(`
                 id, first_name, last_name, created_at, werber_id, record_type, yearly_amount, increase_amount,
                 users!records_werber_id_fkey (name),
-                campaign_areas (id, name, customer_areas (vereinstyp, vereinsname))
+                campaign_areas (id, customer_areas (vereinstyp, name_short))
             `)
             .in('werber_id', werberIds)
             .is('deleted_at', null);
@@ -805,7 +805,7 @@ async function fetchTeamWerber() {
                 werber_id,
                 campaign_area_id,
                 users!campaign_assignment_werber_werber_id_fkey (id, name),
-                campaign_areas (id, name)
+                campaign_areas (id, customer_areas (name_long))
             `)
             .eq('assignment_id', tcAssignment.id);
 
@@ -826,9 +826,9 @@ async function fetchAvailableAreas(campaignId) {
     try {
         const { data } = await supabaseClient
             .from('campaign_areas')
-            .select('id, name, plz')
+            .select('id, plz, customer_areas (name_long)')
             .eq('campaign_id', campaignId)
-            .order('name');
+            .order('customer_areas(name_long)');
 
         return data || [];
     } catch (error) {
@@ -1065,7 +1065,7 @@ const views = {
             <div class="area-list">
                 ${areas.length > 0 ? areas.map(area => `
                     <a href="/formular/?botschafter=${currentUser.id}&werbegebiet=${area.id}${area.campaign_id ? '&kampagne=' + area.campaign_id : ''}" class="area-card">
-                        <h3>${area.name}</h3>
+                        <h3>${area.name_long}</h3>
                         <p>Heute: ${area.today} Mitglieder • Diese Woche: ${area.week} Mitglieder</p>
                         <span class="area-badge" style="background: ${area.active ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)' : '#eeeeee'}; color: ${area.active ? 'white' : '#757575'};">
                             ${area.active ? '● Aktiv' : '○ Inaktiv'}
@@ -1530,7 +1530,7 @@ async function renderTCSection() {
                             <div class="record-meta">
                                 <span class="record-time">${formatTime(record.created_at)}</span>
                             </div>
-                            ${record.campaign_areas?.customer_areas ? `<div class="record-area">${record.campaign_areas.customer_areas.vereinstyp} ${record.campaign_areas.customer_areas.vereinsname}</div>` : ''}
+                            ${record.campaign_areas?.customer_areas ? `<div class="record-area">${record.campaign_areas.customer_areas.vereinstyp} ${record.campaign_areas.customer_areas.name_short}</div>` : ''}
                             <div class="record-werber">${record.users?.name || 'Unbekannt'}</div>
                         </div>
                     </div>
@@ -1553,7 +1553,7 @@ async function renderTCSection() {
                             <option value="">-- Gebiet wählen --</option>
                             ${availableAreas.map(area => `
                                 <option value="${area.id}" ${w.campaign_area_id === area.id ? 'selected' : ''}>
-                                    ${area.name}${area.plz ? ` (${area.plz})` : ''}
+                                    ${area.customer_areas?.name_long}${area.plz ? ` (${area.plz})` : ''}
                                 </option>
                             `).join('')}
                         </select>
@@ -1618,7 +1618,7 @@ async function loadAreasIntoSelects() {
         areas.forEach(area => {
             const opt = document.createElement('option');
             opt.value = area.id;
-            opt.textContent = area.name;
+            opt.textContent = area.customer_areas?.name_long;
             if (area.id === currentValue) opt.selected = true;
             select.appendChild(opt);
         });

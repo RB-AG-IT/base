@@ -643,8 +643,8 @@ input[type="radio"][name="type"]:checked::after {
                     <div class="werber-name" id="werberName">-</div>
                 </div>
             </div>
-            <div class="verband-name" id="verbandName">DRK Kreisverband Musterstadt</div>
-            <div class="verband-adresse" id="verbandAdresse">Musterstraße 123, 12345 Musterstadt</div>
+            <div class="verband-name" id="verbandName"></div>
+            <div class="verband-adresse" id="verbandAdresse"></div>
         </div>
         
         <!-- Gruppenbild -->
@@ -995,7 +995,7 @@ input[type="radio"][name="type"]:checked::after {
             <div class="footer-text">
                 Mit dem Absenden wird bestätigt, dass die DSGVO-konforme
                 <a href="#" id="datenschutzLink" target="_blank" style="color: #667eea;">Datenschutzerklärung</a>
-                des <span id="footerKundeName">DRK Kreisverband Musterstadt</span> zur Kenntnis genommen und akzeptiert wurde.
+                des <span id="footerKundeName"></span> zur Kenntnis genommen und akzeptiert wurde.
             </div>
         </form>
     </div>
@@ -2395,7 +2395,7 @@ const streetResults = data.results.filter(result => {
 
                         const { data: customerArea } = await supabaseClient
                             .from('customer_areas')
-                            .select('name, street, house_number, postal_code, city, privacy_policy, customer_id')
+                            .select('street, house_number, postal_code, city, privacy_policy, customer_id, name_short, name_long')
                             .eq('id', area.customer_area_id)
                             .single();
 
@@ -2403,13 +2403,14 @@ const streetResults = data.results.filter(result => {
 
                         if (customerArea) {
                             // Name anzeigen und für E-Mail speichern
-                            if (customerArea.name) {
-                                if (verbandName) verbandName.textContent = customerArea.name;
-                                if (footerKundeName) footerKundeName.textContent = customerArea.name;
-                                formContext.werbegebiet_name = customerArea.name;
-                                document.title = customerArea.name;
+                            if (customerArea.name_long) {
+                                const areaName = customerArea.name_long;
+                                if (verbandName) verbandName.textContent = areaName;
+                                if (footerKundeName) footerKundeName.textContent = areaName;
+                                formContext.werbegebiet_name = areaName;
+                                document.title = areaName;
                                 // URL kosmetisch anpassen
-                                const urlName = customerArea.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9äöüÄÖÜß\-]/g, '');
+                                const urlName = areaName.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9äöüÄÖÜß\-]/g, '');
                                 history.replaceState(null, '', '/' + urlName + '-Nachbarschaftssteckbrief');
                             }
 
@@ -2494,17 +2495,6 @@ const streetResults = data.results.filter(result => {
                                 formContext.ansprechpartner_email = c.email || '';
                                 formContext.ansprechpartner_telefon = c.phone || '';
                             }
-                        }
-                    } else {
-                        // Fallback: Name aus campaign_areas verwenden
-                        if (area.name) {
-                            if (verbandName) verbandName.textContent = area.name;
-                            if (footerKundeName) footerKundeName.textContent = area.name;
-                            formContext.werbegebiet_name = area.name;
-                            document.title = area.name;
-                            // URL kosmetisch anpassen
-                            const urlName = area.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9äöüÄÖÜß\-]/g, '');
-                            history.replaceState(null, '', '/' + urlName + '-Nachbarschaftssteckbrief');
                         }
                     }
 
