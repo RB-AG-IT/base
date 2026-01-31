@@ -2246,17 +2246,17 @@ const streetResults = data.results.filter(result => {
                         .on('postgres_changes', {
                             event: 'UPDATE',
                             schema: 'public',
-                            table: 'records',
-                            filter: `id=eq.${insertedRecord.id}`
+                            table: 'email_sends',
+                            filter: `record_id=eq.${insertedRecord.id}`
                         }, (payload) => {
-                            if (payload.new.email_status === 'sent') {
+                            if (payload.new.status === 'sent') {
                                 showEmailToast(
-                                    payload.new.first_name,
-                                    payload.new.last_name,
-                                    payload.new.email
+                                    formData.firstName,
+                                    formData.lastName,
+                                    formData.email
                                 );
                                 supabaseClient.removeChannel(emailChannel);
-                            } else if (payload.new.email_status === 'failed') {
+                            } else if (payload.new.status === 'failed') {
                                 showToast('Email-Versand fehlgeschlagen', 5000, 'info');
                                 supabaseClient.removeChannel(emailChannel);
                             }
@@ -3131,17 +3131,23 @@ const streetResults = data.results.filter(result => {
                         // Email in DB updaten
                         const { error: updateError } = await supabaseClient
                             .from('records')
-                            .update({
-                                email: newEmail,
-                                email_status: 'queued',
-                                email_retry_count: 0,
-                                email_sent_at: null,
-                                email_opened_at: null,
-                                email_error: null
-                            })
+                            .update({ email: newEmail })
                             .eq('id', recordId);
 
                         if (updateError) throw new Error('DB Update fehlgeschlagen: ' + updateError.message);
+
+                        // Bestehenden email_sends Eintrag zurücksetzen
+                        await supabaseClient
+                            .from('email_sends')
+                            .update({
+                                status: 'queued',
+                                retry_count: 0,
+                                sent_at: null,
+                                opened_at: null,
+                                error: null
+                            })
+                            .eq('record_id', recordId)
+                            .eq('vorlage_typ', 'willkommen');
 
                         // Email erneut senden
                         const response = await fetch(SUPABASE_URL + '/functions/v1/send-email', {
@@ -3150,7 +3156,7 @@ const streetResults = data.results.filter(result => {
                                 'Authorization': 'Bearer ' + SUPABASE_KEY,
                                 'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify({ record_id: recordId, vorlage_typ: 'willkommen' })
+                            body: JSON.stringify({ record_id: recordId, vorlage_typ: 'willkommen', force: true })
                         });
 
                         const result = await response.json();
