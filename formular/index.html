@@ -2223,9 +2223,12 @@ const streetResults = data.results.filter(result => {
                 // Offline-Record entfernen
                 removeOfflineRecord(offlineId);
 
+                // Toast sofort nach DB-Insert
+                showToast('Erfolgreich hochgeladen');
+
                 // Willkommensmail auslösen (nur für NMG mit Email)
                 if (formData.type === 'NMG' && formData.email) {
-                    // Realtime-Listener ZUERST starten, damit kein Event verpasst wird
+                    // Realtime-Listener starten
                     const emailChannel = supabaseClient
                         .channel(`email-${insertedRecord.id}`)
                         .on('postgres_changes', {
@@ -2253,27 +2256,23 @@ const streetResults = data.results.filter(result => {
                         supabaseClient.removeChannel(emailChannel);
                     }, 30000);
 
-                    // Dann Edge Function aufrufen
-                    try {
-                        await fetch(SUPABASE_URL + '/functions/v1/send-email', {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': 'Bearer ' + SUPABASE_KEY,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ record_id: insertedRecord.id, vorlage_typ: 'willkommen' })
-                        });
-                    } catch (emailErr) {
+                    // Edge Function aufrufen (ohne await — läuft im Hintergrund)
+                    fetch(SUPABASE_URL + '/functions/v1/send-email', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + SUPABASE_KEY,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ record_id: insertedRecord.id, vorlage_typ: 'willkommen' })
+                    }).catch(emailErr => {
                         console.warn('Email-Aufruf fehlgeschlagen, Cron-Job übernimmt:', emailErr.message);
-                    }
+                    });
                 }
-
-                // Toast anzeigen
-                showToast('Erfolgreich hochgeladen');
 
             } catch (error) {
                 console.warn('Hintergrund-Upload fehlgeschlagen:', error.message);
                 // Record bleibt in localStorage für späteren Sync
+                showToast('Offline gespeichert', 5000, 'info');
             }
         }
 
