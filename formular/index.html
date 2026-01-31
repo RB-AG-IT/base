@@ -2225,26 +2225,11 @@ const streetResults = data.results.filter(result => {
 
                 // Willkommensmail auslösen (nur für NMG mit Email)
                 if (formData.type === 'NMG' && formData.email) {
-                    try {
-                        await fetch(SUPABASE_URL + '/functions/v1/send-email', {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': 'Bearer ' + SUPABASE_KEY,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ record_id: insertedRecord.id, vorlage_typ: 'willkommen' })
-                        });
-                    } catch (emailErr) {
-                        console.warn('Email-Aufruf fehlgeschlagen, Cron-Job übernimmt:', emailErr.message);
-                    }
-                }
-
-                // Realtime-Subscription für Email-Status (nur für NMG mit Email)
-                if (formData.type === 'NMG' && formData.email) {
+                    // Realtime-Listener ZUERST starten, damit kein Event verpasst wird
                     const emailChannel = supabaseClient
                         .channel(`email-${insertedRecord.id}`)
                         .on('postgres_changes', {
-                            event: 'UPDATE',
+                            event: '*',
                             schema: 'public',
                             table: 'email_sends',
                             filter: `record_id=eq.${insertedRecord.id}`
@@ -2267,6 +2252,20 @@ const streetResults = data.results.filter(result => {
                     setTimeout(() => {
                         supabaseClient.removeChannel(emailChannel);
                     }, 30000);
+
+                    // Dann Edge Function aufrufen
+                    try {
+                        await fetch(SUPABASE_URL + '/functions/v1/send-email', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': 'Bearer ' + SUPABASE_KEY,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ record_id: insertedRecord.id, vorlage_typ: 'willkommen' })
+                        });
+                    } catch (emailErr) {
+                        console.warn('Email-Aufruf fehlgeschlagen, Cron-Job übernimmt:', emailErr.message);
+                    }
                 }
 
                 // Toast anzeigen
