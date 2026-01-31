@@ -2245,7 +2245,7 @@ const streetResults = data.results.filter(result => {
                                 );
                                 supabaseClient.removeChannel(emailChannel);
                             } else if (payload.new.status === 'failed') {
-                                showToast('Email-Versand fehlgeschlagen', 5000, 'info');
+                                showToast('Email-Versand fehlgeschlagen', 5000, 'error');
                                 supabaseClient.removeChannel(emailChannel);
                             }
                         })
