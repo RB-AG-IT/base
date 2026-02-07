@@ -826,9 +826,8 @@ async function fetchAvailableAreas(campaignId) {
     try {
         const { data } = await supabaseClient
             .from('campaign_areas')
-            .select('id, plz, customer_areas (name_long)')
-            .eq('campaign_id', campaignId)
-            .order('customer_areas(name_long)');
+            .select('id, plz, customer_areas (vereinstyp, name_short)')
+            .eq('campaign_id', campaignId);
 
         return data || [];
     } catch (error) {
@@ -1553,7 +1552,7 @@ async function renderTCSection() {
                             <option value="">-- Gebiet wählen --</option>
                             ${availableAreas.map(area => `
                                 <option value="${area.id}" ${w.campaign_area_id === area.id ? 'selected' : ''}>
-                                    ${area.customer_areas?.name_long}${area.plz ? ` (${area.plz})` : ''}
+                                    ${[area.customer_areas?.vereinstyp, area.customer_areas?.name_short].filter(Boolean).join(' ')}${area.plz ? ` (${area.plz})` : ''}
                                 </option>
                             `).join('')}
                         </select>

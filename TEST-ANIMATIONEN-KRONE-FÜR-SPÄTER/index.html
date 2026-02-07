@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>RB-INSIDE  – Kachel Web App</title>
+
+  <!-- WICHTIG FÜR APP / PWA -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#050509">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <!-- Manifest einbinden -->
+  <link rel="manifest" href="/manifest.json">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      background: radial-gradient(circle at top, #141824 0, #050509 45%, #020208 100%);
+      overscroll-behavior-y: contain;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #141824 0, #050509 45%, #020208 100%);
+      color: #f5f5f5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    .app-frame {
+      min-height: 100vh;
+      padding-top: 50px;
+      padding-bottom: 50px;
+    }
+
+    /* TOP BAR – 50px */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(5, 5, 9, 0.96);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(12px);
+      z-index: 20;
+    }
+
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-toggle {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top left, #20263a 0, #10131f 55%, #070811 100%);
+      cursor: pointer;
+      transition: transform 0.12s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+
+    .sidebar-toggle:active {
+      transform: scale(0.95);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.4);
+      border-color: rgba(0, 240, 255, 0.4);
+    }
+
+    .sidebar-toggle-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .sidebar-toggle-line {
+      width: 16px;
+      height: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #00f0ff, #8b9bff);
+    }
+
+    .sidebar-toggle-line:last-child {
+      width: 10px;
+      align-self: flex-end;
+    }
+
+    .app-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #e4e7ff;
+      opacity: 0.9;
+      text-align: center;
+      flex: 1;
+    }
+
+    .profile-avatar-wrapper {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .profile-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 0, #ffffff 0, #b0b0b0 30%, #555 65%, #111 100%);
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+      cursor: pointer;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed;
+      top: 50px;
+      left: 0;
+      bottom: 50px;
+      width: 230px;
+      background: rgba(5, 7, 16, 0.98);
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 18px 0 36px rgba(0, 0, 0, 0.8);
+      transform: translateX(-100%);
+      transition: transform 0.2s ease-out;
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 10px 12px 12px;
+    }
+
+    .sidebar.open {
+      transform: translateX(0);
+    }
+
+    .sidebar-section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #6f7494;
+      margin-bottom: 6px;
+      padding-left: 6px;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 10px;
+      margin-bottom: 6px;
+      border-radius: 999px;
+      cursor: pointer;
+      background: transparent;
+      border: 1px solid transparent;
+      font-size: 13px;
+      color: #c9cdee;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .sidebar-item-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+    }
+
+    .sidebar-item span {
+      white-space: nowrap;
+    }
+
+    .sidebar-item.active {
+      background: radial-gradient(circle at left, rgba(0, 240, 255, 0.16) 0, rgba(0, 0, 0, 0) 55%);
+      border-color: rgba(0, 240, 255, 0.25);
+    }
+
+    .sidebar-item:hover {
+      transform: translateX(1px);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .sidebar-item-muted {
+      opacity: 0.7;
+    }
+
+    .sidebar-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 8px;
+      margin-top: 6px;
+    }
+
+    .sidebar-footer-btn {
+      width: 100%;
+      border-radius: 999px;
+      padding: 8px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: linear-gradient(90deg, rgba(0, 240, 255, 0.18), rgba(0, 0, 0, 0.1));
+      font-size: 12px;
+      color: #e1f9ff;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    /* HINTERGRUND-FADES AN DEN RÄNDERN */
+    .edge-fade-left,
+    .edge-fade-right {
+      position: fixed;
+      top: 50px;
+      bottom: 50px;
+      width: 22px;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .edge-fade-left {
+      left: 0;
+      background: linear-gradient(to right, rgba(5, 5, 9, 1) 0, rgba(5, 5, 9, 0) 100%);
+    }
+
+    .edge-fade-right {
+      right: 0;
+      background: linear-gradient(to left, rgba(5, 5, 9, 1) 0, rgba(5, 5, 9, 0) 100%);
+    }
+
+    /* INHALT – scrollbar */
+    .content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 12px 14px 18px;
+      height: calc(100vh - 50px - 50px);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .tile-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .tile {
+      position: relative;
+      border-radius: 18px;
+      background: radial-gradient(circle at top, #1c2235 0, #0d0f1b 40%, #05060d 100%);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 10px;
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.02),
+        0 14px 40px rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+    }
+
+    .tile::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 10% 0, rgba(0, 240, 255, 0.22), transparent 45%),
+        radial-gradient(circle at 90% 90%, rgba(139, 155, 255, 0.16), transparent 50%);
+      opacity: 0.16;
+      pointer-events: none;
+    }
+
+    .tile-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .tile:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 0 0 1px rgba(0, 240, 255, 0.24),
+        0 18px 46px rgba(0, 0, 0, 0.9);
+      border-color: rgba(0, 240, 255, 0.35);
+    }
+
+    .tile-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #8287aa;
+      margin-bottom: 4px;
+      opacity: 0.9;
+    }
+
+    .tile-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f5f7ff;
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .tile-value {
+      font-size: 20px;
+      font-weight: 600;
+      color: #00f0ff;
+      margin-bottom: 4px;
+    }
+
+    .tile-meta {
+      font-size: 11px;
+      color: #868bb0;
+    }
+
+    .tile-tag {
+      align-self: flex-start;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(0, 0, 0, 0.4);
+      color: #d7e7ff;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* KACHELGRÖSSEN – starr */
+    .tile-large {
+      grid-column: span 2;
+      height: 340px;
+    }
+
+    .tile-small {
+      grid-column: span 2;
+      height: 170px;
+    }
+
+    .tile-xs {
+      grid-column: span 1;
+      height: 170px;
+    }
+
+    /* Ranking-Liste */
+    .ranking-scroll {
+      margin-top: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .ranking-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 8px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid transparent;
+      font-size: 12px;
+    }
+
+    .ranking-item-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ranking-badge {
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 240, 255, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #eafbff;
+      background: radial-gradient(circle at 30% 0, #00f0ff 0, #004d5a 60%, #000 100%);
+    }
+
+    .ranking-name {
+      color: #f5f7ff;
+    }
+
+    .ranking-value {
+      font-size: 12px;
+      color: #a6fffe;
+    }
+
+    .ranking-item:first-child {
+      border-color: rgba(0, 240, 255, 0.6);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.35);
+      background: linear-gradient(90deg, rgba(0, 240, 255, 0.2), rgba(0, 0, 0, 0.1));
+    }
+
+    /* AKTIEN-CHART (ruhig) */
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .chart-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f5f7ff;
+    }
+
+    .chart-chip {
+      font-size: 10px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 240, 255, 0.5);
+      color: #a6fffe;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .chart-meta {
+      font-size: 11px;
+      color: #868bb0;
+      margin-bottom: 4px;
+    }
+
+    .chart-area {
+      position: relative;
+      height: 40px;
+      border-radius: 12px;
+      background: radial-gradient(circle at top, #1a2336 0, #05060c 70%);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      padding: 4px 6px;
+      overflow: hidden;
+    }
+
+    .chart-svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .chart-line {
+      stroke: #00f0ff;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .chart-glow {
+      filter: drop-shadow(0 0 6px rgba(0, 240, 255, 0.8));
+    }
+
+    .chart-axis {
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: #6f7494;
+      letter-spacing: 0.06em;
+    }
+
+    .chart-footer {
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #7e82a4;
+    }
+
+    .chart-footer span:last-child {
+      color: #1de9b6;
+    }
+
+    /* BOTTOM NAV – 50px */
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 50px;
+      padding: 4px 0;
+      background: rgba(5, 5, 9, 0.98);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(18px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 25;
+    }
+
+    .nav-button {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .nav-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #7f84a5;
+      cursor: pointer;
+      transition: border-color 0.12s ease, box-shadow 0.12s ease, color 0.12s ease, transform 0.1s ease;
+    }
+
+    .nav-icon:active {
+      transform: scale(0.95);
+    }
+
+    .nav-button.nav-active .nav-icon {
+      color: #eaf7ff;
+      border-color: rgba(0, 240, 255, 0.7);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-frame">
+    <!-- Top-Bar -->
+    <header class="top-bar">
+      <div class="top-left">
+        <div class="sidebar-toggle" id="sidebarToggle">
+          <div class="sidebar-toggle-lines">
+            <div class="sidebar-toggle-line"></div>
+            <div class="sidebar-toggle-line"></div>
+            <div class="sidebar-toggle-line"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="app-title">RHODENBURG AG</div>
+
+      <div class="profile-avatar-wrapper">
+        <div class="profile-avatar" id="profileAvatar"></div>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-section-label">Navigation</div>
+
+      <div class="sidebar-nav">
+        <!-- Bestehende Punkte -->
+        <div class="sidebar-item active">
+          <div class="sidebar-item-icon">◎</div>
+          <span>Dashboard</span>
+        </div>
+
+        <div class="sidebar-item">
+          <div class="sidebar-item-icon">□</div>
+          <span>Kunden</span>
+        </div>
+
+        <div class="sidebar-item">
+          <div class="sidebar-item-icon">≡</div>
+          <span>Formulare</span>
+        </div>
+
+        <div class="sidebar-item">
+          <div class="sidebar-item-icon">⧉</div>
+          <span>Mitglieder</span>
+        </div>
+
+        <div class="sidebar-item sidebar-item-muted">
+          <div class="sidebar-item-icon">⋯</div>
+          <span>Automation (Soon)</span>
+        </div>
+
+        <!-- NEUE 5 Punkte -->
+        <div class="sidebar-item">
+          <div class="sidebar-item-icon">⌁</div>
+          <span>Übersicht Plus</span>
+        </div>
+
+        <div class="sidebar-item">
+          <div class="sidebar-item-icon">✦</div>
+          <span>Berichte</span>
+        </div>
+
+        <div class="sidebar-item">
+          <div class="sidebar-item-icon">✹</div>
+          <span>Analyse Center</span>
+        </div>
+
+        <div class="sidebar-item">
+          <div class="sidebar-item-icon">✓</div>
+          <span>Aufgaben Manager</span>
+        </div>
+
+        <div class="sidebar-item">
+          <div class="sidebar-item-icon">⇄</div>
+          <span>Workflow</span>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-footer-btn" id="sidebarSettingsBtn">Einstellungen & Systemstatus</div>
+      </div>
+    </aside>
+
+    <!-- Fade-Ränder -->
+    <div class="edge-fade-left"></div>
+    <div class="edge-fade-right"></div>
+
+    <!-- Inhalt – Kacheln -->
+    <main class="content">
+      <div class="tile-grid">
+        <!-- GROSSE KACHEL: Ranking -->
+        <div class="tile tile-large">
+          <div class="tile-inner">
+            <div class="tile-label">Live-Ranking</div>
+            <div class="tile-title">Interne Bereiche</div>
+            <div class="tile-meta">Übersicht der wichtigsten Module</div>
+
+            <div class="ranking-scroll">
+              <div class="ranking-list">
+                <div class="ranking-item">
+                  <div class="ranking-item-left">
+                    <div class="ranking-badge">1</div>
+                    <div class="ranking-name">Kundenportal</div>
+                  </div>
+                  <div class="ranking-value">98 Punkte</div>
+                </div>
+
+                <div class="ranking-item">
+                  <div class="ranking-item-left">
+                    <div class="ranking-badge">2</div>
+                    <div class="ranking-name">Formulare</div>
+                  </div>
+                  <div class="ranking-value">93 Punkte</div>
+                </div>
+
+                <div class="ranking-item">
+                  <div class="ranking-item-left">
+                    <div class="ranking-badge">3</div>
+                    <div class="ranking-name">Mitglieder</div>
+                  </div>
+                  <div class="ranking-value">89 Punkte</div>
+                </div>
+
+                <div class="ranking-item">
+                  <div class="ranking-item-left">
+                    <div class="ranking-badge">4</div>
+                    <div class="ranking-name">Auswertungen</div>
+                  </div>
+                  <div class="ranking-value">82 Punkte</div>
+                </div>
+
+                <div class="ranking-item">
+                  <div class="ranking-item-left">
+                    <div class="ranking-badge">5</div>
+                    <div class="ranking-name">Automation (Beta)</div>
+                  </div>
+                  <div class="ranking-value">76 Punkte</div>
+                </div>
+
+                <div class="ranking-item">
+                  <div class="ranking-item-left">
+                    <div class="ranking-badge">6</div>
+                    <div class="ranking-name">Archiv</div>
+                  </div>
+                  <div class="ranking-value">71 Punkte</div>
+                </div>
+
+                <div class="ranking-item">
+                  <div class="ranking-item-left">
+                    <div class="ranking-badge">7</div>
+                    <div class="ranking-name">Benachrichtigungen</div>
+                  </div>
+                  <div class="ranking-value">65 Punkte</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tile-tag">Ranking</div>
+        </div>
+
+        <!-- MITTLERE KACHEL: Chart -->
+        <div class="tile tile-small">
+          <div class="tile-inner">
+            <div class="chart-header">
+              <div class="chart-title">RB-INDEX • Dummy</div>
+              <div class="chart-chip">+3,4 %</div>
+            </div>
+            <div class="chart-meta">Monatsverlauf – reine Demo</div>
+
+            <div class="chart-area">
+              <svg class="chart-svg" viewBox="0 0 160 60" preserveAspectRatio="none">
+                <g class="chart-glow">
+                  <polyline
+                    class="chart-line"
+                    points="0,45 15,40 30,42 45,32 60,36 75,25 90,30 105,18 120,24 135,15 150,20"
+                  />
+                </g>
+              </svg>
+            </div>
+
+            <div class="chart-axis">
+              <span>01</span>
+              <span>05</span>
+              <span>10</span>
+              <span>15</span>
+              <span>20</span>
+              <span>25</span>
+              <span>30</span>
+            </div>
+
+            <div class="chart-footer">
+              <span>Simulierter Verlauf</span>
+              <span>Layout-Test</span>
+            </div>
+          </div>
+          <div class="tile-tag">Chart</div>
+        </div>
+
+        <!-- Zwei kleine Kacheln nebeneinander -->
+        <div class="tile tile-xs">
+          <div class="tile-inner">
+            <div class="tile-label">Heute</div>
+            <div class="tile-title">Neue Anfragen</div>
+            <div class="tile-value">+4</div>
+            <div class="tile-meta">Nur Dummy für Layout</div>
+          </div>
+        </div>
+
+        <div class="tile tile-xs">
+          <div class="tile-inner">
+            <div class="tile-label">Formulare</div>
+            <div class="tile-title">Offen</div>
+            <div class="tile-value">7</div>
+            <div class="tile-meta">Später mit echten Daten</div>
+          </div>
+        </div>
+
+        <!-- MITTLERE KACHEL -->
+        <div class="tile tile-small">
+          <div class="tile-inner">
+            <div class="tile-label">Mitglieder</div>
+            <div class="tile-title">Team</div>
+            <div class="tile-value">12</div>
+            <div class="tile-meta">Benutzerverwaltung, Rollen, Rechte</div>
+          </div>
+          <div class="tile-tag">Team</div>
+        </div>
+
+        <!-- MITTLERE KACHEL -->
+        <div class="tile tile-small">
+          <div class="tile-inner">
+            <div class="tile-label">Login & Sicherheit</div>
+            <div class="tile-title">Web App Login</div>
+            <div class="tile-meta">
+              Supabase Auth • E-Mail Login • Passwort-Reset • DSGVO EU-Region
+            </div>
+          </div>
+          <div class="tile-tag">Security</div>
+        </div>
+
+        <!-- Zwei kleine Kacheln -->
+        <div class="tile tile-xs">
+          <div class="tile-inner">
+            <div class="tile-label">Ping</div>
+            <div class="tile-title">Backend</div>
+            <div class="tile-meta">24 ms • Dummy</div>
+          </div>
+        </div>
+
+        <div class="tile tile-xs">
+          <div class="tile-inner">
+            <div class="tile-label">Modus</div>
+            <div class="tile-title">Sandbox</div>
+            <div class="tile-meta">Nur Testoberfläche – kein Live-System</div>
+          </div>
+        </div>
+
+        <!-- NEUE MITTLERE KACHEL UNTEN -->
+        <div class="tile tile-small">
+          <div class="tile-inner">
+            <div class="tile-label">System</div>
+            <div class="tile-title">Notizen & Status</div>
+            <div class="tile-meta">
+              Platzhalter für Hinweise, Statusmeldungen oder kurze Zusammenfassungen.
+            </div>
+          </div>
+          <div class="tile-tag">Übersicht</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Bottom Navigation – Icons mittig in 4 Vierteln -->
+  <nav class="bottom-nav">
+    <div class="nav-button nav-active">
+      <div class="nav-icon">◎</div>
+    </div>
+    <div class="nav-button">
+      <div class="nav-icon">□</div>
+    </div>
+    <div class="nav-button">
+      <div class="nav-icon">≡</div>
+    </div>
+    <div class="nav-button">
+      <div class="nav-icon">⚙</div>
+    </div>
+  </nav>
+
+  <script>
+    // Sidebar Toggle
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+
+    sidebarToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+    });
+
+    // Sidebar Items aktiv schalten
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(item => {
+      item.addEventListener('click', () => {
+        sidebarItems.forEach(i => i.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+
+    // Sidebar Settings Button (Dummy)
+    const sidebarSettingsBtn = document.getElementById('sidebarSettingsBtn');
+    sidebarSettingsBtn.addEventListener('click', () => {
+      alert('Dummy: Systemstatus & Einstellungen folgen später.');
+    });
+
+    // Profil-Avatar Klick (Dummy-Testprofil)
+    const profileAvatar = document.getElementById('profileAvatar');
+    profileAvatar.addEventListener('click', () => {
+      alert('Dummy: Testprofil "Teamchef" ausgewählt.');
+    });
+
+    // Bottom-Navigation aktiv schalten
+    const navButtons = document.querySelectorAll('.nav-button');
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        navButtons.forEach(b => b.classList.remove('nav-active'));
+        btn.classList.add('nav-active');
+      });
+    });
+
+    // Service Worker Registrierung mit Auto-Update
+    if ('serviceWorker' in navigator) {
+      let hasReloaded = false;
+
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (!newWorker) return;
+
+            newWorker.addEventListener('statechange', () => {
+              if (
+                newWorker.state === 'activated' &&
+                navigator.serviceWorker.controller &&
+                !hasReloaded
+              ) {
+                hasReloaded = true;
+                window.location.reload();
+              }
+            });
+          });
+        }).catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>

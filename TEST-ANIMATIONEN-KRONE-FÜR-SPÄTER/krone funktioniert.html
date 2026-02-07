@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Ranking GSAP – exakte Landung</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <style>
+    body { background:#0b0f14; color:#e9eef5; font-family:Inter, sans-serif; padding:20px; }
+    table { border-collapse:collapse; width:420px; background:#121822; border:1px solid #1f2a3a; border-radius:12px; overflow:hidden; }
+    th, td { padding:8px 12px; border-bottom:1px solid #1f2a3a; font-size:14px; }
+    th { background:#162034; text-align:left; }
+    .badge { display:inline-block; min-width:22px; text-align:center; border-radius:50%; background:#1e2a3d; padding:2px 6px; }
+    .no1 { background:linear-gradient(135deg,#ffd86f,#fc6262); color:#111; font-weight:700; }
+    .name-first { position:relative; display:inline-block; }
+    /* WICHTIG: keine position/top/left hier! Sonst doppelte Offsets bei Overlays */
+    .crown { width:18px; height:18px; }
+    .overlay { position:fixed; top:0; left:0; pointer-events:none; will-change: transform, opacity; z-index:9999; }
+    button { margin-top:16px; padding:8px 12px; border-radius:8px; border:none; background:#74b9ff; color:#0b0f14; font-weight:600; cursor:pointer; }
+  </style>
+</head>
+<body>
+
+<h2>Ranking – exakte Kronen-Landung</h2>
+<table>
+  <thead>
+    <tr><th>Platz</th><th>Name</th><th>JE</th></tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+<button id="btn">Simuliere neuen Platz 1</button>
+
+<script>
+let currentRows = [
+  {platz:1,name:"Alice",je:1200},
+  {platz:2,name:"Bob",je:1100},
+  {platz:3,name:"Charlie",je:1000},
+];
+
+const CROWN_W = 18, CROWN_H = 18;
+// Diese Offsets gelten NUR für die feste Krone im Namen:
+const OFF_X = -6, OFF_Y = -14; 
+
+function crownSVG(id){
+  const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+  svg.setAttribute("viewBox","0 0 24 24");
+  if(id) svg.id = id;
+  svg.classList.add("crown");
+  svg.innerHTML = `<path fill="gold" stroke="#b8922c" stroke-width="0.6" d="M5 16l-3-9 6 5 4-7 4 7 6-5-3 9H5z"/>`;
+  return svg;
+}
+
+function renderStatic(rows, {withCrown=true}={}){
+  const tb = document.getElementById("tbody");
+  tb.innerHTML = "";
+  rows.forEach(r=>{
+    const tr = document.createElement("tr");
+    tr.id = "row-"+r.name;
+    tr.innerHTML = `
+      <td><span class="badge ${r.platz===1?"no1":""}">${r.platz}</span></td>
+      <td><span class="name-first">${r.name}</span></td>
+      <td>${r.je.toLocaleString("de-DE")}</td>`;
+    tb.appendChild(tr);
+
+    if(r.platz===1 && withCrown){
+      const first = tr.querySelector(".name-first");
+      const fixed = crownSVG("crown-fixed");
+      fixed.style.position = "absolute";
+      fixed.style.left = OFF_X + "px";
+      fixed.style.top  = OFF_Y + "px";
+      fixed.style.transform = "rotate(-15deg)";
+      first.appendChild(fixed);
+    }
+  });
+}
+
+const rect = el => el.getBoundingClientRect();
+const numPx = v => (typeof v==="string" ? parseFloat(v)||0 : (v||0));
+
+/** Y der Trennlinie zwischen Zeile1 (aktuelle #1) und Zeile2 (aktuelle #2).
+ *  Bei border-collapse ist die Linie an der OBERKANTE von Row2.
+ */
+function dividerYBetween(row2El){
+  const cell = row2El.querySelector("td, th") || row2El;
+  const r = rect(cell);
+  const bTop = numPx(getComputedStyle(cell).borderTopWidth);
+  // Mitte der Linie (stabil auf High-DPI):
+  return r.top + (bTop>0 ? bTop*0.5 : 0);
+}
+
+async function renderWithAnimation(oldRows,newRows){
+  const oldTop = oldRows.find(r=>r.platz===1)?.name;
+  const newTop = newRows.find(r=>r.platz===1)?.name;
+  if(!oldTop || !newTop || oldTop===newTop){ renderStatic(newRows); return; }
+
+  // Feste Krone weg, sonst doppelt
+  document.getElementById("crown-fixed")?.remove();
+
+  // Elemente (vor Flip)
+  const oldRowEl = document.getElementById("row-"+oldTop);
+  const newRowEl = document.getElementById("row-"+newTop);
+  const oldFirst = oldRowEl.querySelector(".name-first");
+  const newFirst = newRowEl.querySelector(".name-first");
+
+  const rOldRow   = rect(oldRowEl);
+  const rOldFirst = rect(oldFirst);
+  const rNewRow   = rect(newRowEl);
+
+  // Wie weit tauschen die sich (visuell)?
+  const dy = rOldRow.top - rNewRow.top;
+
+  // ---------- PHASE 1: alte Krone exakt auf Trennlinie 1/2 ----------
+  const oldCrownWrap = document.createElement("div");
+  oldCrownWrap.className = "overlay";
+  oldCrownWrap.style.width = CROWN_W+"px";
+  oldCrownWrap.style.height= CROWN_H+"px";
+  // WICHTIG: SVG ohne interne Offsets!
+  oldCrownWrap.appendChild(crownSVG("oldCrown"));
+  document.body.appendChild(oldCrownWrap);
+
+  // Start: direkt über dem 1. Buchstaben von alter #1 (die feste Krone stand dort)
+  gsap.set(oldCrownWrap, { 
+    x: rOldFirst.left + OFF_X, 
+    y: rOldFirst.top  + OFF_Y, 
+    rotation: -15, 
+    opacity: 1 
+  });
+
+  // Ziel: Mitte der geteilten Border auf Höhe der OBERKANTE von Row2
+  const lineY = dividerYBetween(newRowEl);
+  const targetY = lineY - CROWN_H;
+
+  const tl = gsap.timeline();
+  tl.to(oldCrownWrap, {
+      y: targetY,
+      rotation: 20,
+      duration: 0.9,
+      ease: "bounce.out"
+    })
+    .to(oldCrownWrap, {
+      opacity: 0,
+      duration: 0.4,
+      ease: "power1.out"
+    }, "+=0.15");
+
+  // ---------- PHASE 2: Flip ----------
+  tl.to(oldRowEl, { y: -dy, duration: 0.9, ease: "power1.inOut" }, "+=0.05")
+    .to(newRowEl, { y:  dy, duration: 0.9, ease: "power1.inOut" }, "<");
+
+  // ---------- PHASE 3: neue Krone (Blattflug) ----------
+  tl.add(() => {
+    // Nach dem Flip messen (inkl. transform)
+    const rNewFirstAfter = rect(newFirst);
+    const endX = rNewFirstAfter.left + OFF_X;
+    const endY = rNewFirstAfter.top  + OFF_Y;
+
+    const newCrownWrap = document.createElement("div");
+    newCrownWrap.className = "overlay";
+    newCrownWrap.style.width = CROWN_W+"px";
+    newCrownWrap.style.height= CROWN_H+"px";
+    // WICHTIG: keine .crown-Offsets innerhalb!
+    newCrownWrap.appendChild(crownSVG("newCrown"));
+    document.body.appendChild(newCrownWrap);
+
+    const startX = endX + 120;
+    const startY = endY - 160;
+    gsap.set(newCrownWrap, { x:startX, y:startY, rotation:-28, opacity:0 });
+
+    const leafTl = gsap.timeline({
+      onComplete: () => {
+        // Jetzt DOM neu + feste Krone exakt an dieselbe Stelle
+        renderStatic(newRows, {withCrown:true});
+        newCrownWrap.remove();
+        oldCrownWrap.remove();
+      }
+    });
+
+    leafTl
+      .to(newCrownWrap, { 
+        x: startX - 60, y: startY + 80, rotation: -8, opacity: 1, duration: 1.2, ease: "sine.inOut" 
+      }, "+=0.2")
+      .to(newCrownWrap, { 
+        x: startX - 110, y: startY + 150, rotation: 5, duration: 0.95, ease: "sine.inOut" 
+      })
+      .to(newCrownWrap, { 
+        x: endX, y: endY, rotation: -15, duration: 0.85, ease: "sine.out" 
+      });
+  });
+}
+
+document.getElementById("btn").addEventListener("click", ()=>{
+  const newRows = [
+    {platz:1,name: currentRows[1].name, je: currentRows[1].je + 20},
+    {platz:2,name: currentRows[0].name, je: currentRows[0].je - 20},
+    {platz:3,name: currentRows[2].name, je: currentRows[2].je},
+  ];
+  renderWithAnimation(currentRows, newRows);
+  currentRows = newRows;
+});
+
+renderStatic(currentRows, {withCrown:true});
+</script>
+</body>
+</html>
