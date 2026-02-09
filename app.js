@@ -526,7 +526,8 @@ async function fetchRankingData(period = 'day') {
             .from('provisions_ledger')
             .select('user_id, einheiten, kw, created_at, typ')
             .eq('kategorie', 'werben')
-            .eq('year', year);
+            .eq('year', year)
+            .limit(10000);
 
         const { data } = await query;
 
