@@ -2395,7 +2395,7 @@ const streetResults = data.results.filter(result => {
 
                         const { data: customerArea } = await supabaseClient
                             .from('customer_areas')
-                            .select('street, house_number, postal_code, city, privacy_policy, customer_id, name_short, name_long')
+                            .select('street, house_number, postal_code, city, privacy_policy, website, customer_id, name_short, name_long')
                             .eq('id', area.customer_area_id)
                             .single();
 
@@ -2470,14 +2470,21 @@ const streetResults = data.results.filter(result => {
                             else if (customerArea.customer_id) {
                                 const { data: customer } = await supabaseClient
                                     .from('customers')
-                                    .select('privacy_policy')
+                                    .select('privacy_policy, website')
                                     .eq('id', customerArea.customer_id)
                                     .single();
 
                                 if (customer && customer.privacy_policy) {
                                     privacyPolicyUrl = customer.privacy_policy;
                                 }
+                                if (customer && customer.website) {
+                                    formContext.website_url = customer.website;
+                                }
                             }
+
+                            // Datenschutz + Website in formContext speichern
+                            if (privacyPolicyUrl) formContext.datenschutz_url = privacyPolicyUrl;
+                            if (customerArea.website) formContext.website_url = customerArea.website;
 
                             // Customer ID für Record speichern
                             formContext.customer_id = customerArea.customer_id;
@@ -3026,59 +3033,70 @@ const streetResults = data.results.filter(result => {
 
             document.querySelector('.container').innerHTML = `
                 <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&display=swap');
+                    .container { overflow: visible !important; font-family: ArialMT, Arial, sans-serif; }
                 </style>
-                <div class="header" style="background: white; position: relative; padding: 15px 20px; min-height: 120px;">
-                    <img src="/formular/assets/drk-logo.png" alt="DRK Logo" style="width: 120px; height: 120px; position: absolute; left: 20px; top: 50%; transform: translateY(-50%);">
-                    <div style="text-align: center; padding-top: 30px;">
-                        <h2 style="font-family: 'Oswald', sans-serif; color: black; font-weight: 700; font-size: 2.2rem; margin: 0;">${formContext.werbegebiet_name || 'Das DRK'} sagt Danke, ${formData.firstName || ''}!</h2>
-                        <p style="color: black; font-size: 0.9rem; margin: 5px 0 0 0;">${formContext.werbegebiet_adresse || ''}</p>
+                <div class="success-page" style="min-height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 100px;">
+                    <div class="header" style="background: white; position: relative; padding: 15px 20px; min-height: 120px;">
+                        <img src="/formular/assets/drk-logo.png" alt="DRK Logo" style="width: 80px; height: 80px; position: absolute; left: 20px; top: 50%; transform: translateY(-50%);">
+                        <div style="margin-left: 90px; text-align: center; padding-top: 15px;">
+                            <h2 style="font-family: ArialMT, Arial, sans-serif; color: black; font-weight: 700; font-size: 1.5rem; margin: 0; line-height: 1.3; text-wrap: balance;">${formContext.werbegebiet_name || 'Das DRK'}<br>sagt Danke, ${formData.firstName || ''}!</h2>
+                            <p style="color: black; font-size: 0.9rem; margin: 5px 0 0 0;">${formContext.werbegebiet_adresse || ''}</p>
+                        </div>
+                    </div>
+                    <div style="text-align: center; padding: 30px 20px;">
+                        <img src="/formular/assets/drk-danke.jpg" alt="Deutsches Rotes Danke" style="max-width: 90vw; width: 700px; display: inline-block; border-radius: 12px; box-shadow: 0 16px 48px rgba(0,0,0,0.25);">
+                    </div>
+                    <div style="text-align: center; padding: 20px 20px 10px;">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                            <svg style="width: 28px; height: 28px; color: #4caf50;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span style="color: #4caf50; font-size: 1.2rem; font-weight: bold;">Erfolgreich gespeichert!</span>
+                        </div>
+                        <p style="color: #333; font-size: 1.1rem; font-weight: 500; margin: 0 0 10px 0;">
+                            ${formData.email ? 'Die Bestätigungsmail wird automatisch versendet.' : ''}
+                        </p>
+                        ${formData.email ? `
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                            <span style="color: #666;">Versendet an:</span>
+                            <input type="email" id="successEmailField" value="${formData.email}" disabled style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; width: 250px;">
+                            <button id="btnEditEmail" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">Bearbeiten</button>
+                            <button id="btnSaveEmail" style="padding: 8px 16px; background: #4caf50; color: white; border: none; border-radius: 6px; cursor: pointer; display: none;">Speichern & erneut senden</button>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div style="max-width: 320px; margin: 20px auto 30px; background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15);">
+                        <p style="margin: 0 0 12px 0; font-weight: bold; font-size: 1.1rem; color: #333;">Fragen?</p>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <svg style="width: 18px; height: 18px; color: #e63946;" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                            <span style="font-size: 0.95rem; color: #555;">${formContext.ansprechpartner_name || ''}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                            <svg style="width: 18px; height: 18px; color: #e63946;" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                            </svg>
+                            <span style="font-size: 0.9rem; color: #666;">${formContext.ansprechpartner_email || ''}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <svg style="width: 18px; height: 18px; color: #e63946;" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+                            </svg>
+                            <span style="font-size: 0.9rem; color: #666;">${formContext.ansprechpartner_telefon || ''}</span>
+                        </div>
+                    </div>
+                    <div style="text-align: center; padding: 30px 20px 20px; border-top: 1px solid #e0e0e0; margin-top: 30px;">
+                        ${formContext.datenschutz_url || formContext.website_url ? `
+                            <div style="display: flex; justify-content: center; gap: 20px; align-items: center;">
+                                ${formContext.datenschutz_url ? `<a href="${formContext.datenschutz_url}" target="_blank" style="color: #666; font-size: 0.85rem; text-decoration: none;">Datenschutzerklärung</a>` : ''}
+                                ${formContext.datenschutz_url && formContext.website_url ? '<span style="color: #ccc;">|</span>' : ''}
+                                ${formContext.website_url ? `<a href="${formContext.website_url}" target="_blank" style="color: #666; font-size: 0.85rem; text-decoration: none;">Website</a>` : ''}
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
-                <div style="position: fixed; top: 50%; right: 20px; transform: translateY(-50%); background: white; padding: 15px 20px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); max-width: 250px;">
-                    <p style="margin: 0 0 12px 0; font-weight: bold; font-size: 1.1rem; color: #333;">Fragen?</p>
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                        <svg style="width: 18px; height: 18px; color: #e63946;" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                        </svg>
-                        <span style="font-size: 0.95rem; color: #555;">${formContext.ansprechpartner_name || ''}</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                        <svg style="width: 18px; height: 18px; color: #e63946;" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-                        </svg>
-                        <span style="font-size: 0.9rem; color: #666;">${formContext.ansprechpartner_email || ''}</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <svg style="width: 18px; height: 18px; color: #e63946;" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-                        </svg>
-                        <span style="font-size: 0.9rem; color: #666;">${formContext.ansprechpartner_telefon || ''}</span>
-                    </div>
-                </div>
-                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 1;">
-                    <img src="/formular/assets/drk-danke.jpg" alt="Deutsches Rotes Danke" style="max-width: 90vw; width: 700px; display: block; border-radius: 12px; box-shadow: 0 16px 48px rgba(0,0,0,0.25);">
-                </div>
-                <div style="position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 2;">
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
-                        <svg style="width: 28px; height: 28px; color: #4caf50;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        <span style="color: #4caf50; font-size: 1.2rem; font-weight: bold;">Erfolgreich gespeichert!</span>
-                    </div>
-                    <p style="color: #333; font-size: 1.1rem; font-weight: 500; margin: 0 0 10px 0;">
-                        ${formData.email ? 'Die Willkommensemail wird automatisch versendet.' : ''}
-                    </p>
-                    ${formData.email ? `
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-                        <span style="color: #666;">Versendet an:</span>
-                        <input type="email" id="successEmailField" value="${formData.email}" disabled style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; width: 250px;">
-                        <button id="btnEditEmail" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">Bearbeiten</button>
-                        <button id="btnSaveEmail" style="padding: 8px 16px; background: #4caf50; color: white; border: none; border-radius: 6px; cursor: pointer; display: none;">Speichern & erneut senden</button>
-                    </div>
-                    ` : ''}
-                </div>
-                <button id="btnNewRecord" style="position: fixed; bottom: 20px; left: 20px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                <button id="btnNewRecord" style="position: fixed; bottom: 20px; left: 20px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10;">
                     <svg style="width: 28px; height: 28px; color: white;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
