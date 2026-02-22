@@ -198,6 +198,7 @@ function showResetView() {
     document.getElementById('resetEmail').value = document.getElementById('loginEmail').value || '';
     document.getElementById('resetError').style.display = 'none';
     document.getElementById('resetSuccess').style.display = 'none';
+    document.getElementById('resetContactHint').style.display = 'none';
     document.getElementById('resetBtn').disabled = false;
     document.getElementById('resetBtn').textContent = 'Zuruecksetzen';
     // Modal-Titel aendern
@@ -213,6 +214,7 @@ function showLoginView() {
     document.getElementById('resetEmail').disabled = false;
     document.getElementById('resetError').style.display = 'none';
     document.getElementById('resetSuccess').style.display = 'none';
+    document.getElementById('resetContactHint').style.display = 'none';
     document.getElementById('resetBtn').style.display = 'block';
     document.getElementById('resetBtn').disabled = false;
     document.getElementById('resetBtn').textContent = 'Zuruecksetzen';
@@ -252,6 +254,29 @@ async function handlePasswordReset() {
         resetSuccess.style.display = 'block';
         resetBtn.style.display = 'none';
         document.getElementById('resetEmail').disabled = true;
+
+        // Kontakt-Hinweis laden (nur anzeigen wenn contact_email konfiguriert)
+        try {
+            const { data: contactData } = await supabaseClient
+                .from('system_config')
+                .select('value')
+                .eq('key', 'contact_email')
+                .maybeSingle();
+
+            if (contactData && contactData.value) {
+                const hintEl = document.getElementById('resetContactHint');
+                hintEl.textContent = '';
+                hintEl.appendChild(document.createTextNode('Keine Email erhalten? Wende dich an: '));
+                const mailLink = document.createElement('a');
+                mailLink.href = 'mailto:' + contactData.value;
+                mailLink.textContent = contactData.value;
+                hintEl.appendChild(mailLink);
+                hintEl.style.display = 'block';
+            }
+        } catch (contactErr) {
+            // Stillschweigend — Hinweis bleibt unsichtbar
+            console.warn('Contact email config check failed:', contactErr);
+        }
 
     } catch (err) {
         console.error('Password reset error:', err);

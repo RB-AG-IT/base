@@ -2845,6 +2845,23 @@ select.form-input {
     line-height: 1.5;
 }
 
+/* Kontakt-Hinweis nach Passwort-Reset */
+.reset-contact-hint {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-bottom: var(--spacing-md);
+    line-height: 1.5;
+}
+
+.reset-contact-hint a {
+    color: var(--accent-primary);
+    text-decoration: none;
+}
+
+.reset-contact-hint a:hover {
+    text-decoration: underline;
+}
+
 /* ========== LOADING OVERLAY ========== */
 .loading-overlay {
     display: none;
