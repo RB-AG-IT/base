@@ -166,6 +166,101 @@ function closeLoginModal() {
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPassword').value = '';
     document.getElementById('loginError').style.display = 'none';
+    // Reset-View zuruecksetzen
+    showLoginView();
+}
+
+// ========== PASSWORT VERGESSEN ==========
+let passwordResetEnabled = false;
+
+async function checkPasswordResetConfig() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('system_config')
+            .select('value')
+            .eq('key', 'email_reset_sender')
+            .maybeSingle();
+
+        if (!error && data && data.value) {
+            passwordResetEnabled = true;
+            const link = document.getElementById('forgotPasswordLink');
+            if (link) link.style.display = 'block';
+        }
+    } catch (e) {
+        // Stillschweigend — Link bleibt unsichtbar
+        console.warn('Password reset config check failed:', e);
+    }
+}
+
+function showResetView() {
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('resetView').style.display = 'block';
+    document.getElementById('resetEmail').value = document.getElementById('loginEmail').value || '';
+    document.getElementById('resetError').style.display = 'none';
+    document.getElementById('resetSuccess').style.display = 'none';
+    document.getElementById('resetBtn').disabled = false;
+    document.getElementById('resetBtn').textContent = 'Zuruecksetzen';
+    // Modal-Titel aendern
+    const headerTitle = document.querySelector('#loginModal .modal-header h2');
+    if (headerTitle) headerTitle.textContent = 'Passwort vergessen';
+    document.getElementById('resetEmail').focus();
+}
+
+function showLoginView() {
+    document.getElementById('loginView').style.display = 'block';
+    document.getElementById('resetView').style.display = 'none';
+    document.getElementById('resetEmail').value = '';
+    document.getElementById('resetEmail').disabled = false;
+    document.getElementById('resetError').style.display = 'none';
+    document.getElementById('resetSuccess').style.display = 'none';
+    document.getElementById('resetBtn').style.display = 'block';
+    document.getElementById('resetBtn').disabled = false;
+    document.getElementById('resetBtn').textContent = 'Zuruecksetzen';
+    // Modal-Titel zuruecksetzen
+    const headerTitle = document.querySelector('#loginModal .modal-header h2');
+    if (headerTitle) headerTitle.textContent = 'Anmelden';
+}
+
+async function handlePasswordReset() {
+    const email = document.getElementById('resetEmail').value.trim();
+    const resetBtn = document.getElementById('resetBtn');
+    const resetError = document.getElementById('resetError');
+    const resetSuccess = document.getElementById('resetSuccess');
+
+    resetError.style.display = 'none';
+    resetSuccess.style.display = 'none';
+
+    if (!email || !email.includes('@')) {
+        resetError.textContent = 'Bitte eine gueltige E-Mail-Adresse eingeben.';
+        resetError.style.display = 'block';
+        return;
+    }
+
+    resetBtn.disabled = true;
+    resetBtn.textContent = 'Wird gesendet...';
+
+    try {
+        const redirectUrl = window.location.origin + '/reset-password/';
+
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+            redirectTo: redirectUrl
+        });
+
+        if (error) throw error;
+
+        // Immer Erfolg anzeigen (egal ob Email existiert — Sicherheit)
+        resetSuccess.style.display = 'block';
+        resetBtn.style.display = 'none';
+        document.getElementById('resetEmail').disabled = true;
+
+    } catch (err) {
+        console.error('Password reset error:', err);
+        resetError.textContent = 'Fehler beim Senden. Bitte versuche es spaeter erneut.';
+        resetError.style.display = 'block';
+    } finally {
+        resetBtn.disabled = false;
+        resetBtn.textContent = 'Zuruecksetzen';
+    }
 }
 
 async function handleLogin(e) {
@@ -2196,17 +2291,23 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Close login modal
     document.getElementById('closeLoginModal').addEventListener('click', closeLoginModal);
 
-    // Close modal on backdrop click (nicht bei Text-Selektion)
-    let loginModalMouseDownTarget = null;
-    document.getElementById('loginModal').addEventListener('mousedown', (e) => {
-        loginModalMouseDownTarget = e.target;
+    // Passwort vergessen — Link + Reset-Flow
+    document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        showResetView();
     });
-    document.getElementById('loginModal').addEventListener('click', (e) => {
-        const modal = document.getElementById('loginModal');
-        if (e.target === modal && loginModalMouseDownTarget === modal) {
-            closeLoginModal();
-        }
+
+    document.getElementById('backToLoginLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        showLoginView();
     });
+
+    document.getElementById('resetBtn').addEventListener('click', handlePasswordReset);
+
+    // Pruefen ob Passwort-Reset konfiguriert ist (Link nur anzeigen wenn ja)
+    checkPasswordResetConfig();
+
+    // Login-Modal wird NUR durch erfolgreichen Login geschlossen — kein Backdrop-Click
 
     // Hash change handler
     window.addEventListener('hashchange', () => {
