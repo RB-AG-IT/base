@@ -109,7 +109,7 @@ function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast-notification toast-${type}`;
     toast.innerHTML = `
-        <span class="toast-icon">${type === 'error' ? '!' : type === 'success' ? '!' : 'i'}</span>
+        <span class="toast-icon">${type === 'error' ? '!' : type === 'success' ? '!' : type === 'warning' ? '!' : 'i'}</span>
         <span class="toast-message">${message}</span>
     `;
 
@@ -255,7 +255,13 @@ async function handlePasswordReset() {
         resetBtn.style.display = 'none';
         document.getElementById('resetEmail').disabled = true;
 
-        // Kontakt-Hinweis laden (nur anzeigen wenn contact_email konfiguriert)
+    } catch (err) {
+        console.error('Password reset error:', err);
+
+        // Fehlermeldung mit Kontakt-Email ergaenzen (wenn konfiguriert)
+        resetError.textContent = 'Fehler beim Senden. Bitte versuche es spaeter erneut.';
+        resetError.style.display = 'block';
+
         try {
             const { data: contactData } = await supabaseClient
                 .from('system_config')
@@ -266,7 +272,7 @@ async function handlePasswordReset() {
             if (contactData && contactData.value) {
                 const hintEl = document.getElementById('resetContactHint');
                 hintEl.textContent = '';
-                hintEl.appendChild(document.createTextNode('Keine Email erhalten? Wende dich an: '));
+                hintEl.appendChild(document.createTextNode('Problem melden: '));
                 const mailLink = document.createElement('a');
                 mailLink.href = 'mailto:' + contactData.value;
                 mailLink.textContent = contactData.value;
@@ -274,14 +280,8 @@ async function handlePasswordReset() {
                 hintEl.style.display = 'block';
             }
         } catch (contactErr) {
-            // Stillschweigend — Hinweis bleibt unsichtbar
             console.warn('Contact email config check failed:', contactErr);
         }
-
-    } catch (err) {
-        console.error('Password reset error:', err);
-        resetError.textContent = 'Fehler beim Senden. Bitte versuche es spaeter erneut.';
-        resetError.style.display = 'block';
     } finally {
         resetBtn.disabled = false;
         resetBtn.textContent = 'Zuruecksetzen';
@@ -346,7 +346,7 @@ async function handleLogout() {
         loadView('dashboard', true); // Force refresh
     } catch (error) {
         console.error('Logout error:', error);
-        alert('Fehler beim Abmelden: ' + error.message);
+        showToast('Fehler beim Abmelden: ' + error.message, 'error');
     } finally {
         showLoading(false);
     }
@@ -973,7 +973,7 @@ async function assignWerberToArea(assignmentId, areaId) {
         return true;
     } catch (error) {
         console.error('Assign werber error:', error);
-        alert('Fehler beim Zuordnen: ' + error.message);
+        showToast('Fehler beim Zuordnen: ' + error.message, 'error');
         return false;
     }
 }
@@ -1450,7 +1450,7 @@ const views = {
                         <label class="form-label">Kleidergröße</label>
                         <select class="form-input" id="profileClothingSize">
                             <option value="">Bitte wählen</option>
-                            ${['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'].map(size =>
+                            ${['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'].map(size =>
                                 `<option value="${size}" ${user.clothing_size === size ? 'selected' : ''}>${size}</option>`
                             ).join('')}
                         </select>
@@ -1799,13 +1799,13 @@ async function uploadProfilePhoto(type, input) {
 
     // Nur Bilder erlauben
     if (!file.type.startsWith('image/')) {
-        alert('Bitte nur Bilddateien auswählen');
+        showToast('Bitte nur Bilddateien auswaehlen', 'warning');
         return;
     }
 
     // Max 5MB
     if (file.size > 5 * 1024 * 1024) {
-        alert('Datei zu groß (max. 5MB)');
+        showToast('Datei zu gross (max. 5MB)', 'warning');
         return;
     }
 
@@ -1843,10 +1843,10 @@ async function uploadProfilePhoto(type, input) {
         if (currentUserData) currentUserData[urlField] = url;
         loadView('profil');
 
-        alert('Foto erfolgreich hochgeladen!');
+        showToast('Foto erfolgreich hochgeladen!', 'success');
     } catch (error) {
         console.error('Upload error:', error);
-        alert('Fehler beim Hochladen: ' + error.message);
+        showToast('Fehler beim Hochladen: ' + error.message, 'error');
     } finally {
         showLoading(false);
         input.value = '';
@@ -1865,12 +1865,12 @@ async function saveProfile() {
 
         if (newPassword) {
             if (newPassword !== confirmPassword) {
-                alert('Passwörter stimmen nicht überein!');
+                showToast('Passwoerter stimmen nicht ueberein!', 'warning');
                 showLoading(false);
                 return;
             }
             if (newPassword.length < 6) {
-                alert('Passwort muss mindestens 6 Zeichen haben!');
+                showToast('Passwort muss mindestens 6 Zeichen haben!', 'warning');
                 showLoading(false);
                 return;
             }
@@ -1880,7 +1880,7 @@ async function saveProfile() {
             });
 
             if (pwError) {
-                alert('Passwort konnte nicht geändert werden: ' + pwError.message);
+                showToast('Passwort konnte nicht geaendert werden: ' + pwError.message, 'error');
                 showLoading(false);
                 return;
             }
@@ -1896,7 +1896,7 @@ async function saveProfile() {
             last_name: document.getElementById('profileLastname')?.value || '',
             phone: document.getElementById('profilePhone')?.value || '',
             game_tag: document.getElementById('profileGametag')?.value || '',
-            clothing_size: document.getElementById('profileClothingSize')?.value || '',
+            clothing_size: document.getElementById('profileClothingSize')?.value || null,
             street: document.getElementById('profileStreet')?.value || '',
             house_number: document.getElementById('profileHouseNumber')?.value || '',
             postal_code: document.getElementById('profileZip')?.value || '',
@@ -1941,11 +1941,11 @@ async function saveProfile() {
 
         // Reload user data
         await loadUserData();
-        alert('Profil erfolgreich gespeichert!');
+        showToast('Profil erfolgreich gespeichert!', 'success');
 
     } catch (error) {
         console.error('Save profile error:', error);
-        alert('Fehler beim Speichern: ' + error.message);
+        showToast('Fehler beim Speichern: ' + error.message, 'error');
     } finally {
         showLoading(false);
     }
@@ -2074,7 +2074,7 @@ async function syncOfflineRecords() {
     const isOnline = await checkConnection(5000);
     if (!isOnline) {
         showLoading(false);
-        alert('Keine Verbindung zum Server. Bitte später erneut versuchen.');
+        showToast('Keine Verbindung zum Server. Bitte spaeter erneut versuchen.', 'error');
         return;
     }
 
@@ -2136,21 +2136,21 @@ async function syncOfflineRecords() {
         // Nur fehlgeschlagene Records behalten
         if (failedRecords.length > 0) {
             localStorage.setItem('offlineRecords', JSON.stringify(failedRecords));
-            let msg = `${successCount} von ${records.length} Datensätzen synchronisiert.\n\n${failedRecords.length} Datensätze konnten nicht hochgeladen werden.\n\nFehler:\n${errorMessages.join('\n')}`;
-            if (skippedCount > 0) msg += `\n\n${skippedCount} Duplikate wurden übersprungen.`;
-            alert(msg);
+            let msg = `${successCount} von ${records.length} synchronisiert, ${failedRecords.length} fehlgeschlagen`;
+            if (skippedCount > 0) msg += `, ${skippedCount} Duplikate uebersprungen`;
+            showToast(msg, 'error');
         } else {
             localStorage.removeItem('offlineRecords');
-            let msg = `Alle ${successCount} Datensätze erfolgreich synchronisiert!`;
-            if (skippedCount > 0) msg += `\n(${skippedCount} Duplikate übersprungen)`;
-            alert(msg);
+            let msg = `Alle ${successCount} Datensaetze erfolgreich synchronisiert!`;
+            if (skippedCount > 0) msg += ` (${skippedCount} Duplikate uebersprungen)`;
+            showToast(msg, 'success');
         }
 
         loadView('offline', true);
 
     } catch (error) {
         console.error('Sync error:', error);
-        alert('Fehler beim Synchronisieren: ' + error.message);
+        showToast('Fehler beim Synchronisieren: ' + error.message, 'error');
     } finally {
         showLoading(false);
     }

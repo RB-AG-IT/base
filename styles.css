@@ -3728,6 +3728,11 @@ select.form-input {
     background: rgba(0, 122, 255, 0.1);
 }
 
+.toast-warning {
+    border-color: #ff9800;
+    background: rgba(255, 152, 0, 0.15);
+}
+
 .toast-icon {
     width: 24px;
     height: 24px;
@@ -3752,6 +3757,11 @@ select.form-input {
 
 .toast-info .toast-icon {
     background: var(--primary);
+    color: white;
+}
+
+.toast-warning .toast-icon {
+    background: #ff9800;
     color: white;
 }
 
