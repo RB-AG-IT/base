@@ -2848,6 +2848,7 @@ const streetResults = data.results.filter(result => {
                 if (firstVisibleBtn) {
                     activeBtn.classList.remove('active');
                     firstVisibleBtn.classList.add('active');
+                    updateAmountDisplay();
                 }
             }
         }
