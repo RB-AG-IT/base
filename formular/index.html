@@ -1152,10 +1152,25 @@ input[type="radio"][name="type"]:checked::after {
             document.getElementById('memberNumber').value = member.member_number || '';
             document.getElementById('memberSince').value = member.member_since || '';
             // old_amount ist Jahresbeitrag, speichern für Trigger-Berechnung
-            selectedMemberYearlyAmount = member.old_amount || null;
-            // Für Anzeige: durch 12 für Monatsbeitrag
-            const monthlyAmount = member.old_amount ? (member.old_amount / 12).toFixed(2) : '';
-            document.getElementById('oldAmount').value = monthlyAmount;
+            const oldAmountField = document.getElementById('oldAmount');
+            if (member.old_amount === null || member.old_amount === undefined) {
+                // NULL = nicht importiert → Werber muss manuell nachtragen
+                selectedMemberYearlyAmount = null;
+                oldAmountField.value = '';
+                oldAmountField.readOnly = false;
+                oldAmountField.style.background = '';
+                oldAmountField.style.border = '2px solid #e67e22';
+                oldAmountField.placeholder = 'Bitte eintragen';
+            } else {
+                // Wert vorhanden (auch 0 ist gültig) → readonly
+                selectedMemberYearlyAmount = member.old_amount;
+                const monthlyAmount = (member.old_amount / 12).toFixed(2);
+                oldAmountField.value = monthlyAmount;
+                oldAmountField.readOnly = true;
+                oldAmountField.style.background = '#f0f0f0';
+                oldAmountField.style.border = '';
+                oldAmountField.placeholder = '';
+            }
             document.getElementById('oldInterval').value = member.old_interval || 'Monatlich';
 
             // Optionale Felder (nur wenn vorhanden)
@@ -1961,6 +1976,17 @@ const streetResults = data.results.filter(result => {
                     field.style.borderColor = '#e0e0e0';
                 }
             });
+
+            // ERH: Prüfen ob alter Monatsbeitrag vorhanden (wenn old_amount NULL war und manuell eingetragen werden muss)
+            if (isERHMode && selectedMember) {
+                const oldAmountField = document.getElementById('oldAmount');
+                if (selectedMemberYearlyAmount === null && (!oldAmountField.value || oldAmountField.value === '')) {
+                    oldAmountField.style.borderColor = '#ff4444';
+                    isValid = false;
+                    if (!firstError) firstError = oldAmountField;
+                    showToast('Bitte alten Monatsbeitrag eintragen', 7000, 'error');
+                }
+            }
 
             // Validate birth date (18+ check) - nur bei NMG
             if (!isERHMode && !validateBirthDate()) {
@@ -2899,6 +2925,12 @@ const streetResults = data.results.filter(result => {
                 formData.memberSince = getValue('memberSince');
                 formData.oldAmount = parseFloat(getValue('oldAmount')) || 0;
                 formData.oldInterval = getValue('oldInterval');
+
+                // Wenn Werber den alten Monatsbeitrag manuell eingetragen hat (old_amount war NULL):
+                // Eingabe × 12 für Jahresbeitrag, damit increase_amount korrekt berechnet wird
+                if (selectedMemberYearlyAmount === null && formData.oldAmount > 0) {
+                    selectedMemberYearlyAmount = formData.oldAmount * 12;
+                }
             }
 
             // Calculate yearly amount (JE)
@@ -2974,9 +3006,9 @@ const streetResults = data.results.filter(result => {
                 // Erhöhungs-spezifisch
                 member_number: formData.memberNumber || null,
                 member_since: formData.memberSince || null,
-                old_amount: selectedMemberYearlyAmount || null, // Jahresbeitrag für Trigger-Berechnung
+                old_amount: selectedMemberYearlyAmount !== null && selectedMemberYearlyAmount !== undefined ? selectedMemberYearlyAmount : null, // Jahresbeitrag für Trigger-Berechnung (0 ist gültig!)
                 old_interval: formData.oldInterval || null,
-                increase_amount: selectedMemberYearlyAmount ? (formData.yearlyAmount - selectedMemberYearlyAmount) : null, // Für Ledger-Trigger
+                increase_amount: selectedMemberYearlyAmount !== null && selectedMemberYearlyAmount !== undefined ? (formData.yearlyAmount - selectedMemberYearlyAmount) : null, // Für Ledger-Trigger
 
                 // Aufnahmedatum
                 start_date: new Date().toISOString(),
