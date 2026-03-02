@@ -690,7 +690,7 @@ input[type="radio"][name="type"]:checked::after {
                 <div class="form-row">
                     <div>
                         <label>Alter Monatsbeitrag:</label>
-                        <input type="number" id="oldAmount" step="0.01" value="10.00" readonly style="background: #f0f0f0;">
+                        <input type="number" id="oldAmount" step="0.01" min="0" value="10.00" readonly style="background: #f0f0f0;">
                     </div>
                     <div>
                         <label>Mitgliedsnummer:</label>
@@ -1977,14 +1977,20 @@ const streetResults = data.results.filter(result => {
                 }
             });
 
-            // ERH: Prüfen ob alter Monatsbeitrag vorhanden (wenn old_amount NULL war und manuell eingetragen werden muss)
+            // ERH: Prüfen ob alter Monatsbeitrag vorhanden und nicht negativ
             if (isERHMode && selectedMember) {
                 const oldAmountField = document.getElementById('oldAmount');
+                const oldAmountValue = parseFloat(oldAmountField.value);
                 if (selectedMemberYearlyAmount === null && (!oldAmountField.value || oldAmountField.value === '')) {
                     oldAmountField.style.borderColor = '#ff4444';
                     isValid = false;
                     if (!firstError) firstError = oldAmountField;
                     showToast('Bitte alten Monatsbeitrag eintragen', 7000, 'error');
+                } else if (!isNaN(oldAmountValue) && oldAmountValue < 0) {
+                    oldAmountField.style.borderColor = '#ff4444';
+                    isValid = false;
+                    if (!firstError) firstError = oldAmountField;
+                    showToast('Alter Monatsbeitrag darf nicht negativ sein', 7000, 'error');
                 }
             }
 
@@ -2231,14 +2237,15 @@ const streetResults = data.results.filter(result => {
                     .single();
 
                 if (insertError) {
-                    // Duplikat-Constraint (23505) = bereits hochgeladen
+                    // Duplikat = bereits hochgeladen
                     if (insertError.code === '23505') {
-                        console.log('Datensatz existiert bereits in DB');
+                        console.log('Hintergrund-Upload: Duplikat erkannt, Code:', insertError.code);
                         removeOfflineRecord(offlineId);
                         showToast('Datensatz wurde bereits hochgeladen', 5000, 'info');
                         return;
                     }
-                    throw insertError;
+                    console.error('Hintergrund-Upload DB-Fehler:', insertError);
+                    throw new Error('Datensatz konnte nicht gespeichert werden');
                 }
 
                 console.log('Hintergrund-Upload erfolgreich:', insertedRecord.id);
@@ -2938,6 +2945,17 @@ const streetResults = data.results.filter(result => {
             const yearMultipliers = { 'monthly': 12, 'quarterly': 4, 'halfyearly': 2, 'yearly': 1 };
             formData.yearlyAmount = amount * yearMultipliers[interval];
 
+            // ERH: Erhoehungsbetrag muss positiv sein (neuer Beitrag > alter Beitrag)
+            if (formData.type === 'ERH' && selectedMemberYearlyAmount !== null && selectedMemberYearlyAmount !== undefined) {
+                const increaseAmount = formData.yearlyAmount - selectedMemberYearlyAmount;
+                if (increaseAmount <= 0) {
+                    btn.disabled = false;
+                    btn.textContent = 'Jetzt überprüfen';
+                    showToast('Der neue Beitrag muss höher sein als der alte Beitrag', 7000, 'error');
+                    return;
+                }
+            }
+
             console.log('Form data to submit:', formData);
 
             // Kontext aus formContext verwenden
@@ -3012,7 +3030,8 @@ const streetResults = data.results.filter(result => {
                 increase_amount: selectedMemberYearlyAmount !== null && selectedMemberYearlyAmount !== undefined ? (formData.yearlyAmount - selectedMemberYearlyAmount) : null, // Für Ledger-Trigger
 
                 // Aufnahmedatum
-                start_date: new Date().toISOString(),
+                recorded_at: new Date().toISOString(),
+                start_date: new Date().toLocaleDateString('en-CA'),
                 later_join_date: formData.laterStartDate || null,
 
                 // Einwilligungen
