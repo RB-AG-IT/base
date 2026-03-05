@@ -1,6 +1,8 @@
 // ========== SUPABASE SETUP ==========
-const SUPABASE_URL = 'https://lgztglycqtiwcmiydxnm.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzgwNzYxNSwiZXhwIjoyMDc5MzgzNjE1fQ.54kSk9ZSUdQt6LKYWkblqgR6Sjev80W80qkNHYEbPgk';
+// env.js setzt window.__ENV__ wenn ein Test-Branch aktiv ist (via test.sh)
+const SUPABASE_URL = (window.__ENV__ && window.__ENV__.SUPABASE_URL) || 'https://lgztglycqtiwcmiydxnm.supabase.co';
+const SUPABASE_KEY = (window.__ENV__ && window.__ENV__.SUPABASE_ANON_KEY) || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxnenRnbHljcXRpd2NtaXlkeG5tIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzgwNzYxNSwiZXhwIjoyMDc5MzgzNjE1fQ.54kSk9ZSUdQt6LKYWkblqgR6Sjev80W80qkNHYEbPgk';
+if (window.__ENV__) console.warn('[TEST-MODUS] Supabase zeigt auf Branch:', SUPABASE_URL);
 
 // Supabase Client initialisieren
 let supabaseClient = null;
@@ -8,6 +10,7 @@ let supabaseClient = null;
 function initSupabase() {
     if (window.supabase && window.supabase.createClient) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        setupAuthListener();
         return true;
     }
     return false;
@@ -483,8 +486,9 @@ function updateAuthUI() {
     }
 }
 
-// Listen for auth state changes
-supabaseClient.auth.onAuthStateChange((event, session) => {
+// Listen for auth state changes (wird in initSupabase() registriert)
+function setupAuthListener() {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
     console.log('Auth event:', event, 'User before:', currentUser?.id, 'Session:', session?.user?.id);
 
     // Bei SIGNED_IN: Nur laden wenn es ein ECHTER Login ist (User war vorher nicht da)
@@ -511,7 +515,8 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
         currentRole = 'werber';
         updateAuthUI();
     }
-});
+    });
+}
 
 // ========== DATA FETCHING FUNCTIONS ==========
 async function fetchDashboardStats() {
@@ -1981,11 +1986,9 @@ async function autoSyncOfflineRecords() {
         // Echter Connection-Check (nicht nur navigator.onLine)
         const isOnline = await checkConnection(5000);
         if (!isOnline) {
-            console.log('Auto-Sync: Keine Verbindung zu Supabase, überspringe');
             return;
         }
 
-        console.log(`Auto-Sync: ${records.length} Offline-Records gefunden`);
         showToast(`${records.length} Offline-Datensätze werden synchronisiert...`, 'info');
 
         // Kurz warten damit Toast sichtbar ist
@@ -1997,7 +2000,7 @@ async function autoSyncOfflineRecords() {
 
         for (const record of records) {
             // Offline-spezifische Felder entfernen, nur DB-Felder behalten
-            const { offlineId, createdAt, name, area, werber, status, synced, data, empfehlung_id, recruiting_id, ...dbRecord } = record;
+            const { offlineId, createdAt, name, area, werber, status, synced, empfehlung_id, recruiting_id, ...dbRecord } = record;
 
             // Duplikat-Prüfung
             if (dbRecord.first_name && dbRecord.last_name) {
@@ -2018,7 +2021,6 @@ async function autoSyncOfflineRecords() {
                 const { data: existing } = await query.limit(1);
 
                 if (existing && existing.length > 0) {
-                    console.log('Auto-Sync: Duplikat übersprungen', dbRecord.first_name, dbRecord.last_name);
                     skippedCount++;
                     continue; // Nicht erneut einfügen
                 }
@@ -2030,7 +2032,6 @@ async function autoSyncOfflineRecords() {
                     .insert(dbRecord);
 
                 if (error) {
-                    console.error('Auto-Sync error:', error);
                     failedRecords.push(record);
                 } else {
                     successCount++;
@@ -2043,13 +2044,14 @@ async function autoSyncOfflineRecords() {
         // Ergebnis speichern
         if (failedRecords.length > 0) {
             localStorage.setItem('offlineRecords', JSON.stringify(failedRecords));
-            let msg = `${successCount} synchronisiert, ${failedRecords.length} fehlgeschlagen`;
-            if (skippedCount > 0) msg += `, ${skippedCount} Duplikate übersprungen`;
+            const total = successCount + failedRecords.length + skippedCount;
+            let msg = failedRecords.length + ' von ' + total + ' Datensätzen stehen noch aus.';
+            if (skippedCount > 0) msg += ' ' + skippedCount + ' bereits vorhanden.';
             showToast(msg, 'warning');
         } else {
             localStorage.removeItem('offlineRecords');
             let msg = `${successCount} Datensätze erfolgreich synchronisiert!`;
-            if (skippedCount > 0) msg += ` (${skippedCount} Duplikate übersprungen)`;
+            if (skippedCount > 0) msg += ` (${skippedCount} bereits vorhanden)`;
             showToast(msg, 'success');
         }
 
@@ -2059,7 +2061,7 @@ async function autoSyncOfflineRecords() {
         }
 
     } catch (e) {
-        console.error('Auto-Sync Fehler:', e);
+        showToast('Synchronisierung konnte nicht gestartet werden. Bitte versuche es erneut.', 'error');
     }
 }
 
@@ -2074,20 +2076,19 @@ async function syncOfflineRecords() {
     const isOnline = await checkConnection(5000);
     if (!isOnline) {
         showLoading(false);
-        showToast('Keine Verbindung zum Server. Bitte spaeter erneut versuchen.', 'error');
+        showToast('Verbindung unterbrochen. Bitte später erneut versuchen.', 'error');
         return;
     }
 
     try {
         const records = JSON.parse(offlineData);
         const failedRecords = [];
-        const errorMessages = [];
         let successCount = 0;
         let skippedCount = 0;
 
         for (const record of records) {
             // Offline-spezifische Felder entfernen, nur DB-Felder behalten
-            const { offlineId, createdAt, name, area, werber, status, synced, data, empfehlung_id, recruiting_id, ...dbRecord } = record;
+            const { offlineId, createdAt, name, area, werber, status, synced, empfehlung_id, recruiting_id, ...dbRecord } = record;
 
             // Duplikat-Prüfung
             if (dbRecord.first_name && dbRecord.last_name) {
@@ -2108,7 +2109,6 @@ async function syncOfflineRecords() {
                 const { data: existing } = await query.limit(1);
 
                 if (existing && existing.length > 0) {
-                    console.log('Sync: Duplikat übersprungen', dbRecord.first_name, dbRecord.last_name);
                     skippedCount++;
                     continue;
                 }
@@ -2120,37 +2120,33 @@ async function syncOfflineRecords() {
                     .insert(dbRecord);
 
                 if (error) {
-                    console.error('Sync error for record:', error);
                     failedRecords.push(record);
-                    errorMessages.push(`${record.name}: ${error.message || error.code || JSON.stringify(error)}`);
                 } else {
                     successCount++;
                 }
             } catch (e) {
-                console.error('Sync exception:', e);
                 failedRecords.push(record);
-                errorMessages.push(`${record.name}: ${e.message || JSON.stringify(e)}`);
             }
         }
 
         // Nur fehlgeschlagene Records behalten
         if (failedRecords.length > 0) {
             localStorage.setItem('offlineRecords', JSON.stringify(failedRecords));
-            let msg = `${successCount} von ${records.length} synchronisiert, ${failedRecords.length} fehlgeschlagen`;
-            if (skippedCount > 0) msg += `, ${skippedCount} Duplikate uebersprungen`;
+            const total = successCount + failedRecords.length + skippedCount;
+            let msg = failedRecords.length + ' von ' + total + ' Datensätzen stehen noch aus.';
+            if (skippedCount > 0) msg += ' ' + skippedCount + ' bereits vorhanden.';
             showToast(msg, 'error');
         } else {
             localStorage.removeItem('offlineRecords');
-            let msg = `Alle ${successCount} Datensaetze erfolgreich synchronisiert!`;
-            if (skippedCount > 0) msg += ` (${skippedCount} Duplikate uebersprungen)`;
+            let msg = `Alle ${successCount} Datensätze erfolgreich synchronisiert!`;
+            if (skippedCount > 0) msg += ` (${skippedCount} bereits vorhanden)`;
             showToast(msg, 'success');
         }
 
         loadView('offline', true);
 
     } catch (error) {
-        console.error('Sync error:', error);
-        showToast('Fehler beim Synchronisieren: ' + error.message, 'error');
+        showToast('Synchronisierung konnte nicht gestartet werden. Bitte versuche es erneut.', 'error');
     } finally {
         showLoading(false);
     }
