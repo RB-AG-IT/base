@@ -1005,6 +1005,7 @@ input[type="radio"][name="type"]:checked::after {
         let selectedMember = null;
         let isERHMode = false;
         let currentCustomerAreaId = null; // Wird beim Laden des Formulars gesetzt
+        let currentCustomerId = null; // Fallback für Kunden-Import
         let selectedMemberYearlyAmount = null; // Jahresbeitrag für ERH-Berechnung
 
         // Debounce-Timer für Suche
@@ -1034,7 +1035,6 @@ input[type="radio"][name="type"]:checked::after {
         async function executeSearch(query) {
             const results = document.getElementById('searchResults');
 
-            // customer_area_id aus formContext holen (wird beim Laden gesetzt)
             if (!currentCustomerAreaId) {
                 console.warn('Keine customer_area_id verfügbar für Bestandsmitglieder-Suche');
                 results.classList.add('hidden');
@@ -1042,21 +1042,40 @@ input[type="radio"][name="type"]:checked::after {
             }
 
             try {
-                // Suche in Bestandsmitgliedern für dieses Werbegebiet (alle Ergebnisse)
-                const { data: members, error } = await supabaseClient
+                // Erst WG-spezifische Liste suchen
+                const { data: areaMembers, error: areaError } = await supabaseClient
                     .from('bestandsmitglieder')
                     .select('*')
                     .eq('customer_area_id', currentCustomerAreaId)
                     .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,member_number.ilike.%${query}%,street.ilike.%${query}%`);
 
-                if (error) {
-                    console.error('Fehler bei Bestandsmitglieder-Suche:', error);
+                if (areaError) {
+                    console.error('Fehler bei Bestandsmitglieder-Suche:', areaError);
                     results.classList.add('hidden');
                     return;
                 }
 
+                let members = areaMembers;
+
+                // Fallback: Wenn keine WG-Ergebnisse, nach Kunden-Import suchen
+                if ((!members || members.length === 0) && currentCustomerId) {
+                    const { data: customerMembers, error: custError } = await supabaseClient
+                        .from('bestandsmitglieder')
+                        .select('*')
+                        .eq('customer_id', currentCustomerId)
+                        .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,member_number.ilike.%${query}%,street.ilike.%${query}%`);
+
+                    if (!custError && customerMembers) {
+                        members = customerMembers;
+                    }
+                }
+
                 if (!members || members.length === 0) {
-                    results.innerHTML = '<div class="search-result-item text-muted">Keine Ergebnisse</div>';
+                    results.textContent = '';
+                    const noResultEl = document.createElement('div');
+                    noResultEl.className = 'search-result-item text-muted';
+                    noResultEl.textContent = 'Keine Ergebnisse';
+                    results.appendChild(noResultEl);
                     results.classList.remove('hidden');
                     allSearchResults = [];
                     displayedCount = 0;
@@ -2519,8 +2538,9 @@ const streetResults = data.results.filter(result => {
                             if (privacyPolicyUrl) formContext.datenschutz_url = privacyPolicyUrl;
                             if (customerArea.website) formContext.website_url = customerArea.website;
 
-                            // Customer ID für Record speichern
+                            // Customer ID für Record speichern + Fallback für Bestandsmitglieder
                             formContext.customer_id = customerArea.customer_id;
+                            currentCustomerId = customerArea.customer_id;
 
                             // Ansprechpartner laden
                             const { data: contacts } = await supabaseClient
