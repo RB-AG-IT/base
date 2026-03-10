@@ -2554,6 +2554,20 @@ const streetResults = data.results.filter(result => {
                                 formContext.ansprechpartner_name = [c.first_name, c.last_name].filter(Boolean).join(' ');
                                 formContext.ansprechpartner_email = c.email || '';
                                 formContext.ansprechpartner_telefon = c.phone || '';
+                            } else if (customerArea.customer_id) {
+                                const { data: customerContacts } = await supabaseClient
+                                    .from('customer_contacts')
+                                    .select('first_name, last_name, phone, email')
+                                    .eq('customer_id', customerArea.customer_id)
+                                    .eq('role', 'mitgliederbeauftragte')
+                                    .limit(1);
+
+                                if (customerContacts && customerContacts.length > 0) {
+                                    const c = customerContacts[0];
+                                    formContext.ansprechpartner_name = [c.first_name, c.last_name].filter(Boolean).join(' ');
+                                    formContext.ansprechpartner_email = c.email || '';
+                                    formContext.ansprechpartner_telefon = c.phone || '';
+                                }
                             }
                         }
                     }
@@ -2617,7 +2631,7 @@ const streetResults = data.results.filter(result => {
                     .select('teamchef_id')
                     .eq('campaign_id', formContext.campaign_id)
                     .eq('kw', currentKW)
-                    .single();
+                    .maybeSingle();
 
                 if (error) {
                     console.warn('Keine Kampagnen-Zuweisung für KW', currentKW, ':', error.message);

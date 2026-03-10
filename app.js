@@ -404,8 +404,9 @@ async function loadUserData() {
         // Finde Kampagnenzuweisung für aktuelle KW
         const { data: assignments } = await supabaseClient
             .from('campaign_assignments')
-            .select('id, campaign_id')
-            .eq('kw', kw);
+            .select('id, campaign_id, campaigns!inner(year)')
+            .eq('kw', kw)
+            .eq('campaigns.year', getCurrentYear());
 
         if (assignments && assignments.length > 0) {
             const assignmentIds = assignments.map(a => a.id);
@@ -416,8 +417,7 @@ async function loadUserData() {
                 .select('assignment_id')
                 .eq('werber_id', currentUser.id)
                 .in('assignment_id', assignmentIds)
-                .limit(1)
-                .single();
+                .maybeSingle();
 
             if (werberAssignment) {
                 const assignment = assignments.find(a => a.id === werberAssignment.assignment_id);
@@ -734,8 +734,9 @@ async function fetchTeamAreas() {
         // Get all assignments for current user in current KW via campaign_assignments
         const { data: parentAssignments } = await supabaseClient
             .from('campaign_assignments')
-            .select('id, campaign_id')
-            .eq('kw', kw);
+            .select('id, campaign_id, campaigns!inner(year)')
+            .eq('kw', kw)
+            .eq('campaigns.year', getCurrentYear());
 
         if (!parentAssignments || parentAssignments.length === 0) {
             return [];
@@ -829,10 +830,12 @@ async function fetchLatestRecords() {
             .select(`
                 id,
                 campaign_id,
-                campaign_assignment_werber (werber_id)
+                campaign_assignment_werber (werber_id),
+                campaigns!inner(year)
             `)
             .eq('teamchef_id', currentUser.id)
-            .eq('kw', kw);
+            .eq('kw', kw)
+            .eq('campaigns.year', getCurrentYear());
 
         if (!tcAssignment || tcAssignment.length === 0) {
             // Fallback: eigene Records
@@ -896,9 +899,10 @@ async function isUserTC() {
 
     const { data } = await supabaseClient
         .from('campaign_assignments')
-        .select('id')
+        .select('id, campaigns!inner(year)')
         .eq('kw', kw)
         .eq('teamchef_id', currentUser.id)
+        .eq('campaigns.year', getCurrentYear())
         .maybeSingle();
 
     return !!data;
@@ -914,10 +918,11 @@ async function fetchTeamWerber() {
         // Get TC's assignment for current KW via campaign_assignments table
         const { data: tcAssignment } = await supabaseClient
             .from('campaign_assignments')
-            .select('id, campaign_id')
+            .select('id, campaign_id, campaigns!inner(year)')
             .eq('teamchef_id', currentUser.id)
             .eq('kw', kw)
-            .single();
+            .eq('campaigns.year', getCurrentYear())
+            .maybeSingle();
 
         if (!tcAssignment) {
             return { campaignId: null, werber: [] };
